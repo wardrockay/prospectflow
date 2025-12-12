@@ -1,5 +1,5 @@
 {
-  "name": "@prospectflow/ingest-api",
+  "name": "prospectflow",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,10 +9,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.9.0",
-  "devDependencies": {
-    "@types/node": "^25.0.1",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
-  }
+  "packageManager": "pnpm@10.9.0"
 }
