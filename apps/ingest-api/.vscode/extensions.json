@@ -1,0 +1,16 @@
+// .vscode/extensions.json
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "wix.vscode-import-cost",
+        "mikestead.dotenv",
+        "redhat.vscode-yaml",
+        "GitHub.vscode-github-actions",
+        "ms-azuretools.vscode-docker",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "eamodio.gitlens",
+        "usernamehw.errorlens",
+        "sonarsource.sonarlint-vscode"
+    ]
+}
