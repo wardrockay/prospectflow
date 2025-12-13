@@ -1,18 +1,45 @@
 {
-  "name": "@prospectflow/ingest-api",
+  "name": "speenea-svc-appliance-state-manager",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Speenea Service Core",
+  "author": "Etienne MAILLOT",
+  "main": "dist/index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/app.js",
+    "dev": "tsc && export NODE_ENV=dev && node dist/app.js",
+    "reset": "export DB_RESET=true && pnpm run dev",
+    "test": "export NODE_ENV=test && vitest --config ./vitest.config.ts",
+    "build": "tsc",
+    "deploy": "export NODE_ENV=production && sudo docker compose -p speenea-svc-appliance-state-manager --env-file ./env/.env.production up --build -d",
+    "clean_install": "rm -r node_modules/ pnpm-lock.yaml dist/ && pnpm i && tsc "
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.9.0",
+  "dependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ioredis": "^5.6.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.3",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "redis": "^4.0.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.21",
+    "zod": "^3.24.3"
+  },
   "devDependencies": {
-    "@types/node": "^25.0.1",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "@types/body-parser": "^1.19.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.13.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.5"
   }
 }

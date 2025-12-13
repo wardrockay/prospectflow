@@ -1,0 +1,35 @@
+services:
+  orm-laudromat:
+    image: starlightcoder/speenea-svc-appliance-state-manager:latest
+    container_name: speenea-svc-appliance-state-manager
+    build: .
+    ports:
+      - '4000:4000'
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - speenea_network
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: speenea-redis
+    ports:
+      - '6380:6379'
+    command: redis-server --save 60 1 --loglevel warning --requirepass "${REDIS_PASSWORD}"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - speenea_network
+
+networks:
+  speenea_network:
+    external: true
+
+volumes:
+  redis-data:
+    driver: local

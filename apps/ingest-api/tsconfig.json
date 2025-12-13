@@ -1,15 +1,40 @@
 {
     "compilerOptions": {
-        "target": "ES2022",
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
-        "outDir": "dist",
-        "rootDir": "src",
-        "strict": true,
+        "target": "esnext",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "types": [
+            "vitest",
+            "node"
+        ],
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "baseUrl": ".",
+        "paths": {
+            "@src/*": [
+                "./src/*"
+            ],
+            "@utils/*": [
+                "./src/utils/*"
+            ],
+            "@models/*": [
+                "./src/models/*"
+            ]
+        },
+        "noEmitOnError": true,
         "esModuleInterop": true,
-        "skipLibCheck": true
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "allowJs": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        // 🚀 Ajout pour TypeORM
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "strictPropertyInitialization": false
     },
     "include": [
-        "src"
+        "src/**/*"
     ]
 }
