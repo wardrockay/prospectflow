@@ -1,7 +1,6 @@
 // src/app.ts
 import { logger } from "./utils/logger.js";
 import express from "express";
-import { AppDataSource } from "./config/database.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { loggerMiddleware } from "./middlewares/logger.middleware.js";
