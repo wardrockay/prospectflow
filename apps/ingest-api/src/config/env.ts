@@ -26,16 +26,4 @@ export const env = {
   port: getEnvVar('PORT', '3000'),
   logLevel: getEnvVar('LOG_LEVEL', 'debug'),
   corsOrigin: getEnvVar('CORS_ORIGIN', 'http://localhost:3000'),
-
-  authUrl: getEnvVar('AUTH_API_URL'),
-
-  redis: {
-    host: getEnvVar('REDIS_HOST', 'redis'),
-    port: parseInt(getEnvVar('REDIS_PORT', '6379'), 10),
-    db: parseInt(getEnvVar('REDIS_DB', '0'), 10),
-    password: getEnvVar('REDIS_PASSWORD', ''),
-    keyPrefix: getEnvVar('REDIS_KEY_PREFIX', 'speenea:'),
-  },
-
-  // Ajoute ici autant de variables que tu veux
 };
