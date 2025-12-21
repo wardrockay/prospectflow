@@ -1,7 +1,7 @@
 {
   "name": "prospectflow-ingest-api",
   "version": "1.0.0",
-  "description": "Speenea Service Core",
+  "description": "Ingest API for ProspectFlow",
   "author": "Etienne MAILLOT",
   "main": "dist/index.js",
   "type": "module",
