@@ -6,9 +6,9 @@ import { z } from 'zod';
 const positionSchema = z.object({
   pharowListName: z.string(),
   positionJobTitle: z.string(),
-  positionEmail: z.string().email(),
-  positionEmailStatus: z.string().optional(),
-  positionEmailReliability: z.string().optional(),
+  positionEmail: z.string().nullable(),
+  positionEmailStatus: z.string().nullable().optional(),
+  positionEmailReliability: z.string().nullable().optional(),
 });
 
 /**
@@ -17,14 +17,14 @@ const positionSchema = z.object({
 const personSchema = z.object({
   personLastName: z.string(),
   personFirstName: z.string(),
-  personSalutation: z.string().optional(),
-  personLinkedinUrl: z.string().url().optional().or(z.literal('')),
-  personMobilePhone: z.string().optional(),
-  personPhoneKaspr1: z.string().optional(),
-  personPhoneKaspr3: z.string().optional(),
-  personMobilePhoneBettercontact: z.string().optional(),
-  personPhoneFullenrich1: z.string().optional(),
-  personPhoneFullenrich3: z.string().optional(),
+  personSalutation: z.string().nullable().optional(),
+  personLinkedinUrl: z.string().nullable().optional(),
+  personMobilePhone: z.string().nullable().optional(),
+  personPhoneKaspr1: z.string().nullable().optional(),
+  personPhoneKaspr3: z.string().nullable().optional(),
+  personMobilePhoneBettercontact: z.string().nullable().optional(),
+  personPhoneFullenrich1: z.string().nullable().optional(),
+  personPhoneFullenrich3: z.string().nullable().optional(),
 });
 
 /**
@@ -32,26 +32,26 @@ const personSchema = z.object({
  */
 const companySchema = z.object({
   pharowCompanyId: z.string(),
-  companySiren: z.string().optional(),
-  companyHqSiret: z.string().optional(),
-  companyBrandName: z.string().optional(),
+  companySiren: z.string().nullable().optional(),
+  companyHqSiret: z.string().nullable().optional(),
+  companyBrandName: z.string().nullable().optional(),
   companyName: z.string(),
-  companyLinkedinName: z.string().optional(),
-  companyMainPhone: z.string().optional(),
-  companyMainPhoneOrigin: z.string().optional(),
-  companyGenericEmail: z.string().email().optional().or(z.literal('')),
-  companyNafSector: z.string().optional(),
-  companyActivity: z.string().optional(),
-  companyFoundingYear: z.string().optional(),
-  companyFoundingDate: z.string().optional(),
-  companyGrowing: z.boolean().optional(),
-  companyNbEmployees: z.string().optional(),
-  companyEmployeeRangeCorrected: z.string().optional(),
-  companyUrl: z.string().url().optional().or(z.literal('')),
-  companyLinkedinUrl: z.string().url().optional().or(z.literal('')),
-  companyHqFullAddress: z.string().optional(),
-  companyAnnualRevenueEuros: z.string().optional(),
-  companyAnnualRevenueYear: z.string().optional(),
+  companyLinkedinName: z.string().nullable().optional(),
+  companyMainPhone: z.string().nullable().optional(),
+  companyMainPhoneOrigin: z.string().nullable().optional(),
+  companyGenericEmail: z.string().nullable().optional(),
+  companyNafSector: z.string().nullable().optional(),
+  companyActivity: z.string().nullable().optional(),
+  companyFoundingYear: z.string().nullable().optional(),
+  companyFoundingDate: z.string().nullable().optional(),
+  companyGrowing: z.boolean().nullable().optional(),
+  companyNbEmployees: z.string().nullable().optional(),
+  companyEmployeeRangeCorrected: z.string().nullable().optional(),
+  companyUrl: z.string().nullable().optional(),
+  companyLinkedinUrl: z.string().nullable().optional(),
+  companyHqFullAddress: z.string().nullable().optional(),
+  companyAnnualRevenueEuros: z.string().nullable().optional(),
+  companyAnnualRevenueYear: z.string().nullable().optional(),
 });
 
 /**

@@ -23,6 +23,15 @@ class IngestRepository {
 
       // Pour chaque item Pharrow, insérer dans les tables
       for (const item of data) {
+        // Filtrer les emails invalides
+        if (!item.position.positionEmail || item.position.positionEmail.trim() === '') {
+          logger.warn(
+            { person: `${item.person.personFirstName} ${item.person.personLastName}` },
+            'Skipping entry: invalid or empty email',
+          );
+          continue;
+        }
+
         // 1. Insérer/récupérer la company
         const companyResult = await client.query(
           `
