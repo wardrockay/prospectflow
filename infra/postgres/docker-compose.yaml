@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   postgres:
     image: postgres:18-alpine
@@ -8,16 +10,21 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-prospectflow}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
       POSTGRES_DB: ${POSTGRES_DB:-prospectflow}
-      PGDATA: /var/lib/postgresql/data/pgdata
+      PGDATA: /data/postgres
     ports:
       - '5432:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data/pgdata # <= ICI
+      - postgres_data:/data/postgres
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-prospectflow}']
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-prospectflow} -d ${POSTGRES_DB:-prospectflow}',
+        ]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
     networks:
       - prospectflow-network
 
