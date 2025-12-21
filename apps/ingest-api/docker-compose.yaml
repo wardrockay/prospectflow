@@ -11,3 +11,8 @@ services:
     restart: unless-stopped
     networks:
       - prospectflow-network
+
+networks:
+  prospectflow-network:
+    external: true
+    name: prospectflow-network
