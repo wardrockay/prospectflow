@@ -26,4 +26,12 @@ export const env = {
   port: getEnvVar('PORT', '3000'),
   logLevel: getEnvVar('LOG_LEVEL', 'debug'),
   corsOrigin: getEnvVar('CORS_ORIGIN', 'http://localhost:3000'),
+
+  postgres: {
+    host: getEnvVar('POSTGRES_HOST', 'localhost'),
+    port: Number(getEnvVar('POSTGRES_PORT', '5432')),
+    user: getEnvVar('POSTGRES_USER', 'prospectflow'),
+    password: getEnvVar('POSTGRES_PASSWORD', ''),
+    database: getEnvVar('POSTGRES_DB', 'prospectflow'),
+  },
 };
