@@ -18,5 +18,5 @@ CREATE TABLE positions (
     updated_at              TIMESTAMPTZ DEFAULT now(),
 
     -- un contact = 1 email unique par boîte
-    UNIQUE (company_id, email)
+UNIQUE(company_id, person_id, email)
 );
