@@ -54,4 +54,5 @@ volumes:
 
 networks:
   prospectflow-network:
-    driver: bridge
+    external: true
+    name: prospectflow-network
