@@ -9,3 +9,5 @@ services:
       - PORT=3000
       - NODE_ENV=production
     restart: unless-stopped
+    networks:
+      - prospectflow-network
