@@ -112,7 +112,7 @@ class IngestRepository {
             person_id, company_id, job_title, pharow_list_name,
             email, email_status, email_reliability
           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-          ON CONFLICT (company_id, email) DO UPDATE SET
+          ON CONFLICT (company_id, person_id, email) DO UPDATE SET
             job_title = EXCLUDED.job_title,
             pharow_list_name = EXCLUDED.pharow_list_name,
             email_status = EXCLUDED.email_status,
