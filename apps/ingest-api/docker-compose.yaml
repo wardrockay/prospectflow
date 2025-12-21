@@ -1,5 +1,5 @@
 services:
-  orm-laudromat:
+  prospectflow-ingest-api:
     image: starlightcoder/prospectflow-ingest-api:latest
     container_name: prospectflow-ingest-api
     build: .
