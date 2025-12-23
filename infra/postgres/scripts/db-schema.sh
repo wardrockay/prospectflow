@@ -8,7 +8,7 @@ OUTPUT=db/schema.sql
 
 echo "📸 Generating DB schema snapshot..."
 
-docker exec -i "$CONTAINER" pg_dump \
+sudo docker exec -i "$CONTAINER" pg_dump \
   --schema-only \
   --no-owner \
   --no-privileges \
