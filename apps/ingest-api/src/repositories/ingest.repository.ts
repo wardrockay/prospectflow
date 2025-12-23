@@ -35,7 +35,7 @@ class IngestRepository {
         // 1. Insérer/récupérer la company
         const companyResult = await client.query(
           `
-          INSERT INTO companies (
+          INSERT INTO crm.companies (
             pharow_company_id, siren, hq_siret, name, brand_name, linkedin_name,
             naf_sector, activity, founding_year, founding_date, growing,
             employee_range, annual_revenue_eur, annual_revenue_year,
@@ -77,7 +77,7 @@ class IngestRepository {
         // 2. Insérer/récupérer la person
         const personResult = await client.query(
           `
-          INSERT INTO people (
+          INSERT INTO crm.people (
             first_name, last_name, salutation, linkedin_url,
             mobile_phone, phone_kaspr_1, phone_kaspr_3,
             phone_bettercontact, phone_fullenrich_1, phone_fullenrich_3
@@ -108,7 +108,7 @@ class IngestRepository {
 
         await client.query(
           `
-          INSERT INTO positions (
+          INSERT INTO crm.positions (
             person_id, company_id, job_title, pharow_list_name,
             email, email_status, email_reliability
           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
