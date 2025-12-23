@@ -7,6 +7,9 @@
 -- 2) backfill
 -- 3) add NOT NULL / constraints in a later migration
 
+ALTER TABLE crm.positions
+  ADD CONSTRAINT ux_positions_org_id UNIQUE (organisation_id, id);
+
 -- -------------------------
 -- campaigns
 -- -------------------------
