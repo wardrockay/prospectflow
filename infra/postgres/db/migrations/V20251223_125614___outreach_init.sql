@@ -303,6 +303,10 @@ CREATE TABLE outreach.tasks (
     ON DELETE CASCADE
 );
 
+ALTER TABLE outreach.tasks
+  ADD CONSTRAINT ux_tasks_org_id UNIQUE (organisation_id, id);
+
+
 CREATE TRIGGER trg_outreach_tasks_updated_at
 BEFORE UPDATE ON outreach.tasks
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -355,6 +359,9 @@ CREATE TABLE outreach.messages (
     REFERENCES crm.positions(organisation_id, id)
     ON DELETE CASCADE
 );
+
+ALTER TABLE outreach.messages
+  ADD CONSTRAINT ux_messages_org_id UNIQUE (organisation_id, id);
 
 CREATE TRIGGER trg_outreach_messages_updated_at
 BEFORE UPDATE ON outreach.messages
