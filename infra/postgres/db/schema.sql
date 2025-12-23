@@ -1,11 +1,8 @@
-git reset --hard origin/main--
--- PostgreSQL database dump
---
+// PostgreSQL database dump
 
-\restrict ABvYcvNv69OknsmWkCQDHpvMvgikrVnnP8mDr0qdyUz8fkFYMY1NDW1Xmwa9jOQ
 
--- Dumped from database version 18.1
--- Dumped by pg_dump version 18.1
+// Dumped from database version 18.1
+// Dumped by pg_dump version 18.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,55 +16,55 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Name: crm; Type: SCHEMA; Schema: -; Owner: -
---
+//
+// Name: crm; Type: SCHEMA; Schema: -; Owner: -
+//
 
 CREATE SCHEMA crm;
 
 
---
--- Name: iam; Type: SCHEMA; Schema: -; Owner: -
---
+//
+// Name: iam; Type: SCHEMA; Schema: -; Owner: -
+//
 
 CREATE SCHEMA iam;
 
 
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
+//
+// Name: public; Type: SCHEMA; Schema: -; Owner: -
+//
 
 CREATE SCHEMA public;
 
 
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
---
+//
+// Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+//
 
 COMMENT ON SCHEMA public IS 'standard public schema';
 
 
---
--- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: -
---
+//
+// Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: -
+//
 
 CREATE FUNCTION public.set_updated_at() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
+    AS 
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$;
+;
 
 
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
---
--- Name: companies; Type: TABLE; Schema: crm; Owner: -
---
+//
+// Name: companies; Type: TABLE; Schema: crm; Owner: -
+//
 
 CREATE TABLE crm.companies (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -96,9 +93,9 @@ CREATE TABLE crm.companies (
 );
 
 
---
--- Name: people; Type: TABLE; Schema: crm; Owner: -
---
+//
+// Name: people; Type: TABLE; Schema: crm; Owner: -
+//
 
 CREATE TABLE crm.people (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -118,9 +115,9 @@ CREATE TABLE crm.people (
 );
 
 
---
--- Name: positions; Type: TABLE; Schema: crm; Owner: -
---
+//
+// Name: positions; Type: TABLE; Schema: crm; Owner: -
+//
 
 CREATE TABLE crm.positions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -137,9 +134,9 @@ CREATE TABLE crm.positions (
 );
 
 
---
--- Name: organisation_users; Type: TABLE; Schema: iam; Owner: -
---
+//
+// Name: organisation_users; Type: TABLE; Schema: iam; Owner: -
+//
 
 CREATE TABLE iam.organisation_users (
     organisation_id uuid NOT NULL,
@@ -153,9 +150,9 @@ CREATE TABLE iam.organisation_users (
 );
 
 
---
--- Name: organisations; Type: TABLE; Schema: iam; Owner: -
---
+//
+// Name: organisations; Type: TABLE; Schema: iam; Owner: -
+//
 
 CREATE TABLE iam.organisations (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -165,9 +162,9 @@ CREATE TABLE iam.organisations (
 );
 
 
---
--- Name: users; Type: TABLE; Schema: iam; Owner: -
---
+//
+// Name: users; Type: TABLE; Schema: iam; Owner: -
+//
 
 CREATE TABLE iam.users (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -179,9 +176,9 @@ CREATE TABLE iam.users (
 );
 
 
---
--- Name: flyway_schema_history; Type: TABLE; Schema: public; Owner: -
---
+//
+// Name: flyway_schema_history; Type: TABLE; Schema: public; Owner: -
+//
 
 CREATE TABLE public.flyway_schema_history (
     installed_rank integer NOT NULL,
@@ -197,274 +194,272 @@ CREATE TABLE public.flyway_schema_history (
 );
 
 
---
--- Name: companies companies_organisation_id_pharow_company_id_key; Type: CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: companies companies_organisation_id_pharow_company_id_key; Type: CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.companies
     ADD CONSTRAINT companies_organisation_id_pharow_company_id_key UNIQUE (organisation_id, pharow_company_id);
 
 
---
--- Name: companies companies_pkey; Type: CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: companies companies_pkey; Type: CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.companies
     ADD CONSTRAINT companies_pkey PRIMARY KEY (id);
 
 
---
--- Name: people people_organisation_id_first_name_last_name_linkedin_url_key; Type: CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: people people_organisation_id_first_name_last_name_linkedin_url_key; Type: CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.people
     ADD CONSTRAINT people_organisation_id_first_name_last_name_linkedin_url_key UNIQUE (organisation_id, first_name, last_name, linkedin_url);
 
 
---
--- Name: people people_pkey; Type: CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: people people_pkey; Type: CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.people
     ADD CONSTRAINT people_pkey PRIMARY KEY (id);
 
 
---
--- Name: positions positions_organisation_id_company_id_person_id_email_key; Type: CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: positions positions_organisation_id_company_id_person_id_email_key; Type: CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.positions
     ADD CONSTRAINT positions_organisation_id_company_id_person_id_email_key UNIQUE (organisation_id, company_id, person_id, email);
 
 
---
--- Name: positions positions_pkey; Type: CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: positions positions_pkey; Type: CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.positions
     ADD CONSTRAINT positions_pkey PRIMARY KEY (id);
 
 
---
--- Name: companies ux_companies_org_id; Type: CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: companies ux_companies_org_id; Type: CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.companies
     ADD CONSTRAINT ux_companies_org_id UNIQUE (organisation_id, id);
 
 
---
--- Name: people ux_people_org_id; Type: CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: people ux_people_org_id; Type: CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.people
     ADD CONSTRAINT ux_people_org_id UNIQUE (organisation_id, id);
 
 
---
--- Name: organisation_users organisation_users_pkey; Type: CONSTRAINT; Schema: iam; Owner: -
---
+//
+// Name: organisation_users organisation_users_pkey; Type: CONSTRAINT; Schema: iam; Owner: -
+//
 
 ALTER TABLE ONLY iam.organisation_users
     ADD CONSTRAINT organisation_users_pkey PRIMARY KEY (organisation_id, user_id);
 
 
---
--- Name: organisations organisations_pkey; Type: CONSTRAINT; Schema: iam; Owner: -
---
+//
+// Name: organisations organisations_pkey; Type: CONSTRAINT; Schema: iam; Owner: -
+//
 
 ALTER TABLE ONLY iam.organisations
     ADD CONSTRAINT organisations_pkey PRIMARY KEY (id);
 
 
---
--- Name: users users_email_key; Type: CONSTRAINT; Schema: iam; Owner: -
---
+//
+// Name: users users_email_key; Type: CONSTRAINT; Schema: iam; Owner: -
+//
 
 ALTER TABLE ONLY iam.users
     ADD CONSTRAINT users_email_key UNIQUE (email);
 
 
---
--- Name: users users_pkey; Type: CONSTRAINT; Schema: iam; Owner: -
---
+//
+// Name: users users_pkey; Type: CONSTRAINT; Schema: iam; Owner: -
+//
 
 ALTER TABLE ONLY iam.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
---
--- Name: flyway_schema_history flyway_schema_history_pk; Type: CONSTRAINT; Schema: public; Owner: -
---
+//
+// Name: flyway_schema_history flyway_schema_history_pk; Type: CONSTRAINT; Schema: public; Owner: -
+//
 
 ALTER TABLE ONLY public.flyway_schema_history
     ADD CONSTRAINT flyway_schema_history_pk PRIMARY KEY (installed_rank);
 
 
---
--- Name: idx_companies_org_pharow; Type: INDEX; Schema: crm; Owner: -
---
+//
+// Name: idx_companies_org_pharow; Type: INDEX; Schema: crm; Owner: -
+//
 
 CREATE INDEX idx_companies_org_pharow ON crm.companies USING btree (organisation_id, pharow_company_id);
 
 
---
--- Name: idx_companies_org_siren; Type: INDEX; Schema: crm; Owner: -
---
+//
+// Name: idx_companies_org_siren; Type: INDEX; Schema: crm; Owner: -
+//
 
 CREATE INDEX idx_companies_org_siren ON crm.companies USING btree (organisation_id, siren);
 
 
---
--- Name: idx_people_org_last_name; Type: INDEX; Schema: crm; Owner: -
---
+//
+// Name: idx_people_org_last_name; Type: INDEX; Schema: crm; Owner: -
+//
 
 CREATE INDEX idx_people_org_last_name ON crm.people USING btree (organisation_id, last_name);
 
 
---
--- Name: idx_positions_org_company; Type: INDEX; Schema: crm; Owner: -
---
+//
+// Name: idx_positions_org_company; Type: INDEX; Schema: crm; Owner: -
+//
 
 CREATE INDEX idx_positions_org_company ON crm.positions USING btree (organisation_id, company_id);
 
 
---
--- Name: idx_positions_org_email; Type: INDEX; Schema: crm; Owner: -
---
+//
+// Name: idx_positions_org_email; Type: INDEX; Schema: crm; Owner: -
+//
 
 CREATE INDEX idx_positions_org_email ON crm.positions USING btree (organisation_id, email);
 
 
---
--- Name: idx_positions_org_person; Type: INDEX; Schema: crm; Owner: -
---
+//
+// Name: idx_positions_org_person; Type: INDEX; Schema: crm; Owner: -
+//
 
 CREATE INDEX idx_positions_org_person ON crm.positions USING btree (organisation_id, person_id);
 
 
---
--- Name: idx_org_users_user; Type: INDEX; Schema: iam; Owner: -
---
+//
+// Name: idx_org_users_user; Type: INDEX; Schema: iam; Owner: -
+//
 
 CREATE INDEX idx_org_users_user ON iam.organisation_users USING btree (user_id);
 
 
---
--- Name: ux_one_owner_per_org; Type: INDEX; Schema: iam; Owner: -
---
+//
+// Name: ux_one_owner_per_org; Type: INDEX; Schema: iam; Owner: -
+//
 
 CREATE UNIQUE INDEX ux_one_owner_per_org ON iam.organisation_users USING btree (organisation_id) WHERE (role = 'owner'::text);
 
 
---
--- Name: flyway_schema_history_s_idx; Type: INDEX; Schema: public; Owner: -
---
+//
+// Name: flyway_schema_history_s_idx; Type: INDEX; Schema: public; Owner: -
+//
 
 CREATE INDEX flyway_schema_history_s_idx ON public.flyway_schema_history USING btree (success);
 
 
---
--- Name: companies trg_companies_updated_at; Type: TRIGGER; Schema: crm; Owner: -
---
+//
+// Name: companies trg_companies_updated_at; Type: TRIGGER; Schema: crm; Owner: -
+//
 
 CREATE TRIGGER trg_companies_updated_at BEFORE UPDATE ON crm.companies FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
---
--- Name: people trg_people_updated_at; Type: TRIGGER; Schema: crm; Owner: -
---
+//
+// Name: people trg_people_updated_at; Type: TRIGGER; Schema: crm; Owner: -
+//
 
 CREATE TRIGGER trg_people_updated_at BEFORE UPDATE ON crm.people FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
---
--- Name: positions trg_positions_updated_at; Type: TRIGGER; Schema: crm; Owner: -
---
+//
+// Name: positions trg_positions_updated_at; Type: TRIGGER; Schema: crm; Owner: -
+//
 
 CREATE TRIGGER trg_positions_updated_at BEFORE UPDATE ON crm.positions FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
---
--- Name: organisation_users trg_org_users_updated_at; Type: TRIGGER; Schema: iam; Owner: -
---
+//
+// Name: organisation_users trg_org_users_updated_at; Type: TRIGGER; Schema: iam; Owner: -
+//
 
 CREATE TRIGGER trg_org_users_updated_at BEFORE UPDATE ON iam.organisation_users FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
---
--- Name: organisations trg_organisations_updated_at; Type: TRIGGER; Schema: iam; Owner: -
---
+//
+// Name: organisations trg_organisations_updated_at; Type: TRIGGER; Schema: iam; Owner: -
+//
 
 CREATE TRIGGER trg_organisations_updated_at BEFORE UPDATE ON iam.organisations FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
---
--- Name: users trg_users_updated_at; Type: TRIGGER; Schema: iam; Owner: -
---
+//
+// Name: users trg_users_updated_at; Type: TRIGGER; Schema: iam; Owner: -
+//
 
 CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON iam.users FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
---
--- Name: companies companies_organisation_id_fkey; Type: FK CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: companies companies_organisation_id_fkey; Type: FK CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.companies
     ADD CONSTRAINT companies_organisation_id_fkey FOREIGN KEY (organisation_id) REFERENCES iam.organisations(id) ON DELETE CASCADE;
 
 
---
--- Name: positions fk_positions_company_same_org; Type: FK CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: positions fk_positions_company_same_org; Type: FK CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.positions
     ADD CONSTRAINT fk_positions_company_same_org FOREIGN KEY (organisation_id, company_id) REFERENCES crm.companies(organisation_id, id) ON DELETE CASCADE;
 
 
---
--- Name: positions fk_positions_person_same_org; Type: FK CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: positions fk_positions_person_same_org; Type: FK CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.positions
     ADD CONSTRAINT fk_positions_person_same_org FOREIGN KEY (organisation_id, person_id) REFERENCES crm.people(organisation_id, id) ON DELETE CASCADE;
 
 
---
--- Name: people people_organisation_id_fkey; Type: FK CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: people people_organisation_id_fkey; Type: FK CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.people
     ADD CONSTRAINT people_organisation_id_fkey FOREIGN KEY (organisation_id) REFERENCES iam.organisations(id) ON DELETE CASCADE;
 
 
---
--- Name: positions positions_organisation_id_fkey; Type: FK CONSTRAINT; Schema: crm; Owner: -
---
+//
+// Name: positions positions_organisation_id_fkey; Type: FK CONSTRAINT; Schema: crm; Owner: -
+//
 
 ALTER TABLE ONLY crm.positions
     ADD CONSTRAINT positions_organisation_id_fkey FOREIGN KEY (organisation_id) REFERENCES iam.organisations(id) ON DELETE CASCADE;
 
 
---
--- Name: organisation_users organisation_users_organisation_id_fkey; Type: FK CONSTRAINT; Schema: iam; Owner: -
---
+//
+// Name: organisation_users organisation_users_organisation_id_fkey; Type: FK CONSTRAINT; Schema: iam; Owner: -
+//
 
 ALTER TABLE ONLY iam.organisation_users
     ADD CONSTRAINT organisation_users_organisation_id_fkey FOREIGN KEY (organisation_id) REFERENCES iam.organisations(id) ON DELETE CASCADE;
 
 
---
--- Name: organisation_users organisation_users_user_id_fkey; Type: FK CONSTRAINT; Schema: iam; Owner: -
---
+//
+// Name: organisation_users organisation_users_user_id_fkey; Type: FK CONSTRAINT; Schema: iam; Owner: -
+//
 
 ALTER TABLE ONLY iam.organisation_users
     ADD CONSTRAINT organisation_users_user_id_fkey FOREIGN KEY (user_id) REFERENCES iam.users(id) ON DELETE CASCADE;
 
 
---
--- PostgreSQL database dump complete
---
-
-\unrestrict ABvYcvNv69OknsmWkCQDHpvMvgikrVnnP8mDr0qdyUz8fkFYMY1NDW1Xmwa9jOQ
+//
+// PostgreSQL database dump complete
+//
 
