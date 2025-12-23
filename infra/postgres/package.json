@@ -1,11 +1,11 @@
 {
   "scripts": {
     "db:new": "node scripts/db-new-migration.mjs",
-    "db:up": "docker compose up -d postgres pgadmin",
-    "db:down": "docker compose down -v",
-    "db:logs": "docker compose logs -f postgres pgadmin",
-    "db:migrate": "docker compose run --rm flyway",
-    "db:info": "docker compose run --rm flyway info",
-    "db:repair": "docker compose run --rm flyway repair"
+    "db:up": "sudo docker compose up -d postgres pgadmin",
+    "db:down": "sudo docker compose down -v",
+    "db:logs": "sudo docker compose logs -f postgres pgadmin",
+    "db:migrate": "sudo docker compose run --rm flyway",
+    "db:info": "sudo docker compose run --rm flyway info",
+    "db:repair": "sudo docker compose run --rm flyway repair"
   }
 }
