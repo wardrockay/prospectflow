@@ -136,8 +136,7 @@ CREATE TABLE outreach.step_experiments (
 ALTER TABLE outreach.step_experiments
   ADD CONSTRAINT ux_step_experiments_org_id UNIQUE (organisation_id, id);
 
-ALTER TABLE outreach.step_experiment_variants
-  ADD CONSTRAINT ux_step_experiment_variants_org_id UNIQUE (organisation_id, id);
+
 
 
 CREATE TRIGGER trg_outreach_step_experiments_updated_at
@@ -178,6 +177,9 @@ CREATE TABLE outreach.step_experiment_variants (
     REFERENCES outreach.prompts(organisation_id, id)
     ON DELETE SET NULL
 );
+
+ALTER TABLE outreach.step_experiment_variants
+  ADD CONSTRAINT ux_step_experiment_variants_org_id UNIQUE (organisation_id, id);
 
 CREATE INDEX idx_step_variants_org_experiment
   ON outreach.step_experiment_variants(organisation_id, step_experiment_id);
