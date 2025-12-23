@@ -133,6 +133,13 @@ CREATE TABLE outreach.step_experiments (
     ON DELETE CASCADE
 );
 
+ALTER TABLE outreach.step_experiments
+  ADD CONSTRAINT ux_step_experiments_org_id UNIQUE (organisation_id, id);
+
+ALTER TABLE outreach.step_experiment_variants
+  ADD CONSTRAINT ux_step_experiment_variants_org_id UNIQUE (organisation_id, id);
+
+
 CREATE TRIGGER trg_outreach_step_experiments_updated_at
 BEFORE UPDATE ON outreach.step_experiments
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
