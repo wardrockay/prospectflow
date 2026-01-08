@@ -341,7 +341,7 @@ pgbouncer:
     PGBOUNCER_DEFAULT_POOL_SIZE: 25
   volumes:
     - ./pgbouncer/entrypoint.sh:/entrypoint.sh:ro
-  entrypoint: ["/bin/sh", "/entrypoint.sh"]
+  entrypoint: ['/bin/sh', '/entrypoint.sh']
   ports:
     - '6432:5432'
 ```

@@ -643,17 +643,20 @@ Existing Files (Validated):
 ### Findings (high → low)
 
 1. **HIGH**: Connection pooling was documented but not implemented.
-    - Fixed by adding pgBouncer service to `infra/postgres/docker-compose.yaml`.
+
+   - Fixed by adding pgBouncer service to `infra/postgres/docker-compose.yaml`.
 
 2. **HIGH**: AC3 "queries without organisation_id should fail" was not enforceable at DB level.
-    - Fixed by adding RLS + `app.current_organisation_id()` enforcement in `infra/postgres/db/migrations/V20260108_120000___tenant_keys_rls_and_pooling_prep.sql`.
-    - Added an app role `prospectflow_app` and documented usage.
+
+   - Fixed by adding RLS + `app.current_organisation_id()` enforcement in `infra/postgres/db/migrations/V20260108_120000___tenant_keys_rls_and_pooling_prep.sql`.
+   - Added an app role `prospectflow_app` and documented usage.
 
 3. **MEDIUM**: SQL validation had a false-positive path (it would print PASS even if enforcement didn’t work).
-    - Fixed by narrowing exception handling to the expected SQLSTATE and running the RLS test under `SET LOCAL ROLE prospectflow_app`.
+
+   - Fixed by narrowing exception handling to the expected SQLSTATE and running the RLS test under `SET LOCAL ROLE prospectflow_app`.
 
 4. **MEDIUM**: pgBouncer image env var assumptions were not evidenced.
-    - Fixed by introducing a deterministic entrypoint script: `infra/postgres/pgbouncer/entrypoint.sh`.
+   - Fixed by introducing a deterministic entrypoint script: `infra/postgres/pgbouncer/entrypoint.sh`.
 
 ### Notes
 
