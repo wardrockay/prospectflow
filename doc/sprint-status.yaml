@@ -1,157 +1,318 @@
+# generated: 2026-01-08
+# project: prospectflow
+# project_key: prospectflow
+# tracking_system: file-system
+# story_location: /home/tolliam/starlightcoder/LightAndShutter/prospectflow/doc/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
 ---
-# ProspectFlow - Sprint Status Tracking
-# Generated: 2025-01-XX
-# Workflow: [SP] Sprint Planning
-# Source: epics.md requirements analysis
+generated: 2026-01-08
+project: prospectflow
+project_key: prospectflow
+tracking_system: file-system
+story_location: /home/tolliam/starlightcoder/LightAndShutter/prospectflow/doc/implementation-artifacts
 
 metadata:
-  projectName: "ProspectFlow"
-  version: "1.0"
-  totalEpics: 13
-  totalStories: 0  # To be calculated as stories are added
-  currentSprint: "Sprint 0 - Foundation"
-  sprintDuration: "2 weeks"
-  velocityTarget: "20 story points per sprint"
+  projectName: 'ProspectFlow'
+  version: '1.0'
+  totalEpics: 14
+  totalStories: 67
+  currentSprint: 'Sprint 0 - Foundation'
+  sprintDuration: '2 weeks'
+  velocityTarget: '20 story points per sprint'
+
+# Development Status Tracking
+# Format: story-key: status
+development_status:
+  # Epic E0: Foundation Infrastructure & Architecture
+  epic-0: in-progress
+  0-1-multi-tenant-postgresql-database-setup: ready-for-dev
+  0-2-express-js-api-foundation-with-layered-architecture: backlog
+  0-3-rabbitmq-message-queue-configuration: backlog
+  0-4-authentication-authorization-system: backlog
+  0-5-structured-logging-with-pino: backlog
+  0-6-error-tracking-with-sentry: backlog
+  0-7-prometheus-metrics-grafana-dashboards: backlog
+  0-8-docker-compose-orchestration: backlog
+  0-9-ci-cd-pipeline-with-github-actions: backlog
+  epic-0-retrospective: optional
+
+  # Epic E1: Campaign Management Foundation
+  epic-1: backlog
+  1-1-create-new-campaign: backlog
+  1-2-view-campaign-list: backlog
+  1-3-view-campaign-details: backlog
+  1-4-archive-campaign: backlog
+  epic-1-retrospective: optional
+
+  # Epic E2: Prospect Import & Validation Pipeline
+  epic-2: backlog
+  2-1-csv-file-upload-interface: backlog
+  2-2-csv-parsing-and-column-validation: backlog
+  2-3-email-format-and-data-validation: backlog
+  2-4-duplicate-detection-within-upload: backlog
+  2-5-duplicate-detection-against-existing-prospects: backlog
+  2-6-validation-report-and-user-actions: backlog
+  epic-2-retrospective: optional
+
+  # Epic E3: Automated Prospect Research Engine
+  epic-3: backlog
+  3-1-research-queue-and-job-management: backlog
+  3-2-website-scraping-for-business-intelligence: backlog
+  3-3-social-media-scanning-web-scraping-approach: backlog
+  3-4-opportunity-analysis-and-hook-generation: backlog
+  3-5-research-profile-generation: backlog
+  3-6-research-failure-handling-and-retries: backlog
+  epic-3-retrospective: optional
+
+  # Epic E4: AI Email Draft Generation
+  epic-4: backlog
+  4-1-ai-prompt-engineering-and-template-system: backlog
+  4-2-openai-api-integration-for-draft-generation: backlog
+  4-3-draft-worker-service-implementation: backlog
+  4-4-ai-confidence-scoring-algorithm: backlog
+  4-5-draft-reasoning-and-source-attribution: backlog
+  4-6-draft-regeneration-capability: backlog
+  4-7-batch-draft-generation-orchestration: backlog
+  epic-4-retrospective: optional
+
+  # Epic E5: Email Review & Approval Interface
+  epic-5: backlog
+  5-1-review-queue-interface: backlog
+  5-2-keyboard-shortcuts-for-rapid-review: backlog
+  5-3-inline-draft-editing: backlog
+  5-4-approve-skip-and-regenerate-actions: backlog
+  5-5-batch-approval-capability: backlog
+  epic-5-retrospective: optional
+
+  # Epic E6: Gmail Integration & Email Sending
+  epic-6: backlog
+  6-1-gmail-oauth-2-0-connection-flow: backlog
+  6-2-email-sending-via-gmail-api: backlog
+  6-3-rate-limiting-and-pacing: backlog
+  6-4-batch-email-sending-orchestration: backlog
+  6-5-unsubscribe-mechanism: backlog
+  epic-6-retrospective: optional
+
+  # Epic E7: Response Tracking & Notifications
+  epic-7: backlog
+  7-1-gmail-reply-detection-worker: backlog
+  7-2-response-classification-with-ai: backlog
+  7-3-user-notifications-for-responses: backlog
+  7-4-response-dashboard: backlog
+  epic-7-retrospective: optional
+
+  # Epic E8: Campaign Analytics Dashboard
+  epic-8: backlog
+  8-1-campaign-metrics-calculation: backlog
+  8-2-analytics-dashboard-ui: backlog
+  8-3-meeting-tracking: backlog
+  8-4-time-saved-calculation: backlog
+  epic-8-retrospective: optional
+
+  # Epic E9: Follow-up Sequence Automation
+  epic-9: backlog
+  9-1-follow-up-sequence-configuration: backlog
+  9-2-follow-up-draft-generation: backlog
+  9-3-follow-up-scheduling-worker: backlog
+  9-4-follow-up-analytics: backlog
+  epic-9-retrospective: optional
+
+  # Epic E10: Email Template Library
+  epic-10: backlog
+  10-1-pre-built-template-library: backlog
+  10-2-custom-template-creation: backlog
+  10-3-template-performance-tracking: backlog
+  epic-10-retrospective: optional
+
+  # Epic E11: Social Media Deep Integration
+  epic-11: backlog
+  11-1-instagram-business-api-integration: backlog
+  11-2-linkedin-company-api-integration: backlog
+  11-3-facebook-pages-api-integration: backlog
+  epic-11-retrospective: optional
+
+  # Epic E12: CRM Integration
+  epic-12: backlog
+  12-1-hubspot-integration: backlog
+  12-2-pipedrive-integration: backlog
+  epic-12-retrospective: optional
+
+  # Epic E13: A/B Testing Framework
+  epic-13: backlog
+  13-1-a-b-test-configuration: backlog
+  13-2-variant-draft-generation: backlog
+  13-3-statistical-significance-tracking: backlog
+  13-4-automatic-winner-rollout: backlog
+  epic-13-retrospective: optional
 
 # Epic Breakdown aligned with FR requirements
 epics:
-  - id: "E1"
-    title: "Campaign Management Foundation"
-    priority: "P0"
-    status: "Not Started"
-    requirementsCovered: ["FR1"]
-    description: "Core campaign CRUD operations with validation and status management"
+  - id: 'E1'
+    title: 'Campaign Management Foundation'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR1']
+    description: 'Core campaign CRUD operations with validation and status management'
     estimatedStoryPoints: 13
     dependencies: []
     stories: []
 
-  - id: "E2"
-    title: "Prospect Import & Validation Pipeline"
-    priority: "P0"
-    status: "Not Started"
-    requirementsCovered: ["FR2"]
-    description: "CSV upload, data validation, duplicate detection, and user-friendly error reporting"
+  - id: 'E2'
+    title: 'Prospect Import & Validation Pipeline'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR2']
+    description: 'CSV upload, data validation, duplicate detection, and user-friendly error reporting'
     estimatedStoryPoints: 21
-    dependencies: ["E1"]
+    dependencies: ['E1']
     stories: []
 
-  - id: "E3"
-    title: "Automated Prospect Research Engine"
-    priority: "P0"
-    status: "Not Started"
-    requirementsCovered: ["FR3", "NFR1", "NFR2"]
-    description: "Web scraping, social media scanning, opportunity analysis, and research profile generation"
+  - id: 'E3'
+    title: 'Automated Prospect Research Engine'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR3', 'NFR1', 'NFR2']
+    description: 'Web scraping, social media scanning, opportunity analysis, and research profile generation'
     estimatedStoryPoints: 34
-    dependencies: ["E2"]
+    dependencies: ['E2']
     stories: []
 
-  - id: "E4"
-    title: "AI Email Draft Generation"
-    priority: "P0"
-    status: "Not Started"
-    requirementsCovered: ["FR4", "NFR1"]
-    description: "AI-powered email composition with personalization, confidence scoring, and source attribution"
+  - id: 'E4'
+    title: 'AI Email Draft Generation'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR4', 'NFR1']
+    description: 'AI-powered email composition with personalization, confidence scoring, and source attribution'
     estimatedStoryPoints: 34
-    dependencies: ["E3"]
+    dependencies: ['E3']
     stories: []
 
-  - id: "E5"
-    title: "Email Review & Approval Interface"
-    priority: "P0"
-    status: "Not Started"
-    requirementsCovered: ["FR5", "NFR11", "NFR12"]
-    description: "User interface for reviewing, editing, approving emails with keyboard shortcuts and batch operations"
+  - id: 'E5'
+    title: 'Email Review & Approval Interface'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR5', 'NFR11', 'NFR12']
+    description: 'User interface for reviewing, editing, approving emails with keyboard shortcuts and batch operations'
     estimatedStoryPoints: 21
-    dependencies: ["E4"]
+    dependencies: ['E4']
     stories: []
 
-  - id: "E6"
-    title: "Gmail Integration & Email Sending"
-    priority: "P0"
-    status: "Not Started"
-    requirementsCovered: ["FR6", "NFR4", "NFR6"]
-    description: "OAuth 2.0 Gmail integration, batch sending with rate limiting, delivery tracking"
+  - id: 'E6'
+    title: 'Gmail Integration & Email Sending'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR6', 'NFR4', 'NFR6']
+    description: 'OAuth 2.0 Gmail integration, batch sending with rate limiting, delivery tracking'
     estimatedStoryPoints: 21
-    dependencies: ["E5"]
+    dependencies: ['E5']
     stories: []
 
-  - id: "E7"
-    title: "Response Tracking & Notifications"
-    priority: "P1"
-    status: "Not Started"
-    requirementsCovered: ["FR7"]
-    description: "Gmail monitoring, response detection, classification, and user notifications"
+  - id: 'E7'
+    title: 'Response Tracking & Notifications'
+    priority: 'P1'
+    status: 'Not Started'
+    requirementsCovered: ['FR7']
+    description: 'Gmail monitoring, response detection, classification, and user notifications'
     estimatedStoryPoints: 21
-    dependencies: ["E6"]
+    dependencies: ['E6']
     stories: []
 
-  - id: "E8"
-    title: "Campaign Analytics Dashboard"
-    priority: "P1"
-    status: "Not Started"
-    requirementsCovered: ["FR8"]
-    description: "Metrics visualization, campaign performance tracking, export capabilities"
+  - id: 'E8'
+    title: 'Campaign Analytics Dashboard'
+    priority: 'P1'
+    status: 'Not Started'
+    requirementsCovered: ['FR8']
+    description: 'Metrics visualization, campaign performance tracking, export capabilities'
     estimatedStoryPoints: 21
-    dependencies: ["E7"]
+    dependencies: ['E7']
     stories: []
 
-  - id: "E9"
-    title: "Follow-up Sequence Automation"
-    priority: "P2"
-    status: "Not Started"
-    requirementsCovered: ["FR9"]
-    description: "Automated follow-up scheduling, drafting, and approval workflow"
+  - id: 'E9'
+    title: 'Follow-up Sequence Automation'
+    priority: 'P2'
+    status: 'Not Started'
+    requirementsCovered: ['FR9']
+    description: 'Automated follow-up scheduling, drafting, and approval workflow'
     estimatedStoryPoints: 21
-    dependencies: ["E6", "E7"]
+    dependencies: ['E6', 'E7']
     stories: []
 
-  - id: "E10"
-    title: "Email Template Library"
-    priority: "P2"
-    status: "Not Started"
-    requirementsCovered: ["FR10"]
-    description: "Pre-built templates, custom template creation, template management"
+  - id: 'E10'
+    title: 'Email Template Library'
+    priority: 'P2'
+    status: 'Not Started'
+    requirementsCovered: ['FR10']
+    description: 'Pre-built templates, custom template creation, template management'
     estimatedStoryPoints: 13
-    dependencies: ["E4"]
+    dependencies: ['E4']
     stories: []
 
-  - id: "E11"
-    title: "Social Media Deep Integration"
-    priority: "P2"
-    status: "Not Started"
-    requirementsCovered: ["FR11"]
-    description: "Direct API integrations for Instagram, LinkedIn, Facebook with enhanced research capabilities"
+  - id: 'E11'
+    title: 'Social Media Deep Integration'
+    priority: 'P2'
+    status: 'Not Started'
+    requirementsCovered: ['FR11']
+    description: 'Direct API integrations for Instagram, LinkedIn, Facebook with enhanced research capabilities'
     estimatedStoryPoints: 21
-    dependencies: ["E3"]
+    dependencies: ['E3']
     stories: []
 
-  - id: "E12"
-    title: "CRM Integration"
-    priority: "P3"
-    status: "Not Started"
-    requirementsCovered: ["FR12"]
-    description: "Bidirectional sync with Hubspot and Pipedrive"
+  - id: 'E12'
+    title: 'CRM Integration'
+    priority: 'P3'
+    status: 'Not Started'
+    requirementsCovered: ['FR12']
+    description: 'Bidirectional sync with Hubspot and Pipedrive'
     estimatedStoryPoints: 21
-    dependencies: ["E8"]
+    dependencies: ['E8']
     stories: []
 
-  - id: "E13"
-    title: "A/B Testing Framework"
-    priority: "P3"
-    status: "Not Started"
-    requirementsCovered: ["FR13"]
-    description: "Built-in A/B testing for email elements with statistical analysis"
+  - id: 'E13'
+    title: 'A/B Testing Framework'
+    priority: 'P3'
+    status: 'Not Started'
+    requirementsCovered: ['FR13']
+    description: 'Built-in A/B testing for email elements with statistical analysis'
     estimatedStoryPoints: 21
-    dependencies: ["E8"]
+    dependencies: ['E8']
     stories: []
 
   # Infrastructure & Non-Functional Epics
-  - id: "E0"
-    title: "Foundation Infrastructure & Architecture"
-    priority: "P0"
-    status: "Not Started"
-    requirementsCovered: ["NFR3", "NFR4", "NFR5", "NFR14", "NFR15", "NFR16"]
-    description: "Multi-tenant PostgreSQL setup, authentication, Docker deployment, monitoring, CI/CD"
+  - id: 'E0'
+    title: 'Foundation Infrastructure & Architecture'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['NFR3', 'NFR4', 'NFR5', 'NFR14', 'NFR15', 'NFR16']
+    description: 'Multi-tenant PostgreSQL setup, authentication, Docker deployment, monitoring, CI/CD'
     estimatedStoryPoints: 34
     dependencies: []
     stories: []
@@ -159,381 +320,381 @@ epics:
 # Sprint Planning
 sprints:
   - sprintNumber: 0
-    sprintName: "Foundation Sprint"
-    startDate: "TBD"
-    endDate: "TBD"
-    status: "Planned"
-    goal: "Establish infrastructure, authentication, and basic campaign management"
-    epicsInSprint: ["E0", "E1"]
+    sprintName: 'Foundation Sprint'
+    startDate: 'TBD'
+    endDate: 'TBD'
+    status: 'Planned'
+    goal: 'Establish infrastructure, authentication, and basic campaign management'
+    epicsInSprint: ['E0', 'E1']
     velocity: 0
     storiesCompleted: []
-    notes: "Foundation sprint to set up architecture and core entities"
+    notes: 'Foundation sprint to set up architecture and core entities'
 
   - sprintNumber: 1
-    sprintName: "Prospect Pipeline Sprint"
-    startDate: "TBD"
-    endDate: "TBD"
-    status: "Planned"
-    goal: "Build prospect import, validation, and basic research capabilities"
-    epicsInSprint: ["E2", "E3"]
+    sprintName: 'Prospect Pipeline Sprint'
+    startDate: 'TBD'
+    endDate: 'TBD'
+    status: 'Planned'
+    goal: 'Build prospect import, validation, and basic research capabilities'
+    epicsInSprint: ['E2', 'E3']
     velocity: 0
     storiesCompleted: []
-    notes: "Focus on getting prospects into the system with initial research"
+    notes: 'Focus on getting prospects into the system with initial research'
 
   - sprintNumber: 2
-    sprintName: "AI Email Generation Sprint"
-    startDate: "TBD"
-    endDate: "TBD"
-    status: "Planned"
-    goal: "Implement AI email drafting and review interface"
-    epicsInSprint: ["E4", "E5"]
+    sprintName: 'AI Email Generation Sprint'
+    startDate: 'TBD'
+    endDate: 'TBD'
+    status: 'Planned'
+    goal: 'Implement AI email drafting and review interface'
+    epicsInSprint: ['E4', 'E5']
     velocity: 0
     storiesCompleted: []
-    notes: "Core AI functionality and human review loop"
+    notes: 'Core AI functionality and human review loop'
 
   - sprintNumber: 3
-    sprintName: "Gmail Integration Sprint"
-    startDate: "TBD"
-    endDate: "TBD"
-    status: "Planned"
-    goal: "Connect Gmail, send emails, track responses"
-    epicsInSprint: ["E6", "E7"]
+    sprintName: 'Gmail Integration Sprint'
+    startDate: 'TBD'
+    endDate: 'TBD'
+    status: 'Planned'
+    goal: 'Connect Gmail, send emails, track responses'
+    epicsInSprint: ['E6', 'E7']
     velocity: 0
     storiesCompleted: []
-    notes: "Complete the outbound email workflow end-to-end"
+    notes: 'Complete the outbound email workflow end-to-end'
 
   - sprintNumber: 4
-    sprintName: "Analytics & Insights Sprint"
-    startDate: "TBD"
-    endDate: "TBD"
-    status: "Planned"
-    goal: "Build analytics dashboard and campaign performance tracking"
-    epicsInSprint: ["E8"]
+    sprintName: 'Analytics & Insights Sprint'
+    startDate: 'TBD'
+    endDate: 'TBD'
+    status: 'Planned'
+    goal: 'Build analytics dashboard and campaign performance tracking'
+    epicsInSprint: ['E8']
     velocity: 0
     storiesCompleted: []
-    notes: "User visibility into campaign effectiveness"
+    notes: 'User visibility into campaign effectiveness'
 
   - sprintNumber: 5
-    sprintName: "Enhancement Sprint 1"
-    startDate: "TBD"
-    endDate: "TBD"
-    status: "Planned"
-    goal: "Add follow-up automation and template library"
-    epicsInSprint: ["E9", "E10"]
+    sprintName: 'Enhancement Sprint 1'
+    startDate: 'TBD'
+    endDate: 'TBD'
+    status: 'Planned'
+    goal: 'Add follow-up automation and template library'
+    epicsInSprint: ['E9', 'E10']
     velocity: 0
     storiesCompleted: []
-    notes: "P2 features for increased efficiency"
+    notes: 'P2 features for increased efficiency'
 
   - sprintNumber: 6
-    sprintName: "Enhancement Sprint 2"
-    startDate: "TBD"
-    endDate: "TBD"
-    status: "Planned"
-    goal: "Social media deep integration"
-    epicsInSprint: ["E11"]
+    sprintName: 'Enhancement Sprint 2'
+    startDate: 'TBD'
+    endDate: 'TBD'
+    status: 'Planned'
+    goal: 'Social media deep integration'
+    epicsInSprint: ['E11']
     velocity: 0
     storiesCompleted: []
-    notes: "Enhanced research capabilities"
+    notes: 'Enhanced research capabilities'
 
   - sprintNumber: 7
-    sprintName: "Integration Sprint"
-    startDate: "TBD"
-    endDate: "TBD"
-    status: "Planned"
-    goal: "CRM integration and A/B testing framework"
-    epicsInSprint: ["E12", "E13"]
+    sprintName: 'Integration Sprint'
+    startDate: 'TBD'
+    endDate: 'TBD'
+    status: 'Planned'
+    goal: 'CRM integration and A/B testing framework'
+    epicsInSprint: ['E12', 'E13']
     velocity: 0
     storiesCompleted: []
-    notes: "P3 features for advanced users"
+    notes: 'P3 features for advanced users'
 
 # Non-Functional Requirements Tracking
 nfrTracking:
   performance:
-    - requirement: "NFR1 - Response Time"
+    - requirement: 'NFR1 - Response Time'
       metrics:
-        - "Page load < 2s"
-        - "Email draft < 30s"
-        - "Research < 2min"
-        - "CSV validation < 5s for 100 prospects"
-      status: "Not Measured"
-      coveredByEpics: ["E0", "E2", "E3", "E4"]
+        - 'Page load < 2s'
+        - 'Email draft < 30s'
+        - 'Research < 2min'
+        - 'CSV validation < 5s for 100 prospects'
+      status: 'Not Measured'
+      coveredByEpics: ['E0', 'E2', 'E3', 'E4']
 
-    - requirement: "NFR2 - Throughput"
+    - requirement: 'NFR2 - Throughput'
       metrics:
-        - "30-40 emails/day per user"
-        - "100 prospects batch overnight"
-        - "10 concurrent users"
-      status: "Not Measured"
-      coveredByEpics: ["E0", "E6"]
+        - '30-40 emails/day per user'
+        - '100 prospects batch overnight'
+        - '10 concurrent users'
+      status: 'Not Measured'
+      coveredByEpics: ['E0', 'E6']
 
-    - requirement: "NFR3 - Scalability"
+    - requirement: 'NFR3 - Scalability'
       metrics:
-        - "Support 100 users"
-        - "Optimize for 10k+ prospects per user"
-      status: "Not Measured"
-      coveredByEpics: ["E0"]
+        - 'Support 100 users'
+        - 'Optimize for 10k+ prospects per user'
+      status: 'Not Measured'
+      coveredByEpics: ['E0']
 
   security:
-    - requirement: "NFR4 - Authentication"
+    - requirement: 'NFR4 - Authentication'
       metrics:
-        - "OAuth 2.0 implemented"
-        - "Secure token storage"
-        - "Token refresh handling"
-      status: "Not Implemented"
-      coveredByEpics: ["E0", "E6"]
+        - 'OAuth 2.0 implemented'
+        - 'Secure token storage'
+        - 'Token refresh handling'
+      status: 'Not Implemented'
+      coveredByEpics: ['E0', 'E6']
 
-    - requirement: "NFR5 - Data Protection"
+    - requirement: 'NFR5 - Data Protection'
       metrics:
-        - "Encryption at rest"
-        - "Secrets management"
-        - "GDPR compliance"
-      status: "Not Implemented"
-      coveredByEpics: ["E0"]
+        - 'Encryption at rest'
+        - 'Secrets management'
+        - 'GDPR compliance'
+      status: 'Not Implemented'
+      coveredByEpics: ['E0']
 
-    - requirement: "NFR6 - Email Security"
+    - requirement: 'NFR6 - Email Security'
       metrics:
-        - "No auto-send"
-        - "Rate limiting"
-        - "Unsubscribe mechanism"
-      status: "Not Implemented"
-      coveredByEpics: ["E6"]
+        - 'No auto-send'
+        - 'Rate limiting'
+        - 'Unsubscribe mechanism'
+      status: 'Not Implemented'
+      coveredByEpics: ['E6']
 
   reliability:
-    - requirement: "NFR7 - Uptime"
+    - requirement: 'NFR7 - Uptime'
       metrics:
-        - "99% uptime during business hours"
-      status: "Not Measured"
-      coveredByEpics: ["E0"]
+        - '99% uptime during business hours'
+      status: 'Not Measured'
+      coveredByEpics: ['E0']
 
-    - requirement: "NFR8 - Error Handling"
+    - requirement: 'NFR8 - Error Handling'
       metrics:
-        - "User-friendly errors"
-        - "Automatic retry"
-        - "Failed prospect flagging"
-      status: "Not Implemented"
-      coveredByEpics: ["E0", "E2", "E3", "E4"]
+        - 'User-friendly errors'
+        - 'Automatic retry'
+        - 'Failed prospect flagging'
+      status: 'Not Implemented'
+      coveredByEpics: ['E0', 'E2', 'E3', 'E4']
 
-    - requirement: "NFR9 - Data Integrity"
+    - requirement: 'NFR9 - Data Integrity'
       metrics:
-        - "No data loss"
-        - "Transactional operations"
-        - "Audit log"
-      status: "Not Implemented"
-      coveredByEpics: ["E0"]
+        - 'No data loss'
+        - 'Transactional operations'
+        - 'Audit log'
+      status: 'Not Implemented'
+      coveredByEpics: ['E0']
 
-    - requirement: "NFR10 - Backup"
+    - requirement: 'NFR10 - Backup'
       metrics:
-        - "Daily Firestore backups"
-        - "30-day retention"
-      status: "Not Implemented"
-      coveredByEpics: ["E0"]
+        - 'Daily Firestore backups'
+        - '30-day retention'
+      status: 'Not Implemented'
+      coveredByEpics: ['E0']
 
   usability:
-    - requirement: "NFR11 - Ease of Use"
+    - requirement: 'NFR11 - Ease of Use'
       metrics:
-        - "Onboarding < 10 minutes"
-        - "Keyboard shortcuts"
-        - "Mobile responsive"
-      status: "Not Implemented"
-      coveredByEpics: ["E5"]
+        - 'Onboarding < 10 minutes'
+        - 'Keyboard shortcuts'
+        - 'Mobile responsive'
+      status: 'Not Implemented'
+      coveredByEpics: ['E5']
 
-    - requirement: "NFR12 - Accessibility"
+    - requirement: 'NFR12 - Accessibility'
       metrics:
-        - "WCAG 2.1 Level AA"
-        - "Keyboard navigation"
-        - "Screen reader support"
-      status: "Not Implemented"
-      coveredByEpics: ["E5"]
+        - 'WCAG 2.1 Level AA'
+        - 'Keyboard navigation'
+        - 'Screen reader support'
+      status: 'Not Implemented'
+      coveredByEpics: ['E5']
 
-    - requirement: "NFR13 - Help & Documentation"
+    - requirement: 'NFR13 - Help & Documentation'
       metrics:
-        - "Inline tooltips"
-        - "Video walkthrough"
-        - "FAQ section"
-      status: "Not Implemented"
-      coveredByEpics: ["E5"]
+        - 'Inline tooltips'
+        - 'Video walkthrough'
+        - 'FAQ section'
+      status: 'Not Implemented'
+      coveredByEpics: ['E5']
 
   maintainability:
-    - requirement: "NFR14 - Code Quality"
+    - requirement: 'NFR14 - Code Quality'
       metrics:
-        - "TypeScript throughout"
-        - "Linting and formatting"
-        - ">70% test coverage"
-      status: "Not Implemented"
-      coveredByEpics: ["E0"]
+        - 'TypeScript throughout'
+        - 'Linting and formatting'
+        - '>70% test coverage'
+      status: 'Not Implemented'
+      coveredByEpics: ['E0']
 
-    - requirement: "NFR15 - Logging & Monitoring"
+    - requirement: 'NFR15 - Logging & Monitoring'
       metrics:
-        - "Structured logging"
-        - "Error tracking"
-        - "Performance monitoring"
-      status: "Not Implemented"
-      coveredByEpics: ["E0"]
+        - 'Structured logging'
+        - 'Error tracking'
+        - 'Performance monitoring'
+      status: 'Not Implemented'
+      coveredByEpics: ['E0']
 
-    - requirement: "NFR16 - Deployment"
+    - requirement: 'NFR16 - Deployment'
       metrics:
-        - "CI/CD pipeline"
-        - "Staging environment"
-        - "Feature flags"
-        - "Rollback capability"
-      status: "Not Implemented"
-      coveredByEpics: ["E0"]
+        - 'CI/CD pipeline'
+        - 'Staging environment'
+        - 'Feature flags'
+        - 'Rollback capability'
+      status: 'Not Implemented'
+      coveredByEpics: ['E0']
 
 # Architecture Components Tracking
 architectureComponents:
   database:
-    - component: "PostgreSQL Multi-tenant Setup"
-      status: "Not Implemented"
-      epic: "E0"
-      description: "Multi-schema design with organisation_id isolation"
+    - component: 'PostgreSQL Multi-tenant Setup'
+      status: 'Not Implemented'
+      epic: 'E0'
+      description: 'Multi-schema design with organisation_id isolation'
 
   api:
-    - component: "Express.js API Layer"
-      status: "Not Implemented"
-      epic: "E0"
-      description: "Zod validation, layered architecture"
+    - component: 'Express.js API Layer'
+      status: 'Not Implemented'
+      epic: 'E0'
+      description: 'Zod validation, layered architecture'
 
   messageQueue:
-    - component: "RabbitMQ"
-      status: "Not Implemented"
-      epic: "E0"
-      description: "Async job processing for drafts, follow-ups, replies"
+    - component: 'RabbitMQ'
+      status: 'Not Implemented'
+      epic: 'E0'
+      description: 'Async job processing for drafts, follow-ups, replies'
 
   workers:
-    - component: "Draft Worker"
-      status: "Not Implemented"
-      epic: "E4"
-      description: "AI generation, prompt handling"
+    - component: 'Draft Worker'
+      status: 'Not Implemented'
+      epic: 'E4'
+      description: 'AI generation, prompt handling'
 
-    - component: "Followup Worker"
-      status: "Not Implemented"
-      epic: "E9"
-      description: "Scheduling, queueing, sending"
+    - component: 'Followup Worker'
+      status: 'Not Implemented'
+      epic: 'E9'
+      description: 'Scheduling, queueing, sending'
 
-    - component: "Reply Detector"
-      status: "Not Implemented"
-      epic: "E7"
-      description: "Gmail parsing, status updates"
+    - component: 'Reply Detector'
+      status: 'Not Implemented'
+      epic: 'E7'
+      description: 'Gmail parsing, status updates'
 
   monitoring:
-    - component: "Prometheus + Grafana"
-      status: "Not Implemented"
-      epic: "E0"
-      description: "Metrics collection and visualization"
+    - component: 'Prometheus + Grafana'
+      status: 'Not Implemented'
+      epic: 'E0'
+      description: 'Metrics collection and visualization'
 
-    - component: "Pino Logging"
-      status: "Not Implemented"
-      epic: "E0"
-      description: "Structured JSON logging"
+    - component: 'Pino Logging'
+      status: 'Not Implemented'
+      epic: 'E0'
+      description: 'Structured JSON logging'
 
-    - component: "Sentry Error Tracking"
-      status: "Not Implemented"
-      epic: "E0"
-      description: "Error monitoring and alerting"
+    - component: 'Sentry Error Tracking'
+      status: 'Not Implemented'
+      epic: 'E0'
+      description: 'Error monitoring and alerting'
 
   deployment:
-    - component: "Docker Compose Orchestration"
-      status: "Not Implemented"
-      epic: "E0"
-      description: "Service containerization and deployment"
+    - component: 'Docker Compose Orchestration'
+      status: 'Not Implemented'
+      epic: 'E0'
+      description: 'Service containerization and deployment'
 
 # Risk Register
 risks:
-  - id: "R1"
-    description: "AI email generation quality may not meet user expectations"
-    impact: "High"
-    probability: "Medium"
-    mitigation: "Iterative prompt engineering, user feedback loop, confidence scoring"
-    affectedEpics: ["E4"]
+  - id: 'R1'
+    description: 'AI email generation quality may not meet user expectations'
+    impact: 'High'
+    probability: 'Medium'
+    mitigation: 'Iterative prompt engineering, user feedback loop, confidence scoring'
+    affectedEpics: ['E4']
 
-  - id: "R2"
-    description: "Web scraping may be blocked or rate-limited by target sites"
-    impact: "High"
-    probability: "High"
-    mitigation: "Respect robots.txt, implement retry logic, use proxies if needed, graceful degradation"
-    affectedEpics: ["E3"]
+  - id: 'R2'
+    description: 'Web scraping may be blocked or rate-limited by target sites'
+    impact: 'High'
+    probability: 'High'
+    mitigation: 'Respect robots.txt, implement retry logic, use proxies if needed, graceful degradation'
+    affectedEpics: ['E3']
 
-  - id: "R3"
-    description: "Gmail API rate limits may restrict sending volume"
-    impact: "Medium"
-    probability: "Medium"
-    mitigation: "Implement intelligent rate limiting, queue management, user communication"
-    affectedEpics: ["E6"]
+  - id: 'R3'
+    description: 'Gmail API rate limits may restrict sending volume'
+    impact: 'Medium'
+    probability: 'Medium'
+    mitigation: 'Implement intelligent rate limiting, queue management, user communication'
+    affectedEpics: ['E6']
 
-  - id: "R4"
-    description: "Social media API access may be restricted or expensive"
-    impact: "Medium"
-    probability: "High"
-    mitigation: "Start with public scraping, add APIs incrementally, make social integration optional"
-    affectedEpics: ["E11"]
+  - id: 'R4'
+    description: 'Social media API access may be restricted or expensive'
+    impact: 'Medium'
+    probability: 'High'
+    mitigation: 'Start with public scraping, add APIs incrementally, make social integration optional'
+    affectedEpics: ['E11']
 
-  - id: "R5"
-    description: "Multi-tenant architecture complexity may slow initial development"
-    impact: "Medium"
-    probability: "Low"
-    mitigation: "Invest in foundation sprint, use proven patterns, thorough testing"
-    affectedEpics: ["E0"]
+  - id: 'R5'
+    description: 'Multi-tenant architecture complexity may slow initial development'
+    impact: 'Medium'
+    probability: 'Low'
+    mitigation: 'Invest in foundation sprint, use proven patterns, thorough testing'
+    affectedEpics: ['E0']
 
-  - id: "R6"
-    description: "GDPR compliance requirements may be complex to implement"
-    impact: "High"
-    probability: "Medium"
-    mitigation: "Legal consultation, implement data export/deletion from start, clear policies"
-    affectedEpics: ["E0"]
+  - id: 'R6'
+    description: 'GDPR compliance requirements may be complex to implement'
+    impact: 'High'
+    probability: 'Medium'
+    mitigation: 'Legal consultation, implement data export/deletion from start, clear policies'
+    affectedEpics: ['E0']
 
 # Success Metrics (from PRD)
 successMetrics:
   primary:
-    metric: "Meetings Booked"
-    target: "10-15 per month"
-    measurement: "Track confirmed meetings scheduled from campaigns"
-    
+    metric: 'Meetings Booked'
+    target: '10-15 per month'
+    measurement: 'Track confirmed meetings scheduled from campaigns'
+
   secondary:
-    - metric: "Response Rate"
-      target: "10% positive responses"
+    - metric: 'Response Rate'
+      target: '10% positive responses'
       measurement: "Track replies classified as 'Positive'"
-      
-    - metric: "Time Saved"
-      target: "50% reduction (10h/week → 5h/week)"
-      measurement: "User surveys and time tracking"
-      
-    - metric: "Email Quality"
-      target: "Each email references at least 1 recent insight"
-      measurement: "AI confidence score + human review approval rate"
+
+    - metric: 'Time Saved'
+      target: '50% reduction (10h/week → 5h/week)'
+      measurement: 'User surveys and time tracking'
+
+    - metric: 'Email Quality'
+      target: 'Each email references at least 1 recent insight'
+      measurement: 'AI confidence score + human review approval rate'
 
 # Technology Stack (from Architecture)
 technologyStack:
   backend:
-    - "Node.js 20.x"
-    - "TypeScript 5.8.2"
-    - "Express.js 4.21.2"
-    - "Zod 3.24.3"
-  
+    - 'Node.js 20.x'
+    - 'TypeScript 5.8.2'
+    - 'Express.js 4.21.2'
+    - 'Zod 3.24.3'
+
   database:
-    - "PostgreSQL 18"
-    - "ClickHouse (analytics)"
-    - "Redis 7 (caching)"
-  
+    - 'PostgreSQL 18'
+    - 'ClickHouse (analytics)'
+    - 'Redis 7 (caching)'
+
   messaging:
-    - "RabbitMQ"
-  
+    - 'RabbitMQ'
+
   migration:
-    - "Flyway 11"
-  
+    - 'Flyway 11'
+
   logging:
-    - "Pino 9.6.0"
-  
+    - 'Pino 9.6.0'
+
   testing:
-    - "Vitest 3.0.5"
-  
+    - 'Vitest 3.0.5'
+
   deployment:
-    - "Docker"
-    - "pnpm 10.9.0"
+    - 'Docker'
+    - 'pnpm 10.9.0'
 
 # Notes
 notes:
-  - "This sprint-status.yaml provides the tracking structure. Next step: populate each epic with detailed stories and acceptance criteria in epics.md"
-  - "Story point estimates are initial; refine during sprint planning"
-  - "Epic dependencies reflect technical dependencies; may be adjusted based on team capacity"
-  - "P0 epics (E0-E6) form MVP; P1-P3 are enhancements"
-  - "Foundation sprint (E0) is critical path - do not rush"
+  - 'This sprint-status.yaml provides the tracking structure. Next step: populate each epic with detailed stories and acceptance criteria in epics.md'
+  - 'Story point estimates are initial; refine during sprint planning'
+  - 'Epic dependencies reflect technical dependencies; may be adjusted based on team capacity'
+  - 'P0 epics (E0-E6) form MVP; P1-P3 are enhancements'
+  - 'Foundation sprint (E0) is critical path - do not rush'
