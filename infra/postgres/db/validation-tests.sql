@@ -214,6 +214,9 @@ ORDER BY tc.table_schema, tc.table_name, tc.constraint_name;
 
 BEGIN;
 
+-- Ensure we test under the app role (RLS applies). Requires the role to exist.
+SET LOCAL ROLE prospectflow_app;
+
 -- Ensure test org exists (IAM is not RLS-protected)
 INSERT INTO iam.organisations (id, name)
 VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, 'Test Org A')
@@ -236,9 +239,11 @@ DO $$
 BEGIN
   BEGIN
     PERFORM 1 FROM crm.companies WHERE name = 'Test Company A1' LIMIT 1;
-    RAISE EXCEPTION '❌ FAIL - Expected query to fail without app.organisation_id';
-  EXCEPTION WHEN others THEN
-    RAISE NOTICE '✅ PASS - Query failed without app.organisation_id: %', SQLERRM;
+    RAISE EXCEPTION '❌ FAIL - Expected query to fail without app.organisation_id'
+      USING ERRCODE = 'P0002';
+  EXCEPTION
+    WHEN SQLSTATE 'P0001' THEN
+      RAISE NOTICE '✅ PASS - Query failed without app.organisation_id: %', SQLERRM;
   END;
 END $$;
 

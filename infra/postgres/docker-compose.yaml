@@ -11,6 +11,7 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test:
         [
@@ -71,14 +72,16 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASES_HOST: postgres
-      DATABASES_PORT: 5432
-      DATABASES_USER: ${POSTGRES_USER:-prospectflow}
-      DATABASES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-      DATABASES_DBNAME: ${POSTGRES_DB:-prospectflow}
+      POSTGRES_DB: ${POSTGRES_DB:-prospectflow}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-changeme_app}
+      PGBOUNCER_DB_HOST: postgres
+      PGBOUNCER_DB_PORT: 5432
       PGBOUNCER_POOL_MODE: transaction
       PGBOUNCER_MAX_CLIENT_CONN: 100
       PGBOUNCER_DEFAULT_POOL_SIZE: 25
+    volumes:
+      - ./pgbouncer/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     ports:
       - '6432:5432'
     networks:

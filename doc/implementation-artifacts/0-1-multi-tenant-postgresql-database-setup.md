@@ -1,6 +1,6 @@
 # Story 0.1: Multi-tenant PostgreSQL Database Setup
 
-**Status:** review  
+**Status:** done  
 **Epic:** E0 - Foundation Infrastructure & Architecture  
 **Story Points:** 8  
 **Priority:** P0 (MVP Foundation)
@@ -587,10 +587,16 @@ Modified Files:
 - infra/postgres/README.md - Updated RLS + pgBouncer guidance
 - infra/postgres/db/VALIDATION.md - Updated AC validation and migration order
 - infra/postgres/db/validation-tests.sql - Added RLS enforcement test and assertions
+- infra/postgres/.env.example - Added APP_DB_PASSWORD variable
 
 New Migration:
 
 - infra/postgres/db/migrations/V20260108_120000\_\_\_tenant_keys_rls_and_pooling_prep.sql
+
+New Runtime Files:
+
+- infra/postgres/pgbouncer/entrypoint.sh
+- infra/postgres/db/init/001_create_app_role.sh
 
 Existing Files (Validated):
 
@@ -625,3 +631,30 @@ Existing Files (Validated):
 **Modified Configuration:**
 
 - infra/postgres/docker-compose.yaml (added outreach, tracking schemas to Flyway)
+
+---
+
+## Senior Developer Review (AI)
+
+**Review Date:** 2026-01-08
+
+**Outcome:** Approved (after fixes)
+
+### Findings (high → low)
+
+1. **HIGH**: Connection pooling was documented but not implemented.
+    - Fixed by adding pgBouncer service to `infra/postgres/docker-compose.yaml`.
+
+2. **HIGH**: AC3 "queries without organisation_id should fail" was not enforceable at DB level.
+    - Fixed by adding RLS + `app.current_organisation_id()` enforcement in `infra/postgres/db/migrations/V20260108_120000___tenant_keys_rls_and_pooling_prep.sql`.
+    - Added an app role `prospectflow_app` and documented usage.
+
+3. **MEDIUM**: SQL validation had a false-positive path (it would print PASS even if enforcement didn’t work).
+    - Fixed by narrowing exception handling to the expected SQLSTATE and running the RLS test under `SET LOCAL ROLE prospectflow_app`.
+
+4. **MEDIUM**: pgBouncer image env var assumptions were not evidenced.
+    - Fixed by introducing a deterministic entrypoint script: `infra/postgres/pgbouncer/entrypoint.sh`.
+
+### Notes
+
+- Validation is provided via SQL test suite; running Docker is required to fully execute it.

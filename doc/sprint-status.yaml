@@ -54,7 +54,7 @@ metadata:
 development_status:
   # Epic E0: Foundation Infrastructure & Architecture
   epic-0: in-progress
-  0-1-multi-tenant-postgresql-database-setup: review
+  0-1-multi-tenant-postgresql-database-setup: done
   0-2-express-js-api-foundation-with-layered-architecture: backlog
   0-3-rabbitmq-message-queue-configuration: backlog
   0-4-authentication-authorization-system: backlog

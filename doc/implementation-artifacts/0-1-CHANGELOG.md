@@ -8,7 +8,7 @@
 
 ### Summary
 
-Implemented comprehensive multi-tenant PostgreSQL database infrastructure with schema-level isolation, automated migrations, backup/restore utilities, and extensive documentation.
+Implemented comprehensive multi-tenant PostgreSQL database infrastructure with schema-level isolation, automated migrations, pgBouncer-based connection pooling, DB-enforced tenant isolation (RLS), backup/restore utilities, and extensive documentation.
 
 ### Changes Made
 
@@ -240,9 +240,9 @@ psql -h localhost -U prospectflow -d prospectflow -f db/validation-tests.sql
 
 1. **pgBouncer** (recommended for production)
 
-   - Max 1000 client connections
-   - Default pool size: 25
    - Transaction-based pooling
+   - Default pool size: 25
+   - Max client connections: 100 (configurable via `PGBOUNCER_MAX_CLIENT_CONN`)
 
 2. **Application-level** (pg-pool in Node.js)
    - 20-50 connections per app instance
@@ -307,7 +307,6 @@ psql -h localhost -U prospectflow -d prospectflow -f db/validation-tests.sql
    - Add monitoring for connection pool usage
 
 3. **Future Enhancements:**
-   - Row-level security (RLS) policies for extra isolation layer
    - Read replicas for analytics workloads
    - Database activity monitoring and audit logging
 
@@ -319,12 +318,17 @@ psql -h localhost -U prospectflow -d prospectflow -f db/validation-tests.sql
 - `infra/postgres/db/ERD.md`
 - `infra/postgres/db/VALIDATION.md`
 - `infra/postgres/db/validation-tests.sql`
+- `infra/postgres/db/migrations/V20260108_120000___tenant_keys_rls_and_pooling_prep.sql`
+- `infra/postgres/db/undo/U20260108_120000__tenant_keys_rls_and_pooling_prep.sql`
+- `infra/postgres/db/init/001_create_app_role.sh`
+- `infra/postgres/pgbouncer/entrypoint.sh`
 - `infra/postgres/scripts/backup.sh`
 - `infra/postgres/scripts/restore.sh`
 
 **Modified Files:**
 
 - `infra/postgres/docker-compose.yaml`
+- `infra/postgres/.env.example`
 - `doc/implementation-artifacts/0-1-multi-tenant-postgresql-database-setup.md`
 - `doc/sprint-status.yaml`
 
@@ -336,6 +340,7 @@ psql -h localhost -U prospectflow -d prospectflow -f db/validation-tests.sql
 - `infra/postgres/db/migrations/V20251223_125520___outreach_tracking_schemas.sql`
 - `infra/postgres/db/migrations/V20251223_125614___outreach_init.sql`
 - `infra/postgres/db/migrations/V20251223_125657___tracking_pixels_and_open_stats.sql`
+- `infra/postgres/db/migrations/V20260108_120000___tenant_keys_rls_and_pooling_prep.sql`
 
 ### References
 
@@ -347,6 +352,6 @@ psql -h localhost -U prospectflow -d prospectflow -f db/validation-tests.sql
 
 ---
 
-**Completed by:** Dev Agent (Claude Sonnet 4.5)  
+**Completed by:** Dev Agent (GPT-5.2 via GitHub Copilot)  
 **Review Status:** Ready for review  
 **Next Story:** 0-2-express-js-api-foundation-with-layered-architecture

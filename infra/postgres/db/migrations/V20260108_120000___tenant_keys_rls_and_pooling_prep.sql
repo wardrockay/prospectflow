@@ -85,6 +85,20 @@ ALTER TABLE tracking.pixels ADD PRIMARY KEY (organisation_id, id);
 -- 3) Row Level Security policies
 -- -------------------------
 
+-- Application role (non-superuser) used for RLS-enforced access.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'prospectflow_app') THEN
+    CREATE ROLE prospectflow_app;
+  END IF;
+END $$;
+
+GRANT USAGE ON SCHEMA crm, outreach, tracking TO prospectflow_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA crm, outreach, tracking TO prospectflow_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA crm GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO prospectflow_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA outreach GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO prospectflow_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA tracking GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO prospectflow_app;
+
 -- CRM
 ALTER TABLE crm.companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE crm.companies FORCE ROW LEVEL SECURITY;

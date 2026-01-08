@@ -56,6 +56,11 @@ cp .env.example .env
 # Edit .env with secure passwords
 ```
 
+Notes:
+
+- `POSTGRES_USER` is an admin/superuser role for migrations/ops.
+- `prospectflow_app` is a non-superuser role intended for application access (RLS enforced).
+
 ### 2. Create Docker Network
 
 ```bash
@@ -101,7 +106,7 @@ docker compose logs postgres
 psql -h localhost -p 5432 -U prospectflow -d prospectflow
 
 # Using pgBouncer (connection pooling)
-psql -h localhost -p 6432 -U prospectflow -d prospectflow
+psql -h localhost -p 6432 -U prospectflow_app -d prospectflow
 
 # Using Docker exec
 docker exec -it prospectflow-postgres psql -U prospectflow -d prospectflow
@@ -327,14 +332,16 @@ pgBouncer is included in `docker-compose.yaml` and listens on port `6432`.
 pgbouncer:
   image: pgbouncer/pgbouncer:latest
   environment:
-    DATABASES_HOST: postgres
-    DATABASES_PORT: 5432
-    DATABASES_USER: prospectflow
-    DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
-    DATABASES_DBNAME: prospectflow
+    POSTGRES_DB: ${POSTGRES_DB}
+    APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+    PGBOUNCER_DB_HOST: postgres
+    PGBOUNCER_DB_PORT: 5432
     PGBOUNCER_POOL_MODE: transaction
     PGBOUNCER_MAX_CLIENT_CONN: 100
     PGBOUNCER_DEFAULT_POOL_SIZE: 25
+  volumes:
+    - ./pgbouncer/entrypoint.sh:/entrypoint.sh:ro
+  entrypoint: ["/bin/sh", "/entrypoint.sh"]
   ports:
     - '6432:5432'
 ```
