@@ -44,3 +44,5 @@ test-results/
 .dynamodb/
 
 *.pem
+
+_bmad

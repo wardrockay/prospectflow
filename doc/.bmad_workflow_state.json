@@ -1,0 +1,38 @@
+{
+  "workflow_id": "WF_20260108_001",
+  "project_path": "/home/tolliam/starlightcoder/LightAndShutter/prospectflow",
+  "status": "initialized",
+  "created_at": "2026-01-08T09:20:22Z",
+  "last_updated": "2026-01-08T09:20:22Z",
+  "current_phase": "discovery",
+  "phases": {
+    "discovery": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "tasks": []
+    },
+    "analysis": {
+      "status": "not_started",
+      "started_at": null,
+      "completed_at": null,
+      "tasks": []
+    },
+    "recommendations": {
+      "status": "not_started",
+      "started_at": null,
+      "completed_at": null,
+      "tasks": []
+    }
+  },
+  "artifacts": {
+    "discovery_report": null,
+    "analysis_report": null,
+    "recommendations_report": null
+  },
+  "context": {
+    "project_type": "unknown",
+    "technologies": [],
+    "key_findings": []
+  }
+}
