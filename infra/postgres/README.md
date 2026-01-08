@@ -100,6 +100,9 @@ docker compose logs postgres
 # Using psql
 psql -h localhost -p 5432 -U prospectflow -d prospectflow
 
+# Using pgBouncer (connection pooling)
+psql -h localhost -p 6432 -U prospectflow -d prospectflow
+
 # Using Docker exec
 docker exec -it prospectflow-postgres psql -U prospectflow -d prospectflow
 ```
@@ -130,6 +133,20 @@ psql -h localhost -U prospectflow -d prospectflow -f db/validation-tests.sql
 ```
 
 Expected output: All tests should show `✅ PASS`
+
+## 🧱 Tenant Enforcement (RLS)
+
+Tenant-scoped tables in `crm`, `outreach`, and `tracking` are protected by Row Level Security (RLS).
+
+- You must set a session variable before querying tenant tables:
+
+```sql
+SET app.organisation_id = '<uuid>';
+```
+
+- Queries against tenant tables without `app.organisation_id` will fail with a clear error.
+
+If you are using pgBouncer in `transaction` mode, prefer `SET LOCAL app.organisation_id = '<uuid>'` inside a transaction.
 
 ## 📊 Schema Overview
 
@@ -237,7 +254,7 @@ docker compose down -v
 3. **Use strong passwords** (20+ characters, mixed case, symbols)
 4. **Restrict network access** - Only expose ports needed
 5. **Enable SSL/TLS** for production connections
-6. **Row-level security (RLS)** - Consider adding for extra isolation
+6. **Row-level security (RLS)** - Enabled on tenant tables; require `app.organisation_id`
 7. **Audit logging** - Enable PostgreSQL audit logs in production
 
 ## 🚨 Troubleshooting
@@ -292,15 +309,19 @@ psql -h localhost -U prospectflow -d prospectflow -f db/validation-tests.sql
 # Check if organisation_id is in queries
 # BAD:  SELECT * FROM crm.people WHERE email = 'test@example.com';
 # GOOD: SELECT * FROM crm.people WHERE organisation_id = ? AND email = 'test@example.com';
+
+# Also ensure the session org context is set (RLS enforcement)
+# Example:
+#   SET app.organisation_id = '<uuid>';
 ```
 
 ## 📈 Performance Tuning
 
 ### Connection Pooling
 
-**Option 1: pgBouncer (Recommended for production)**
+**pgBouncer**
 
-Add to `docker-compose.yaml`:
+pgBouncer is included in `docker-compose.yaml` and listens on port `6432`.
 
 ```yaml
 pgbouncer:
@@ -312,7 +333,7 @@ pgbouncer:
     DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
     DATABASES_DBNAME: prospectflow
     PGBOUNCER_POOL_MODE: transaction
-    PGBOUNCER_MAX_CLIENT_CONN: 1000
+    PGBOUNCER_MAX_CLIENT_CONN: 100
     PGBOUNCER_DEFAULT_POOL_SIZE: 25
   ports:
     - '6432:5432'

@@ -16,7 +16,7 @@
 - `docker-compose.yaml` configures PostgreSQL 18-alpine
 - Port 5432 exposed
 - Health check using `pg_isready`
-- Connection pooling TODO: needs pgBouncer or application-level pooling
+- Connection pooling implemented via pgBouncer service (port 6432)
 
 ### AC2: Multi-schema Architecture ✅
 
@@ -118,11 +118,17 @@ Tables created:
 
 **Implementation:**
 
-All tables follow the pattern:
+All tenant-scoped tables follow the pattern:
 
 ```sql
 PRIMARY KEY (organisation_id, id)
 ```
+
+**Enforcement:**
+
+- Row-Level Security (RLS) is enabled on tenant-scoped tables in `crm`, `outreach`, and `tracking`.
+- A session variable is required: `app.organisation_id`.
+- If `app.organisation_id` is not set, queries against tenant-scoped tables fail with a clear error.
 
 All foreign keys follow the pattern:
 
@@ -162,6 +168,12 @@ CREATE INDEX idx_name ON table(organisation_id, other_column);
 - All migrations use `IF NOT EXISTS` for idempotency
 - All migrations wrapped in transactions (PostgreSQL default)
 
+**Reversibility note:**
+
+- PostgreSQL will rollback the current migration transaction automatically on failure.
+- Flyway Community does not run undo migrations automatically.
+- A manual rollback helper exists for the hardening migration: `infra/postgres/db/undo/U20260108_120000__tenant_keys_rls_and_pooling_prep.sql`.
+
 **Migration Order:**
 
 1. ✅ V20251223_112356 - Base init (extensions, schemas, triggers)
@@ -170,6 +182,7 @@ CREATE INDEX idx_name ON table(organisation_id, other_column);
 4. ✅ V20251223_125520 - Outreach/Tracking schemas
 5. ✅ V20251223_125614 - Outreach tables
 6. ✅ V20251223_125657 - Tracking tables
+7. ✅ V20260108_120000 - Composite PK enforcement + RLS tenant isolation
 
 ## Validation Tests
 

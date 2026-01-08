@@ -63,6 +63,27 @@ services:
     networks:
       - prospectflow-network
 
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    container_name: prospectflow-pgbouncer
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASES_HOST: postgres
+      DATABASES_PORT: 5432
+      DATABASES_USER: ${POSTGRES_USER:-prospectflow}
+      DATABASES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      DATABASES_DBNAME: ${POSTGRES_DB:-prospectflow}
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: 100
+      PGBOUNCER_DEFAULT_POOL_SIZE: 25
+    ports:
+      - '6432:5432'
+    networks:
+      - prospectflow-network
+
 volumes:
   postgres_data:
   pgadmin_data:

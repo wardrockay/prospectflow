@@ -500,7 +500,7 @@ This story establishes the foundational database structure that will be used thr
 
 ### Agent Model Used
 
-Claude Sonnet 4.5
+GPT-5.2
 
 ### Implementation Notes
 
@@ -513,9 +513,8 @@ This story involved setting up the foundational database infrastructure for Pros
 1. **Validated Existing Migrations:**
 
    - Reviewed 6 existing Flyway migrations (V20251223_112356 through V20251223_125657)
-   - Confirmed multi-tenant isolation patterns are correctly implemented
-   - Verified all tables follow (organisation_id, id) composite key pattern
-   - Verified all foreign keys include organisation_id for referential integrity
+   - Confirmed multi-tenant isolation patterns are implemented via `(organisation_id, id)` unique constraints + composite foreign keys
+   - Added a dedicated migration to enforce composite primary keys and DB-level tenant enforcement (RLS)
 
 2. **Enhanced Documentation:**
 
@@ -532,13 +531,14 @@ This story involved setting up the foundational database infrastructure for Pros
 
 4. **Updated Configuration:**
    - Updated docker-compose.yaml to include all schemas (outreach, tracking) in Flyway config
+   - Added pgBouncer to docker-compose.yaml (port 6432) with max 100 client connections
    - Verified .env configuration exists with secure credentials
 
 **Key Findings:**
 
-The existing database schema is **production-ready and exceeds story requirements**:
+The database foundation meets the story requirements with explicit enforcement:
 
-- ✅ Multi-tenant isolation correctly implemented with composite keys
+- ✅ Tenant-scoped tables use composite primary keys `(organisation_id, id)` (enforced via migration)
 - ✅ All 4 schemas exist (iam, crm, outreach, tracking)
 - ✅ Indexes properly configured with organisation_id first
 - ✅ Foreign keys enforce cross-tenant referential integrity
@@ -563,7 +563,7 @@ The existing database schema is **production-ready and exceeds story requirement
 
 **Testing Approach:**
 
-Without local Docker available, created comprehensive SQL-based validation:
+Created SQL-based validation that can be run after migrations:
 
 - 12 automated test suites covering schemas, tables, indexes, foreign keys, multi-tenant isolation
 - Test data insertion and cleanup for isolation verification
@@ -584,6 +584,13 @@ New Files Created:
 Modified Files:
 
 - infra/postgres/docker-compose.yaml - Updated Flyway schemas config
+- infra/postgres/README.md - Updated RLS + pgBouncer guidance
+- infra/postgres/db/VALIDATION.md - Updated AC validation and migration order
+- infra/postgres/db/validation-tests.sql - Added RLS enforcement test and assertions
+
+New Migration:
+
+- infra/postgres/db/migrations/V20260108_120000\_\_\_tenant_keys_rls_and_pooling_prep.sql
 
 Existing Files (Validated):
 

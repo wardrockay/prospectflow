@@ -87,7 +87,7 @@ The following migrations were validated and confirmed to meet all story requirem
 
    - CRM schema tables: companies, people, positions
    - Pharow integration fields for French market
-   - Composite keys for multi-tenant isolation
+   - Cross-tenant safety via (organisation_id, id) unique constraints and composite foreign keys
 
 4. **`V20251223_125520___outreach_tracking_schemas.sql`**
 
@@ -101,8 +101,14 @@ The following migrations were validated and confirmed to meet all story requirem
    - Comprehensive foreign key constraints
 
 6. **`V20251223_125657___tracking_pixels_and_open_stats.sql`**
+
    - Tracking schema tables: pixels, message_open_stats
    - Token-based email open tracking
+
+7. **`V20260108_120000___tenant_keys_rls_and_pooling_prep.sql`**
+
+   - Enforces composite primary keys `(organisation_id, id)` on tenant-scoped tables
+   - Adds DB-level tenant isolation (RLS) requiring `app.organisation_id`
 
 ### Acceptance Criteria Validation
 
@@ -110,19 +116,20 @@ The following migrations were validated and confirmed to meet all story requirem
 
 - PostgreSQL 18 configured in Docker
 - Health checks passing
-- Connection pooling documented (pgBouncer + application-level)
+- Connection pooling implemented via pgBouncer (port 6432, max 100 client connections)
 - Environment variables secured in .env
 
 #### AC2: Multi-schema Architecture ✅
 
 - All 4 schemas created (iam, crm, outreach, tracking)
-- All tables include `organisation_id` in composite primary keys
+- Tenant-scoped tables enforce composite primary keys `(organisation_id, id)`
 - Foreign keys enforce cross-tenant referential integrity
 - **Enhancement:** Additional tables for A/B testing and enrollment tracking
 
 #### AC3: Multi-tenant Data Isolation ✅
 
-- Composite keys `(organisation_id, id)` on all tenant-scoped tables
+- Composite keys `(organisation_id, id)` on tenant-scoped tables
+- RLS enforced: queries without `app.organisation_id` fail with a clear error
 - All foreign keys include `organisation_id`
 - Indexes optimized with `organisation_id` as first column
 - Validation tests confirm complete data isolation

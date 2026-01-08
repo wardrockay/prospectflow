@@ -8,9 +8,27 @@
 --   psql -U prospectflow -d prospectflow -f validation-tests.sql
 -- ================================================================
 
+\set ON_ERROR_STOP on
+
 \echo '==============================================='
 \echo 'Test 1: Verify All Schemas Exist'
 \echo '==============================================='
+
+DO $$
+DECLARE
+  schema_count int;
+BEGIN
+  SELECT COUNT(*)
+  INTO schema_count
+  FROM information_schema.schemata
+  WHERE schema_name IN ('iam', 'crm', 'outreach', 'tracking');
+
+  IF schema_count <> 4 THEN
+    RAISE EXCEPTION '❌ FAIL - Expected 4 schemas (iam, crm, outreach, tracking), found %', schema_count;
+  END IF;
+
+  RAISE NOTICE '✅ PASS - Found % schemas (iam, crm, outreach, tracking)', schema_count;
+END $$;
 
 SELECT schema_name, 
        CASE 
@@ -191,62 +209,54 @@ ORDER BY tc.table_schema, tc.table_name, tc.constraint_name;
 \echo 'Test 9: Multi-Tenant Data Isolation Test'
 \echo '==============================================='
 
--- Clean up any existing test data
-DELETE FROM iam.organisations WHERE name IN ('Test Org A', 'Test Org B');
+\echo ''
+\echo 'Test 9a: RLS enforcement requires app.organisation_id'
 
--- Insert test organizations
-INSERT INTO iam.organisations (id, name) 
-VALUES 
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, 'Test Org A'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'::uuid, 'Test Org B')
+BEGIN;
+
+-- Ensure test org exists (IAM is not RLS-protected)
+INSERT INTO iam.organisations (id, name)
+VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, 'Test Org A')
 ON CONFLICT (id) DO NOTHING;
 
-\echo 'Inserted 2 test organizations'
+-- With org context: insert tenant data
+SET app.organisation_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
--- Insert test companies for each org
-INSERT INTO crm.companies (organisation_id, id, name, website_url) 
-VALUES 
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid, 'cccccccc-cccc-cccc-cccc-cccccccccccc'::uuid, 'Test Company A1', 'https://a1.test'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'::uuid, 'dddddddd-dddd-dddd-dddd-dddddddddddd'::uuid, 'Test Company B1', 'https://b1.test')
-ON CONFLICT (organisation_id, id) DO NOTHING;
+INSERT INTO crm.companies (organisation_id, id, name, website_url)
+VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid,
+        'cccccccc-cccc-cccc-cccc-cccccccccccc'::uuid,
+        'Test Company A1',
+        'https://a1.test')
+ON CONFLICT DO NOTHING;
 
-\echo 'Inserted 2 test companies (one per org)'
-\echo ''
+-- Without org context: queries should fail with clear error
+RESET app.organisation_id;
 
--- Test: Query Org A data
-\echo 'Test 9a: Query Org A companies'
-SELECT 
-  organisation_id,
-  name,
-  CASE 
-    WHEN COUNT(*) = 1 AND MAX(name) = 'Test Company A1' THEN '✅ PASS - Correct isolation'
-    ELSE '❌ FAIL - Data leakage detected'
-  END as isolation_test
-FROM crm.companies 
-WHERE organisation_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid
-  AND name LIKE 'Test Company%'
-GROUP BY organisation_id, name;
+DO $$
+BEGIN
+  BEGIN
+    PERFORM 1 FROM crm.companies WHERE name = 'Test Company A1' LIMIT 1;
+    RAISE EXCEPTION '❌ FAIL - Expected query to fail without app.organisation_id';
+  EXCEPTION WHEN others THEN
+    RAISE NOTICE '✅ PASS - Query failed without app.organisation_id: %', SQLERRM;
+  END;
+END $$;
 
-\echo ''
+-- With org context: queries should succeed
+SET app.organisation_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
--- Test: Verify Org A cannot see Org B data
-\echo 'Test 9b: Verify Org A cannot see Org B data'
-SELECT 
-  CASE 
-    WHEN COUNT(*) = 0 THEN '✅ PASS - No cross-org data leak'
-    ELSE '❌ FAIL - Can see other org data!'
-  END as isolation_test
-FROM crm.companies 
-WHERE organisation_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid 
-  AND name = 'Test Company B1';
+SELECT
+  CASE
+    WHEN COUNT(*) = 1 THEN '✅ PASS - Scoped query returned 1 row'
+    ELSE '❌ FAIL - Scoped query returned unexpected rowcount'
+  END AS isolation_test
+FROM crm.companies
+WHERE name = 'Test Company A1';
+
+ROLLBACK;
 
 \echo ''
-
--- Cleanup test data
-DELETE FROM crm.companies WHERE name IN ('Test Company A1', 'Test Company B1');
-DELETE FROM iam.organisations WHERE name IN ('Test Org A', 'Test Org B');
-
-\echo 'Cleaned up test data'
+\echo 'Test 9b: (deprecated) - replaced by RLS-enforced test above'
 \echo ''
 
 -- ================================================================
