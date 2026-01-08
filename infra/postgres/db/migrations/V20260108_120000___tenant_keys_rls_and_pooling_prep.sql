@@ -67,7 +67,7 @@ ALTER TABLE outreach.campaign_enrollments DROP CONSTRAINT IF EXISTS campaign_enr
 ALTER TABLE outreach.campaign_enrollments ADD PRIMARY KEY (organisation_id, id);
 
 ALTER TABLE outreach.enrollment_step_variant_assignments DROP CONSTRAINT IF EXISTS enrollment_step_variant_assignments_pkey;
-ALTER TABLE outreach.enrollment_step_variant_assignments ADD PRIMARY KEY (organisation_id, id);
+ALTER TABLE outreach.enrollment_step_variant_assignments ADD PRIMARY KEY (organisation_id, enrollment_id, workflow_step_id);
 
 ALTER TABLE outreach.tasks DROP CONSTRAINT IF EXISTS tasks_pkey;
 ALTER TABLE outreach.tasks ADD PRIMARY KEY (organisation_id, id);
