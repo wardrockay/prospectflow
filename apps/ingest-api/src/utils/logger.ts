@@ -4,13 +4,25 @@ import { pino } from 'pino';
 
 export const logger = pino({
   level: env.logLevel,
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'SYS:dd/mm/yyyy HH:MM:ss o',
-      ignore: 'pid,hostname',
-    },
+  transport:
+    env.node_env === 'development' || env.node_env === 'dev'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'SYS:standard',
+            ignore: 'pid,hostname',
+          },
+        }
+      : undefined,
+  serializers: {
+    req: (req) => ({
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+    }),
+    res: (res) => ({
+      statusCode: res.statusCode,
+    }),
   },
-  timestamp: () => `,"time":"${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}"`,
 });
