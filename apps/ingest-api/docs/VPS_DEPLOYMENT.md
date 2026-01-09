@@ -6,6 +6,22 @@ L'application crash en boucle car il manque les variables d'environnement Postgr
 
 ## Étapes de correction sur le VPS
 
+### 0. S'assurer que PostgreSQL est démarré (IMPORTANT)
+
+L'ingest-api a besoin que PostgreSQL soit déjà en cours d'exécution.
+
+```bash
+cd ~/starlightcoder/prospectflow/infra/postgres
+sudo docker compose up -d
+```
+
+Vérifier que PostgreSQL est bien démarré :
+
+```bash
+sudo docker ps | grep prospectflow-postgres
+# Doit afficher le container en état "healthy"
+```
+
 ### 1. Créer le fichier `.env`
 
 ```bash

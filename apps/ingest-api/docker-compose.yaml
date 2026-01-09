@@ -18,8 +18,6 @@ services:
     restart: unless-stopped
     networks:
       - prospectflow-network
-    depends_on:
-      - postgres
 
 networks:
   prospectflow-network:
