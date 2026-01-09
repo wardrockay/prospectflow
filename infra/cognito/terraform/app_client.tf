@@ -11,7 +11,7 @@ resource "aws_cognito_user_pool_client" "api_client" {
   callback_urls = var.environment == "production" ? [
     "https://app.prospectflow.com/auth/callback"
     ] : [
-    "http://localhost:3000/auth/callback",
+    "http://localhost:4000/auth/callback",
     "http://localhost:5173/auth/callback"
   ]
 
@@ -19,7 +19,7 @@ resource "aws_cognito_user_pool_client" "api_client" {
   logout_urls = var.environment == "production" ? [
     "https://app.prospectflow.com/"
     ] : [
-    "http://localhost:3000/",
+    "http://localhost:4000/",
     "http://localhost:5173/"
   ]
 

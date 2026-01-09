@@ -65,6 +65,13 @@ development_status:
   0-9-ci-cd-pipeline-with-github-actions: backlog
   epic-0-retrospective: optional
 
+  # Epic UI-0: Frontend Foundation & Authentication
+  epic-ui-0: ready-for-dev
+  ui-0-1-nuxt-project-setup: ready-for-dev
+  ui-0-2-authentication-ui: ready-for-dev
+  ui-0-3-app-layout-navigation: ready-for-dev
+  epic-ui-0-retrospective: optional
+
   # Epic E1: Campaign Management Foundation
   epic-1: backlog
   1-1-create-new-campaign: backlog
@@ -72,6 +79,14 @@ development_status:
   1-3-view-campaign-details: backlog
   1-4-archive-campaign: backlog
   epic-1-retrospective: optional
+
+  # Epic UI-1: Campaign Management UI
+  epic-ui-1: backlog
+  ui-1-1-campaign-list-view: backlog
+  ui-1-2-campaign-creation-form: backlog
+  ui-1-3-campaign-details-page: backlog
+  ui-1-4-campaign-editing: backlog
+  epic-ui-1-retrospective: optional
 
   # Epic E2: Prospect Import & Validation Pipeline
   epic-2: backlog
@@ -82,6 +97,13 @@ development_status:
   2-5-duplicate-detection-against-existing-prospects: backlog
   2-6-validation-report-and-user-actions: backlog
   epic-2-retrospective: optional
+
+  # Epic UI-2: Prospect Management UI
+  epic-ui-2: backlog
+  ui-2-1-csv-upload-interface: backlog
+  ui-2-2-column-mapping-interface: backlog
+  ui-2-3-validation-results-import: backlog
+  epic-ui-2-retrospective: optional
 
   # Epic E3: Automated Prospect Research Engine
   epic-3: backlog
@@ -113,6 +135,14 @@ development_status:
   5-5-batch-approval-capability: backlog
   epic-5-retrospective: optional
 
+  # Epic UI-3: Email Review Interface
+  epic-ui-3: backlog
+  ui-3-1-review-queue-layout: backlog
+  ui-3-2-email-preview-edit: backlog
+  ui-3-3-keyboard-shortcuts: backlog
+  ui-3-4-batch-approval-actions: backlog
+  epic-ui-3-retrospective: optional
+
   # Epic E6: Gmail Integration & Email Sending
   epic-6: backlog
   6-1-gmail-oauth-2-0-connection-flow: backlog
@@ -137,6 +167,13 @@ development_status:
   8-3-meeting-tracking: backlog
   8-4-time-saved-calculation: backlog
   epic-8-retrospective: optional
+
+  # Epic UI-4: Analytics Dashboard UI
+  epic-ui-4: backlog
+  ui-4-1-campaign-metrics-charts: backlog
+  ui-4-2-response-tracking-dashboard: backlog
+  ui-4-3-export-reporting: backlog
+  epic-ui-4-retrospective: optional
 
   # Epic E9: Follow-up Sequence Automation
   epic-9: backlog
@@ -234,6 +271,30 @@ development_status:
 
 # Epic Breakdown aligned with FR requirements
 epics:
+  # Backend Epics
+  - id: 'E0'
+    title: 'Foundation Infrastructure & Architecture'
+    priority: 'P0'
+    status: 'In Progress'
+    requirementsCovered: ['NFR3', 'NFR4', 'NFR5', 'NFR14', 'NFR15', 'NFR16']
+    description: 'Multi-tenant PostgreSQL setup, authentication, Docker deployment, monitoring, CI/CD'
+    estimatedStoryPoints: 34
+    dependencies: []
+    stories: []
+    artifactFile: 'planning-artifacts/epics.md#epic-0'
+
+  # Frontend Epics
+  - id: 'UI-0'
+    title: 'Frontend Foundation & Authentication'
+    priority: 'P0'
+    status: 'Ready for Dev'
+    requirementsCovered: ['NFR4']
+    description: 'Nuxt 3 setup, NuxtUI, Cognito auth integration, app layout'
+    estimatedStoryPoints: 8
+    dependencies: ['E0']
+    stories: []
+    artifactFile: 'planning-artifacts/ui-epics.md#epic-ui-0'
+
   - id: 'E1'
     title: 'Campaign Management Foundation'
     priority: 'P0'
@@ -243,6 +304,18 @@ epics:
     estimatedStoryPoints: 13
     dependencies: []
     stories: []
+    artifactFile: 'planning-artifacts/epics.md#epic-1'
+
+  - id: 'UI-1'
+    title: 'Campaign Management UI'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR1']
+    description: 'Campaign list, creation form, details page, editing'
+    estimatedStoryPoints: 13
+    dependencies: ['UI-0', 'E1']
+    stories: []
+    artifactFile: 'planning-artifacts/ui-epics.md#epic-ui-1'
 
   - id: 'E2'
     title: 'Prospect Import & Validation Pipeline'
@@ -253,6 +326,18 @@ epics:
     estimatedStoryPoints: 21
     dependencies: ['E1']
     stories: []
+    artifactFile: 'planning-artifacts/epics.md#epic-2'
+
+  - id: 'UI-2'
+    title: 'Prospect Management UI'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR2']
+    description: 'CSV upload, column mapping, validation, import execution'
+    estimatedStoryPoints: 13
+    dependencies: ['UI-0', 'E2']
+    stories: []
+    artifactFile: 'planning-artifacts/ui-epics.md#epic-ui-2'
 
   - id: 'E3'
     title: 'Automated Prospect Research Engine'
@@ -283,6 +368,18 @@ epics:
     estimatedStoryPoints: 21
     dependencies: ['E4']
     stories: []
+    artifactFile: 'planning-artifacts/epics.md#epic-5'
+
+  - id: 'UI-3'
+    title: 'Email Review Interface'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR5', 'NFR11', 'NFR12']
+    description: 'Review queue, email preview, inline editor, keyboard shortcuts, batch approval'
+    estimatedStoryPoints: 21
+    dependencies: ['UI-0', 'E5']
+    stories: []
+    artifactFile: 'planning-artifacts/ui-epics.md#epic-ui-3'
 
   - id: 'E6'
     title: 'Gmail Integration & Email Sending'
@@ -313,6 +410,18 @@ epics:
     estimatedStoryPoints: 21
     dependencies: ['E7']
     stories: []
+    artifactFile: 'planning-artifacts/epics.md#epic-8'
+
+  - id: 'UI-4'
+    title: 'Analytics Dashboard UI'
+    priority: 'P1'
+    status: 'Not Started'
+    requirementsCovered: ['FR8']
+    description: 'Campaign metrics charts, response tracking, export functionality'
+    estimatedStoryPoints: 13
+    dependencies: ['UI-0', 'E8']
+    stories: []
+    artifactFile: 'planning-artifacts/ui-epics.md#epic-ui-4'
 
   - id: 'E9'
     title: 'Follow-up Sequence Automation'

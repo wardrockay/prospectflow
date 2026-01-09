@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  ui-web:
+    build:
+      context: ../..
+      dockerfile: apps/ui-web/Dockerfile
+    container_name: prospectflow-ui-web
+    ports:
+      - '4000:4000'
+    environment:
+      - NODE_ENV=production
+      - NUXT_HOST=0.0.0.0
+      - NUXT_PORT=4000
+      # API Configuration
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:3001}
+      # Cognito Configuration
+      - COGNITO_HOSTED_UI=${COGNITO_HOSTED_UI}
+      - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+      - COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI:-http://localhost:4000/auth/callback}
+    restart: unless-stopped
+    networks:
+      - prospectflow
+
+networks:
+  prospectflow:
+    name: prospectflow
+    external: true
