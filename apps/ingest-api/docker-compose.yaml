@@ -6,11 +6,20 @@ services:
     ports:
       - '3000:3000'
     environment:
-      - PORT=3000
       - NODE_ENV=production
+      - PORT=3000
+      - LOG_LEVEL=info
+      - CORS_ORIGIN=https://prospectflow.com
+      - POSTGRES_HOST=prospectflow-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=prospectflow
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=prospectflow
     restart: unless-stopped
     networks:
       - prospectflow-network
+    depends_on:
+      - prospectflow-postgres
 
 networks:
   prospectflow-network:
