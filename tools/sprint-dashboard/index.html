@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProspectFlow - Sprint Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/typescript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/sql.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/bash.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-content">
+          <h1>🚀 ProspectFlow Sprint Dashboard</h1>
+          <p class="subtitle">Suivi de progression en temps réel</p>
+        </div>
+        <div class="header-meta">
+          <span class="badge" id="currentSprint">Chargement...</span>
+          <span class="badge secondary" id="lastUpdate">Dernière mise à jour: --</span>
+        </div>
+      </header>
+
+      <section class="stats-overview">
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <h3 id="progressPercentage">0%</h3>
+            <p>Progression Globale</p>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <h3 id="storiesDone">0</h3>
+            <p>Stories Terminées</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🔄</div>
+          <div class="stat-content">
+            <h3 id="storiesInProgress">0</h3>
+            <p>En Cours</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-content">
+            <h3 id="storiesBacklog">0</h3>
+            <p>Backlog</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="filters">
+        <button class="filter-btn active" data-filter="all">Tous</button>
+        <button class="filter-btn" data-filter="in-progress">En cours</button>
+        <button class="filter-btn" data-filter="done">Terminés</button>
+        <button class="filter-btn" data-filter="backlog">Backlog</button>
+      </section>
+
+      <section class="epics-grid" id="epicsGrid">
+        <!-- Epics will be dynamically inserted here -->
+      </section>
+
+      <section class="charts-section">
+        <div class="chart-card">
+          <h3>📈 Progression par Epic</h3>
+          <canvas id="epicProgressChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>🎯 Répartition par Status</h3>
+          <canvas id="statusChart"></canvas>
+        </div>
+      </section>
+
+      <section class="sprints-timeline" id="sprintsTimeline">
+        <h2>🗓️ Timeline des Sprints</h2>
+        <div id="sprintsList">
+          <!-- Sprints will be dynamically inserted here -->
+        </div>
+      </section>
+
+      <footer>
+        <p>BMAD Sprint Dashboard Module | ProspectFlow v1.0</p>
+        <button id="refreshBtn" class="btn-refresh">🔄 Rafraîchir</button>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

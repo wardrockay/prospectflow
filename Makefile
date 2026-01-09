@@ -1,4 +1,4 @@
-.PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready clean
+.PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready clean dashboard
 
 # Default target
 help:
@@ -14,6 +14,7 @@ help:
 	@echo "  make dev-logs      - Show logs from all services"
 	@echo "  make dev-status    - Show status of all services"
 	@echo "  make test-ready    - Ensure environment is ready for integration tests"
+	@echo "  make dashboard     - Launch Sprint Dashboard UI"
 	@echo "  make clean         - Remove all containers, volumes, and networks"
 	@echo ""
 
@@ -79,6 +80,12 @@ dev-status:
 # Ensure environment is ready for integration tests
 test-ready: dev-ready
 	@echo "✅ Environment ready for integration tests"
+
+# Launch Sprint Dashboard UI
+dashboard:
+	@echo "🚀 Lancement du Sprint Dashboard sur http://localhost:8080/tools/sprint-dashboard/"
+	@echo "📊 Appuyez sur Ctrl+C pour arrêter"
+	@npx http-server -p 8080 -c-1 -o /tools/sprint-dashboard/
 
 # Clean up everything (containers, volumes, networks)
 clean:
