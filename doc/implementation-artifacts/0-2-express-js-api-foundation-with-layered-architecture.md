@@ -1,6 +1,6 @@
 # Story 0.2: Express.js API Foundation with Layered Architecture
 
-**Status:** review  
+**Status:** done  
 **Epic:** E0 - Foundation Infrastructure & Architecture  
 **Story Points:** 5  
 **Priority:** P0 (MVP Foundation)
