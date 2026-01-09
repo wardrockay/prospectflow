@@ -1,0 +1,42 @@
+services:
+  # Test database - ephemeral, only for tests
+  prospectflow-test-db:
+    image: postgres:16-alpine
+    container_name: prospectflow-test-db
+    environment:
+      POSTGRES_DB: prospectflow_test
+      POSTGRES_USER: prospectflow
+      POSTGRES_PASSWORD: testpassword123
+    networks:
+      - prospectflow-test-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U prospectflow']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Test runner - runs all tests including integration
+  prospectflow-test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: prospectflow-test-runner
+    environment:
+      - NODE_ENV=test
+      - POSTGRES_HOST=prospectflow-test-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=prospectflow
+      - POSTGRES_PASSWORD=testpassword123
+      - POSTGRES_DB=prospectflow_test
+      - LOG_LEVEL=error
+      - PORT=3000
+      - CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      prospectflow-test-db:
+        condition: service_healthy
+    networks:
+      - prospectflow-test-network
+
+networks:
+  prospectflow-test-network:
+    driver: bridge

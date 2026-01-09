@@ -1,0 +1,23 @@
+# syntax=docker/dockerfile:1
+
+# Test stage - includes dev dependencies and runs tests
+FROM node:20-alpine AS tester
+WORKDIR /usr/src/app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
+
+# Install ALL dependencies (including devDependencies for tests)
+RUN pnpm install --no-frozen-lockfile
+
+# Copy source code and tests
+COPY . .
+
+# Build TypeScript
+RUN pnpm run build
+
+# Wait for DB and run tests
+CMD ["sh", "-c", "sleep 3 && pnpm test run"]
