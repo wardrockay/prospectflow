@@ -4,17 +4,15 @@ import { pino } from 'pino';
 
 export const logger = pino({
   level: env.logLevel,
-  transport:
-    env.node_env === 'development' || env.node_env === 'dev'
-      ? {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
-          },
-        }
-      : undefined,
+  transport: {
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'SYS:standard',
+      ignore: 'pid,hostname',
+      singleLine: false,
+    },
+  },
   serializers: {
     req: (req) => ({
       method: req.method,
