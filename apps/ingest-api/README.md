@@ -8,6 +8,7 @@ ProspectFlow Ingest API - A multi-tenant Express.js API with layered architectur
 
 - Node.js 20.x
 - PostgreSQL 14+ (for integration tests)
+- RabbitMQ 3.x+ (for message queue)
 - Docker & Docker Compose (for containerized testing)
 - **Docker permissions**: User must be in `docker` group OR have sudo access
 
@@ -24,11 +25,50 @@ newgrp docker
 docker ps  # Should work without sudo
 ```
 
+### RabbitMQ Setup
+
+Start RabbitMQ with Docker:
+
+```bash
+cd ../../infra/rabbitmq
+docker compose up -d
+```
+
+RabbitMQ Management UI: http://localhost:15672 (admin/changeme)
+
 ## Installation
 
 ```bash
 pnpm install
 ```
+
+## Environment Variables
+
+Create a `.env` file in the `env/` directory:
+
+```bash
+# Server
+NODE_ENV=development
+PORT=3000
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/prospectflow
+DATABASE_POOL_MIN=2
+DATABASE_POOL_MAX=10
+
+# RabbitMQ
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USER=admin
+RABBITMQ_PASS=changeme
+RABBITMQ_MANAGEMENT_PORT=15672
+
+# Redis (optional)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+See `env/.env.example` for all available configuration options.
 
 ## Testing
 
@@ -70,6 +110,61 @@ pnpm test:docker       # Complete isolated test environment
 See [docs/TESTING.md](docs/TESTING.md) for detailed testing guide.
 
 ## Architecture
+
+### Message Queue (RabbitMQ)
+
+The application uses RabbitMQ for asynchronous job processing:
+
+**Queues:**
+
+- `draft_queue` - Email draft generation jobs
+- `followup_queue` - Follow-up scheduling jobs
+- `reply_queue` - Reply detection jobs
+
+**Usage Example - Publishing:**
+
+```typescript
+import { queuePublisher, QUEUES } from './queue';
+
+const job = {
+  id: '123',
+  type: 'draft_generation',
+  organisation_id: '456',
+  payload: { campaign_id: 'abc' },
+  created_at: new Date().toISOString(),
+  retry_count: 0,
+};
+
+await queuePublisher.publish(QUEUES.DRAFT, job);
+```
+
+**Usage Example - Consuming:**
+
+```typescript
+import { QueueConsumer } from './queue';
+
+class MyWorker extends QueueConsumer {
+  get queueName(): string {
+    return 'draft_queue';
+  }
+
+  async processJob(job: QueueJob): Promise<void> {
+    // Your processing logic here
+    console.log('Processing job:', job.id);
+  }
+}
+
+const worker = new MyWorker();
+await worker.start();
+```
+
+**Key Features:**
+
+- Automatic retry with exponential backoff (max 3 retries)
+- Dead letter queue for failed messages
+- Publisher confirms for reliability
+- Prefetch=1 for even load distribution
+- Graceful shutdown support
 
 See [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) for architectural decisions including:
 

@@ -10,6 +10,13 @@ export const HealthCheckResponseSchema = z.object({
     connected: z.boolean(),
     latency: z.number(),
   }),
+  rabbitmq: z
+    .object({
+      connected: z.boolean(),
+      managementUI: z.string().optional(),
+      error: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type HealthCheckResponse = z.infer<typeof HealthCheckResponseSchema>;

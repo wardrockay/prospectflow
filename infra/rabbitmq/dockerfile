@@ -320,6 +320,7 @@ ENV RUNNING_UNDER_SYSTEMD=true
 
 COPY --chown=rabbitmq:rabbitmq 10-defaults.conf 20-management_agent.disable_metrics_collector.conf /etc/rabbitmq/conf.d/
 COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 4369 5671 5672 15691 15692 25672
