@@ -19,23 +19,23 @@ const getVerifier = () => {
 
 /**
  * Middleware to validate AWS Cognito JWT tokens
- * 
+ *
  * Extracts and validates the JWT token from the Authorization header,
  * verifies its signature against Cognito public keys, and attaches
  * the decoded payload to req.user.
- * 
+ *
  * @throws 401 - If token is missing, invalid, or expired
  * @throws 403 - If token is valid but missing required claims
  */
 export const cognitoAuthMiddleware = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader) {
       res.status(401).json({
         error: 'Unauthorized',
@@ -69,7 +69,7 @@ export const cognitoAuthMiddleware = async (
     } catch (error) {
       // Token verification failed (invalid signature, expired, wrong issuer, etc.)
       const errorMessage = error instanceof Error ? error.message : 'Token verification failed';
-      
+
       // Check if token is expired
       if (errorMessage.includes('expired')) {
         res.status(401).json({

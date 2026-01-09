@@ -21,6 +21,7 @@ cd apps/ingest-api
 ```
 
 This creates a test user with:
+
 - Email: `test-admin@prospectflow.com`
 - Password: `TestPass123!`
 - Custom attributes: `organisation_id=test-org-001`, `role=admin`
@@ -61,21 +62,27 @@ Server should start on `http://localhost:3003`
 This runs three tests:
 
 **Test 1: Valid Token (200)**
+
 ```bash
 curl -H "Authorization: Bearer <token>" http://localhost:3003/api/v1/auth/test
 ```
+
 Expected: 200 OK with decoded user payload
 
 **Test 2: Missing Token (401)**
+
 ```bash
 curl http://localhost:3003/api/v1/auth/test
 ```
+
 Expected: 401 Unauthorized
 
 **Test 3: Invalid Token (401)**
+
 ```bash
 curl -H "Authorization: Bearer invalid.token" http://localhost:3003/api/v1/auth/test
 ```
+
 Expected: 401 Unauthorized
 
 ### 5. Cleanup
@@ -137,6 +144,7 @@ This deletes the test user and removes `test-token.txt`.
 **Solution**: The app client may not have USER_PASSWORD_AUTH enabled. Use the manual Hosted UI method instead.
 
 To enable programmatic auth:
+
 ```bash
 cd ../../infra/cognito/terraform
 # Add to app_client.tf:
@@ -147,6 +155,7 @@ terraform apply
 ### Issue: Token verification fails with "invalid signature"
 
 **Solution**: Verify Cognito config matches Terraform outputs:
+
 ```bash
 cd ../../infra/cognito/terraform
 terraform output
@@ -157,6 +166,7 @@ Check `apps/ingest-api/src/config/cognito.ts` has matching values.
 ### Issue: API returns 500 instead of 401
 
 **Solution**: Check API logs for errors. Likely causes:
+
 - Cognito config mismatch (region, userPoolId, clientId)
 - Network issue reaching Cognito public keys endpoint
 - Middleware not properly initialized
@@ -164,6 +174,7 @@ Check `apps/ingest-api/src/config/cognito.ts` has matching values.
 ### Issue: Token expired
 
 **Solution**: Tokens are valid for 1 hour by default. Regenerate:
+
 ```bash
 ./smoke-test.sh generate-token
 ```
@@ -181,6 +192,7 @@ Check `apps/ingest-api/src/config/cognito.ts` has matching values.
 ## Next Steps
 
 After smoke test passes:
+
 - Proceed to Phase 2: Session Management & User Sync
 - Implement Redis session storage
 - Create user sync service

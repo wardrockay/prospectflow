@@ -32,12 +32,14 @@ docker-compose down
 ## Data Persistence
 
 Data is stored in `./data/` directory:
+
 - `dump.rdb`: RDB snapshot
 - `appendonly.aof`: AOF log
 
 ## Health Check
 
 Redis container has automatic health monitoring:
+
 - Interval: 10 seconds
 - Timeout: 3 seconds
 - Retries: 3
@@ -82,6 +84,7 @@ docker-compose up -d
 ## Troubleshooting
 
 ### Container won't start
+
 ```bash
 # Check logs
 docker-compose logs redis
@@ -95,6 +98,7 @@ docker-compose up -d
 ```
 
 ### Memory issues
+
 ```bash
 # Check memory usage
 redis-cli info memory
@@ -104,6 +108,7 @@ redis-cli info stats | grep evicted
 ```
 
 ### Connection issues
+
 ```bash
 # Test from host
 redis-cli -h localhost -p 6379 ping

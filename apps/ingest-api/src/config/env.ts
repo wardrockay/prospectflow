@@ -27,6 +27,11 @@ const envSchema = z.object({
 
   DATABASE_URL: z.string().optional(),
   ALLOWED_ORIGINS: z.string().optional(),
+
+  AWS_REGION: z.string().default('eu-west-1'),
+  COGNITO_USER_POOL_ID: z.string(),
+  COGNITO_CLIENT_ID: z.string(),
+  COGNITO_ISSUER: z.string(),
 });
 
 // Parse and validate environment variables
@@ -44,6 +49,11 @@ const parsedEnv = envSchema.parse({
 
   DATABASE_URL: process.env.DATABASE_URL,
   ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS,
+
+  AWS_REGION: process.env.AWS_REGION,
+  COGNITO_USER_POOL_ID: process.env.COGNITO_USER_POOL_ID,
+  COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
+  COGNITO_ISSUER: process.env.COGNITO_ISSUER,
 });
 
 // Export typed environment configuration
@@ -63,4 +73,11 @@ export const env = {
 
   databaseUrl: parsedEnv.DATABASE_URL,
   allowedOrigins: parsedEnv.ALLOWED_ORIGINS,
+
+  cognito: {
+    region: parsedEnv.AWS_REGION,
+    userPoolId: parsedEnv.COGNITO_USER_POOL_ID,
+    clientId: parsedEnv.COGNITO_CLIENT_ID,
+    issuer: parsedEnv.COGNITO_ISSUER,
+  },
 };

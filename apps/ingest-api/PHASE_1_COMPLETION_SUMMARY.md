@@ -1,14 +1,17 @@
 # Phase 1 Completion Summary - AWS Cognito Authentication
 
 ## 🎯 Objective
+
 Infrastructure setup and core JWT validation for AWS Cognito authentication
 
 ## ✅ Tasks Completed
 
 ### Task 1.1: Terraform - Cognito User Pool Setup
+
 **Status**: ✅ Complete
 
 **Files Created**:
+
 ```
 infra/cognito/terraform/
 ├── main.tf           # User Pool with password policies & custom attributes
@@ -23,16 +26,19 @@ infra/cognito/terraform/
 ```
 
 **Terraform Outputs**:
+
 - User Pool ID: `eu-west-1_m8wWyUG8x`
 - App Client ID: `21iugsof735ks8k76r2vdn31do`
 - Hosted UI URL: `https://prospectflow-dev.auth.eu-west-1.amazoncognito.com`
 - Region: `eu-west-1` (Paris)
 
 **Custom Attributes**:
+
 - `organisation_id` (String, mutable)
 - `role` (String, mutable)
 
 **Groups**:
+
 - `admin` - Full access
 - `user` - Standard access
 - `viewer` - Read-only access
@@ -40,9 +46,11 @@ infra/cognito/terraform/
 ---
 
 ### Task 1.2: Redis Docker Infrastructure Setup
+
 **Status**: ✅ Complete
 
 **Files Created**:
+
 ```
 infra/redis/
 ├── redis.conf              # Optimized Redis configuration
@@ -52,6 +60,7 @@ infra/redis/
 ```
 
 **Configuration**:
+
 - Memory limit: 256MB (LRU eviction policy)
 - Persistence: AOF + RDB snapshots
 - Port: 6379
@@ -59,6 +68,7 @@ infra/redis/
 - Restart policy: unless-stopped
 
 **Verification**:
+
 ```bash
 ✅ Container running: redis-session-store
 ✅ Health: healthy
@@ -68,11 +78,13 @@ infra/redis/
 ---
 
 ### Task 1.3: Database Migration - Add Cognito Fields
+
 **Status**: ✅ Complete
 
 **Migration**: `V20260109_120000___add_cognito_fields.sql`
 
 **Changes**:
+
 ```sql
 ALTER TABLE iam.users
 ADD COLUMN cognito_sub VARCHAR(255) UNIQUE;
@@ -83,6 +95,7 @@ CREATE INDEX idx_users_cognito_sub ON iam.users(cognito_sub);
 **Purpose**: Links Cognito users (`sub` claim) to database user records
 
 **Verification**:
+
 ```bash
 ✅ Migration applied successfully
 ✅ Column exists with UNIQUE constraint
@@ -92,9 +105,11 @@ CREATE INDEX idx_users_cognito_sub ON iam.users(cognito_sub);
 ---
 
 ### Task 1.4: JWT Validation Middleware
+
 **Status**: ✅ Complete
 
 **Files Created**:
+
 ```
 apps/ingest-api/src/
 ├── config/
@@ -107,9 +122,11 @@ apps/ingest-api/src/
 ```
 
 **Dependencies Installed**:
+
 - `aws-jwt-verify@4.0.1`
 
 **Middleware Features**:
+
 - Lazy verifier initialization (for testing)
 - Bearer token extraction from Authorization header
 - JWT signature verification against Cognito public keys
@@ -118,6 +135,7 @@ apps/ingest-api/src/
 - Comprehensive error handling (401 for auth failures, 500 for unexpected errors)
 
 **Unit Tests**:
+
 ```
 apps/ingest-api/tests/unit/middlewares/
 └── cognito-auth.middleware.test.ts
@@ -126,6 +144,7 @@ apps/ingest-api/tests/unit/middlewares/
 **Test Coverage**: 91.66% (exceeds 90% requirement)
 
 **Test Scenarios**:
+
 - ✅ Valid token with all claims
 - ✅ Bearer prefix extraction
 - ✅ Missing Authorization header
@@ -139,9 +158,11 @@ apps/ingest-api/tests/unit/middlewares/
 ---
 
 ### Task 1.5: Smoke Test - End-to-End JWT Validation
+
 **Status**: ✅ Complete
 
 **Files Created**:
+
 ```
 apps/ingest-api/
 ├── src/routes/
@@ -151,17 +172,20 @@ apps/ingest-api/
 ```
 
 **Test Endpoint**: `GET /api/v1/auth/test`
+
 - Protected by `cognitoAuthMiddleware`
 - Returns decoded JWT payload
 - Used for manual smoke testing
 
 **Smoke Test Script**: `./smoke-test.sh`
+
 - `create-user` - Creates test user in Cognito
 - `generate-token` - Generates JWT token (programmatic or manual)
 - `test-endpoint` - Tests all three scenarios (valid, missing, invalid)
 - `cleanup` - Removes test user and token file
 
 **Manual Verification Steps**:
+
 1. Create test user with custom attributes
 2. Generate JWT via Hosted UI or AWS CLI
 3. Test valid token → 200 OK
@@ -204,14 +228,14 @@ req.user = {
 
 ## 🚀 Deployment Status
 
-| Component | Status | Location |
-|-----------|--------|----------|
-| Cognito User Pool | ✅ Deployed | AWS eu-west-1 |
-| Redis Session Store | ✅ Running | Docker (localhost:6379) |
-| Database Migration | ✅ Applied | PostgreSQL 18 |
-| JWT Middleware | ✅ Implemented | apps/ingest-api/src/middlewares |
-| Unit Tests | ✅ Passing | 91.66% coverage |
-| Test Endpoint | ✅ Available | /api/v1/auth/test |
+| Component           | Status         | Location                        |
+| ------------------- | -------------- | ------------------------------- |
+| Cognito User Pool   | ✅ Deployed    | AWS eu-west-1                   |
+| Redis Session Store | ✅ Running     | Docker (localhost:6379)         |
+| Database Migration  | ✅ Applied     | PostgreSQL 18                   |
+| JWT Middleware      | ✅ Implemented | apps/ingest-api/src/middlewares |
+| Unit Tests          | ✅ Passing     | 91.66% coverage                 |
+| Test Endpoint       | ✅ Available   | /api/v1/auth/test               |
 
 ---
 
@@ -266,6 +290,7 @@ req.user = {
 **Goal**: Implement session management and user synchronization
 
 **Upcoming Tasks**:
+
 1. Redis client configuration and connection pool
 2. Session service (create, validate, destroy)
 3. Session middleware (validate session from Redis)
@@ -279,12 +304,14 @@ req.user = {
 ## 📝 Quick Reference
 
 **Start Redis**:
+
 ```bash
 cd infra/redis
 docker-compose up -d
 ```
 
 **Run Smoke Test**:
+
 ```bash
 cd apps/ingest-api
 ./smoke-test.sh create-user
@@ -295,12 +322,14 @@ pnpm dev  # In separate terminal
 ```
 
 **Run Unit Tests**:
+
 ```bash
 cd apps/ingest-api
 pnpm test cognito-auth.middleware.test.ts
 ```
 
 **Check Cognito Outputs**:
+
 ```bash
 cd infra/cognito/terraform
 terraform output

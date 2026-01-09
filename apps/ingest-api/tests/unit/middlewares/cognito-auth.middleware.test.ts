@@ -70,11 +70,7 @@ describe('Cognito Auth Middleware', () => {
       };
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockVerify).toHaveBeenCalledWith('valid-token-12345');
@@ -100,11 +96,7 @@ describe('Cognito Auth Middleware', () => {
       });
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockVerify).toHaveBeenCalledWith(token);
@@ -118,11 +110,7 @@ describe('Cognito Auth Middleware', () => {
       mockRequest.headers = {};
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockResponse.status).toHaveBeenCalledWith(401);
@@ -140,11 +128,7 @@ describe('Cognito Auth Middleware', () => {
       };
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockResponse.status).toHaveBeenCalledWith(401);
@@ -162,11 +146,7 @@ describe('Cognito Auth Middleware', () => {
       };
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockResponse.status).toHaveBeenCalledWith(401);
@@ -188,11 +168,7 @@ describe('Cognito Auth Middleware', () => {
       mockVerify.mockRejectedValue(new Error('Invalid signature'));
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockResponse.status).toHaveBeenCalledWith(401);
@@ -213,11 +189,7 @@ describe('Cognito Auth Middleware', () => {
       mockVerify.mockRejectedValue(new Error('Token expired at 2024-01-01'));
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockResponse.status).toHaveBeenCalledWith(401);
@@ -237,11 +209,7 @@ describe('Cognito Auth Middleware', () => {
       mockVerify.mockRejectedValue(new Error('Token issuer mismatch'));
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockResponse.status).toHaveBeenCalledWith(401);
@@ -267,11 +235,7 @@ describe('Cognito Auth Middleware', () => {
       });
 
       // Act
-      await cognitoAuthMiddleware(
-        mockRequest as Request,
-        mockResponse as Response,
-        mockNext
-      );
+      await cognitoAuthMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockResponse.status).toHaveBeenCalledWith(401);
