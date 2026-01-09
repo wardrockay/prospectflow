@@ -1,0 +1,24 @@
+# Test Database Only - For local development
+# Usage: docker compose -f docker-compose.test-db-only.yaml up -d
+# This runs ONLY the test database, allowing you to run tests locally with `pnpm test`
+
+services:
+  prospectflow-test-db:
+    image: postgres:16-alpine
+    container_name: prospectflow-test-db
+    ports:
+      - '5433:5432' # Exposed on host port 5433 to avoid conflict with dev DB
+    environment:
+      POSTGRES_DB: prospectflow_test
+      POSTGRES_USER: prospectflow
+      POSTGRES_PASSWORD: testpassword123
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U prospectflow']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - prospectflow-test-db-data:/var/lib/postgresql/data
+
+volumes:
+  prospectflow-test-db-data:

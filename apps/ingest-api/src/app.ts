@@ -10,6 +10,8 @@ import { errorHandler } from './middlewares/error.middleware.js';
 import router from './routes/index.js';
 
 const app = express();
+
+// Trust proxy configuration (must be set before security middleware)
 app.set('trust proxy', true);
 
 // Security middleware
