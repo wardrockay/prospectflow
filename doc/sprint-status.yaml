@@ -43,8 +43,8 @@ story_location: /home/tolliam/starlightcoder/LightAndShutter/prospectflow/doc/im
 metadata:
   projectName: 'ProspectFlow'
   version: '1.0'
-  totalEpics: 14
-  totalStories: 67
+  totalEpics: 20
+  totalStories: 100
   currentSprint: 'Sprint 0 - Foundation'
   sprintDuration: '2 weeks'
   velocityTarget: '20 story points per sprint'
@@ -55,7 +55,7 @@ development_status:
   # Epic E0: Foundation Infrastructure & Architecture
   epic-0: in-progress
   0-1-multi-tenant-postgresql-database-setup: done
-  0-2-express-js-api-foundation-with-layered-architecture: backlog
+  0-2-express-js-api-foundation-with-layered-architecture: ready-for-dev
   0-3-rabbitmq-message-queue-configuration: backlog
   0-4-authentication-authorization-system: backlog
   0-5-structured-logging-with-pino: backlog
@@ -173,6 +173,64 @@ development_status:
   13-3-statistical-significance-tracking: backlog
   13-4-automatic-winner-rollout: backlog
   epic-13-retrospective: optional
+
+  # Epic MS-1: Fondations Multi-Source (Multi-Source Data Architecture)
+  epic-ms-1: backlog
+  ms-1-1-data-sources-registry: backlog
+  ms-1-2-import-jobs-tracking: backlog
+  ms-1-3-import-records-audit-trail: backlog
+  ms-1-4-multi-tenant-row-level-security: backlog
+  ms-1-5-composite-foreign-key-constraints: backlog
+  ms-1-6-source-configuration-management-api: backlog
+  ms-1-7-import-job-status-queries: backlog
+  epic-ms-1-retrospective: optional
+
+  # Epic MS-2: Système de Mapping Entités Externes
+  epic-ms-2: backlog
+  ms-2-1-external-entity-mappings-table: backlog
+  ms-2-2-entity-mapping-creation-and-lookup: backlog
+  ms-2-3-confidence-scoring-system: backlog
+  ms-2-4-source-specific-data-storage-in-jsonb: backlog
+  ms-2-5-entity-mapping-query-patterns-and-apis: backlog
+  epic-ms-2-retrospective: optional
+
+  # Epic MS-3: Import Pharow avec Deduplication
+  epic-ms-3: backlog
+  ms-3-1-pharow-data-source-configuration: backlog
+  ms-3-2-pharow-api-client-and-data-fetching: backlog
+  ms-3-3-company-deduplication-via-siren: backlog
+  ms-3-4-company-deduplication-via-linkedin-url: backlog
+  ms-3-5-external-id-deduplication-check: backlog
+  ms-3-6-conflict-resolution-and-data-merging: backlog
+  ms-3-7-pharow-list-name-and-metadata-storage: backlog
+  ms-3-8-end-to-end-pharow-import-orchestration: backlog
+  epic-ms-3-retrospective: optional
+
+  # Epic MS-4: Import LinkedIn Sales Navigator
+  epic-ms-4: backlog
+  ms-4-1-linkedin-data-source-configuration: backlog
+  ms-4-2-linkedin-profile-data-extraction: backlog
+  ms-4-3-linkedin-url-based-deduplication: backlog
+  ms-4-4-linkedin-data-enrichment: backlog
+  ms-4-5-linkedin-import-orchestration: backlog
+  epic-ms-4-retrospective: optional
+
+  # Epic MS-5: Import Manuel CSV/Excel
+  epic-ms-5: backlog
+  ms-5-1-csv-excel-file-upload: backlog
+  ms-5-2-column-mapping-interface: backlog
+  ms-5-3-csv-data-validation-and-preview: backlog
+  ms-5-4-csv-import-execution: backlog
+  ms-5-5-csv-template-download-and-reusable-mappings: backlog
+  epic-ms-5-retrospective: optional
+
+  # Epic MS-6: Nettoyage Schema Core
+  epic-ms-6: backlog
+  ms-6-1-remove-pharow-company-id-from-companies-table: backlog
+  ms-6-2-remove-pharow-list-name-from-positions-table: backlog
+  ms-6-3-update-application-queries: backlog
+  ms-6-4-validate-source-agnostic-architecture: backlog
+  epic-ms-6-retrospective: optional
 
 # Epic Breakdown aligned with FR requirements
 epics:
@@ -304,6 +362,67 @@ epics:
     description: 'Built-in A/B testing for email elements with statistical analysis'
     estimatedStoryPoints: 21
     dependencies: ['E8']
+    stories: []
+
+  # Multi-Source Data Architecture Epics
+  - id: 'MS-1'
+    title: 'Fondations Multi-Source'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR2', 'FR4', 'NFR1', 'NFR2', 'NFR3', 'NFR4', 'NFR5']
+    description: 'Infrastructure de base pour supporter plusieurs sources de données avec traçabilité complète'
+    estimatedStoryPoints: 34
+    dependencies: ['E0']
+    stories: []
+
+  - id: 'MS-2'
+    title: 'Système de Mapping Entités Externes'
+    priority: 'P0'
+    status: 'Not Started'
+    requirementsCovered: ['FR3', 'FR6', 'FR9', 'NFR6', 'NFR7']
+    description: 'Système de liaison entre entités internes et identifiants externes'
+    estimatedStoryPoints: 21
+    dependencies: ['MS-1']
+    stories: []
+
+  - id: 'MS-3'
+    title: 'Import Pharow avec Deduplication'
+    priority: 'P1'
+    status: 'Not Started'
+    requirementsCovered: ['FR1', 'FR5', 'FR8', 'FR10']
+    description: 'Import complet depuis Pharow avec détection et gestion intelligente des doublons'
+    estimatedStoryPoints: 34
+    dependencies: ['MS-1', 'MS-2']
+    stories: []
+
+  - id: 'MS-4'
+    title: 'Import LinkedIn Sales Navigator'
+    priority: 'P2'
+    status: 'Not Started'
+    requirementsCovered: ['FR1', 'FR5', 'FR8', 'FR9']
+    description: 'Import de données depuis LinkedIn avec enrichissement des profils'
+    estimatedStoryPoints: 21
+    dependencies: ['MS-1', 'MS-2']
+    stories: []
+
+  - id: 'MS-5'
+    title: 'Import Manuel CSV/Excel'
+    priority: 'P1'
+    status: 'Not Started'
+    requirementsCovered: ['FR1', 'FR7', 'FR5', 'FR10']
+    description: 'Import manuel de données via fichiers CSV ou Excel'
+    estimatedStoryPoints: 21
+    dependencies: ['MS-1', 'MS-2']
+    stories: []
+
+  - id: 'MS-6'
+    title: 'Nettoyage Schema Core'
+    priority: 'P2'
+    status: 'Not Started'
+    requirementsCovered: ['NFR1', 'NFR2']
+    description: 'Retirer tous les champs source-spécifiques des tables core'
+    estimatedStoryPoints: 13
+    dependencies: ['MS-1', 'MS-2', 'MS-3']
     stories: []
 
   # Infrastructure & Non-Functional Epics
