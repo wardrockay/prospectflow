@@ -1,0 +1,1187 @@
+# Story 0.4: AWS Cognito Authentication Integration
+
+**Status:** ready-for-dev
+
+---
+
+## Story
+
+As a **security engineer**,  
+I want **AWS Cognito authentication with Redis session management**,  
+So that **users authenticate securely via managed AWS service with server-side session control**.
+
+---
+
+## Acceptance Criteria
+
+### AC1: AWS Cognito User Pool Infrastructure
+
+**Given** Terraform configuration is applied  
+**When** infrastructure is provisioned  
+**Then** Cognito User Pool should be created in eu-west-1  
+**And** custom attributes `organisation_id` and `role` should be defined  
+**And** Cognito Groups (admin, user, viewer) should be created  
+**And** App Client should be configured for Hosted UI  
+**And** Hosted UI domain should be available (`prospectflow-{env}.auth.eu-west-1.amazoncognito.com`)
+
+### AC2: Redis Session Store Setup
+
+**Given** Docker Compose configuration is deployed on VPS  
+**When** Redis container starts  
+**Then** Redis should be accessible on localhost:6379  
+**And** persistence should be enabled (AOF + RDB)  
+**And** maxmemory policy should be set to allkeys-lru  
+**And** health checks should pass
+
+### AC3: Cognito JWT Validation Middleware
+
+**Given** an API request includes Authorization header with Cognito JWT  
+**When** the middleware validates the token  
+**Then** it should verify JWT signature using Cognito public keys  
+**And** check token expiration and issuer  
+**And** extract `sub`, `email`, `cognito:groups`, and custom attributes  
+**And** return 401 Unauthorized if invalid or expired
+
+### AC4: Redis Session Management
+
+**Given** a user makes their first authenticated API call  
+**When** JWT is validated successfully  
+**Then** a session should be created in Redis with key `session:{cognito_sub}`  
+**And** session should store: organisation_id, role, email, last_activity  
+**And** session TTL should be 24 hours  
+**And** subsequent requests should check session existence in Redis  
+**And** session should be refreshed on each activity
+
+### AC5: Multi-tenant Authorization
+
+**Given** a user makes a request for a resource  
+**When** the service layer queries the database  
+**Then** the query must include the user's organisation_id from session  
+**And** resources from other organizations should not be accessible  
+**And** attempt to access other org's data should return 403 Forbidden
+
+### AC6: User Synchronization
+
+**Given** a user successfully authenticates via Cognito  
+**When** they make their first API call  
+**Then** if user doesn't exist in `iam.users`, create record  
+**And** store `cognito_sub` for future lookups  
+**And** associate user with organisation_id from custom attribute  
+**And** create entry in `iam.organisation_users` with role
+
+### AC7: Session Invalidation
+
+**Given** a user logs out or admin revokes access  
+**When** logout endpoint is called  
+**Then** session should be deleted from Redis  
+**And** subsequent API calls with same JWT should fail (no session)  
+**And** admin should be able to revoke any user's sessions
+
+---
+
+## Dev Notes
+
+### Architecture Context
+
+This story implements AWS Cognito authentication with Redis session management for ProspectFlow. This hybrid architecture leverages AWS managed authentication while keeping session control and data on your VPS for cost optimization.
+
+**Key Architecture Principles:**
+
+- **AWS Cognito**: Managed authentication, MFA, password policies, compliance (SOC2/ISO27001)
+- **Redis Sessions**: Server-side session control, immediate revocation, activity tracking
+- **Multi-Tenant Isolation**: organisation_id in Cognito custom attributes + session
+- **Cost Optimization**: Cognito free tier (50k MAU), Redis self-hosted on VPS ($0)
+- **Hybrid Infrastructure**: Auth on AWS, sessions + data on VPS
+
+**Architecture Flow:**
+
+```
+┌──────────────┐
+│   Frontend   │
+│  (React/Vue) │
+└──────┬───────┘
+       │ 1. Redirect to Cognito Hosted UI
+       ↓
+┌──────────────────────────────────────┐
+│   AWS Cognito (eu-west-1)            │
+│   User Pool: prospectflow-prod       │
+│   Groups: admin, user, viewer        │
+│   Custom attrs: organisation_id      │
+└──────┬───────────────────────────────┘
+       │ 2. Return JWT tokens (access + ID + refresh)
+       ↓
+┌──────────────┐
+│   Frontend   │ 3. Call API with Bearer token
+└──────┬───────┘
+       ↓
+┌──────────────────────────────────────┐
+│   VPS Docker Infrastructure          │
+│                                      │
+│  ┌────────────────────────────────┐ │
+│  │   Express API Middleware       │ │
+│  │   - Verify Cognito JWT         │ │
+│  │   - Check Redis session        │ │
+│  │   - Extract organisation_id    │ │
+│  └────────┬───────────────────────┘ │
+│           │                          │
+│  ┌────────▼───────────┐             │
+│  │   Redis Sessions   │             │
+│  │   session:{sub}    │             │
+│  │   TTL: 24h         │             │
+│  └────────┬───────────┘             │
+│           │                          │
+│  ┌────────▼───────────┐             │
+│  │  Service Layer     │             │
+│  │  + PostgreSQL      │             │
+│  └────────────────────┘             │
+└──────────────────────────────────────┘
+```
+
+### Infrastructure Status
+
+**AWS Resources (NEW - THIS STORY):**
+- ❌ Cognito User Pool (to create via Terraform)
+- ❌ Cognito App Client (to create)
+- ❌ Cognito Hosted UI domain (to create)
+- ❌ Cognito Groups (to create)
+
+**VPS Docker Resources:**
+- ✅ PostgreSQL (already running from Story 0.1)
+- ✅ RabbitMQ (already running from Story 0.3)
+- ❌ Redis (to add to docker-compose)
+
+**What's Missing (THIS STORY):**
+
+1. **Terraform IaC** for Cognito User Pool
+2. **Redis Docker container** configuration
+3. **Cognito JWT validation** middleware (`aws-jwt-verify`)
+4. **Redis session** service and middleware
+5. **User sync** service (Cognito → `iam.users`)
+6. **Auth routes** (callback, logout, session status)
+7. **Database migration** for `cognito_sub` field
+
+### Project Structure Notes
+
+**New Infrastructure to Create:**
+
+```
+infra/
+├── cognito/
+│   └── terraform/
+│       ├── main.tf                  # NEW - Cognito User Pool
+│       ├── app_client.tf            # NEW - App Client config
+│       ├── groups.tf                # NEW - Admin/User/Viewer groups
+│       ├── domain.tf                # NEW - Hosted UI domain
+│       ├── variables.tf             # NEW - AWS region, pool name
+│       ├── outputs.tf               # NEW - Pool ID, Client ID
+│       └── README.md                # NEW - Setup instructions
+└── redis/
+    ├── docker-compose.yaml          # NEW - Redis container
+    ├── redis.conf                   # NEW - Redis configuration
+    └── README.md                    # NEW - Redis setup
+
+apps/ingest-api/src/
+├── config/
+│   ├── cognito.ts                   # NEW - Cognito config (region, pool ID, client ID)
+│   └── redis.ts                     # NEW - Redis client config
+├── services/
+│   ├── session.service.ts           # NEW - Redis session CRUD
+│   └── user-sync.service.ts         # NEW - Cognito user → DB sync
+├── middlewares/
+│   ├── cognito-auth.middleware.ts   # NEW - JWT validation
+│   └── session.middleware.ts        # NEW - Redis session check
+├── types/
+│   ├── cognito.ts                   # NEW - Cognito JWT payload types
+│   └── session.ts                   # NEW - Session data types
+└── routes/
+    └── auth.routes.ts               # NEW - /auth/* endpoints
+```
+
+**Database Migration:**
+
+```
+infra/postgres/db/migrations/
+└── V6__add_cognito_fields_to_users.sql   # NEW
+```
+
+**Docker Compose Updates:**
+
+```
+docker-compose.yaml                  # UPDATE - add redis service
+```
+
+**Integration Points:**
+
+- Update `app.ts`: Add auth routes, Cognito middleware
+- Update `server.ts`: Initialize Redis connection
+- Update environment config: Add Cognito + Redis env vars
+
+---
+
+## Technical Requirements
+
+### Technology Stack
+
+**AWS Services:**
+- **Amazon Cognito**: User Pool for authentication
+- **Region**: eu-west-1 (Paris)
+- **Terraform**: Infrastructure as Code
+
+**Core Dependencies (Already Installed):**
+- **Express.js** ^4.21.2 - Web framework
+- **Zod** ^3.24.3 - Request validation
+- **Pino** ^9.6.0 - Logging
+- **PostgreSQL** with pg pool - Database
+
+**NEW Dependencies to Install:**
+
+```json
+{
+  "aws-jwt-verify": "^4.0.1",
+  "redis": "^4.6.13",
+  "@types/redis": "^4.0.11"
+}
+```
+
+**Why aws-jwt-verify:**
+- Official AWS library for Cognito JWT validation
+- Automatic JWKS (public keys) fetching and caching
+- Better than generic `jsonwebtoken` for Cognito
+- Built-in issuer and audience validation
+
+**Why Redis 4.x:**
+- Native promises support (no callback hell)
+- Clustering support for future scaling
+- Pub/Sub for real-time features
+- Battle-tested session store
+
+### Environment Configuration
+
+**AWS Cognito Configuration:**
+
+Add to `.env` file:
+
+```bash
+# AWS Cognito Configuration
+AWS_REGION=eu-west-1
+COGNITO_USER_POOL_ID=<from-terraform-output>
+COGNITO_CLIENT_ID=<from-terraform-output>
+COGNITO_ISSUER=https://cognito-idp.eu-west-1.amazonaws.com/<pool-id>
+
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=<optional-for-local>
+REDIS_DB=0
+REDIS_SESSION_TTL=86400  # 24 hours in seconds
+
+# Session Configuration
+SESSION_SECRET=<generate-32-char-random-string>
+```
+
+**Update `src/config/env.ts` schema:**
+
+```typescript
+const envSchema = z.object({
+  // ... existing fields
+
+  // AWS Cognito
+  awsRegion: z.string().default('eu-west-1'),
+  cognitoUserPoolId: z.string(),
+  cognitoClientId: z.string(),
+  cognitoIssuer: z.string(),
+
+  // Redis
+  redisHost: z.string().default('localhost'),
+  redisPort: z.coerce.number().default(6379),
+  redisPassword: z.string().optional(),
+  redisDb: z.coerce.number().default(0),
+  redisSessionTtl: z.coerce.number().default(86400), // 24h
+
+  // Session
+  sessionSecret: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
+});
+```
+
+**CRITICAL Startup Validation:**
+
+```typescript
+// server.ts - Add before starting server
+async function validateCognitoConfig() {
+  if (!env.cognitoUserPoolId || !env.cognitoClientId) {
+    throw new Error('Cognito configuration missing - run terraform apply first');
+  }
+  
+  // Test Redis connection
+  try {
+    await redisClient.ping();
+    logger.info('Redis connection successful');
+  } catch (error) {
+    throw new Error('Redis connection failed - ensure Redis container is running');
+  }
+}
+```
+
+---
+
+## Infrastructure Setup
+
+### 1. Terraform - AWS Cognito User Pool
+
+**File: `infra/cognito/terraform/main.tf`**
+
+```hcl
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+resource "aws_cognito_user_pool" "main" {
+  name = "${var.project_name}-${var.environment}"
+
+  # Allow email as username
+  username_attributes      = ["email"]
+  auto_verified_attributes = ["email"]
+
+  # Password policy
+  password_policy {
+    minimum_length    = 8
+    require_lowercase = true
+    require_uppercase = true
+    require_numbers   = true
+    require_symbols   = true
+  }
+
+  # Custom attributes for multi-tenancy
+  schema {
+    name                = "organisation_id"
+    attribute_data_type = "String"
+    mutable             = true
+    required            = false
+
+    string_attribute_constraints {
+      min_length = 36
+      max_length = 36
+    }
+  }
+
+  schema {
+    name                = "role"
+    attribute_data_type = "String"
+    mutable             = true
+    required            = false
+
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 50
+    }
+  }
+
+  # Account recovery
+  account_recovery_setting {
+    recovery_mechanism {
+      name     = "verified_email"
+      priority = 1
+    }
+  }
+
+  # Admin create user config
+  admin_create_user_config {
+    allow_admin_create_user_only = false
+  }
+
+  # Email configuration (using Cognito default for now)
+  email_configuration {
+    email_sending_account = "COGNITO_DEFAULT"
+  }
+
+  # MFA configuration (optional for MVP)
+  mfa_configuration = "OPTIONAL"
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+```
+
+**File: `infra/cognito/terraform/app_client.tf`**
+
+```hcl
+resource "aws_cognito_user_pool_client" "main" {
+  name         = "${var.project_name}-${var.environment}-client"
+  user_pool_id = aws_cognito_user_pool.main.id
+
+  # OAuth configuration
+  allowed_oauth_flows                  = ["code", "implicit"]
+  allowed_oauth_scopes                 = ["openid", "email", "profile"]
+  allowed_oauth_flows_user_pool_client = true
+
+  # Callback URLs (update with your frontend URLs)
+  callback_urls = var.callback_urls
+  logout_urls   = var.logout_urls
+
+  # Token validity
+  id_token_validity      = 60  # minutes
+  access_token_validity  = 60  # minutes
+  refresh_token_validity = 30  # days
+
+  # Token validity units
+  token_validity_units {
+    id_token      = "minutes"
+    access_token  = "minutes"
+    refresh_token = "days"
+  }
+
+  # Prevent user existence errors
+  prevent_user_existence_errors = "ENABLED"
+
+  # Read/write attributes
+  read_attributes = [
+    "email",
+    "email_verified",
+    "custom:organisation_id",
+    "custom:role",
+  ]
+
+  write_attributes = [
+    "email",
+    "custom:organisation_id",
+    "custom:role",
+  ]
+
+  # Generate client secret (set to false if using frontend only)
+  generate_secret = var.generate_client_secret
+
+  # Supported identity providers
+  supported_identity_providers = ["COGNITO"]
+
+  # Explicit auth flows
+  explicit_auth_flows = [
+    "ALLOW_REFRESH_TOKEN_AUTH",
+    "ALLOW_USER_SRP_AUTH",
+    "ALLOW_CUSTOM_AUTH",
+  ]
+}
+```
+
+**File: `infra/cognito/terraform/groups.tf`**
+
+```hcl
+# Admin group
+resource "aws_cognito_user_group" "admin" {
+  name         = "admin"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Administrators with full access"
+  precedence   = 1
+}
+
+# User group
+resource "aws_cognito_user_group" "user" {
+  name         = "user"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Standard users with limited access"
+  precedence   = 2
+}
+
+# Viewer group
+resource "aws_cognito_user_group" "viewer" {
+  name         = "viewer"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Read-only viewers"
+  precedence   = 3
+}
+```
+
+**File: `infra/cognito/terraform/domain.tf`**
+
+```hcl
+resource "aws_cognito_user_pool_domain" "main" {
+  domain       = "${var.project_name}-${var.environment}"
+  user_pool_id = aws_cognito_user_pool.main.id
+}
+
+# Hosted UI URLs will be:
+# https://${domain}.auth.${region}.amazoncognito.com/login
+# https://${domain}.auth.${region}.amazoncognito.com/oauth2/authorize
+```
+
+**File: `infra/cognito/terraform/variables.tf`**
+
+```hcl
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "eu-west-1"
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "prospectflow"
+}
+
+variable "environment" {
+  description = "Environment (dev, staging, prod)"
+  type        = string
+}
+
+variable "callback_urls" {
+  description = "Allowed callback URLs after login"
+  type        = list(string)
+  default     = ["http://localhost:3000/auth/callback"]
+}
+
+variable "logout_urls" {
+  description = "Allowed logout URLs"
+  type        = list(string)
+  default     = ["http://localhost:3000"]
+}
+
+variable "generate_client_secret" {
+  description = "Whether to generate client secret (false for SPA)"
+  type        = bool
+  default     = false
+}
+```
+
+**File: `infra/cognito/terraform/outputs.tf`**
+
+```hcl
+output "user_pool_id" {
+  description = "Cognito User Pool ID"
+  value       = aws_cognito_user_pool.main.id
+}
+
+output "user_pool_arn" {
+  description = "Cognito User Pool ARN"
+  value       = aws_cognito_user_pool.main.arn
+}
+
+output "user_pool_endpoint" {
+  description = "Cognito User Pool endpoint"
+  value       = aws_cognito_user_pool.main.endpoint
+}
+
+output "client_id" {
+  description = "Cognito App Client ID"
+  value       = aws_cognito_user_pool_client.main.id
+}
+
+output "client_secret" {
+  description = "Cognito App Client Secret (if generated)"
+  value       = aws_cognito_user_pool_client.main.client_secret
+  sensitive   = true
+}
+
+output "hosted_ui_domain" {
+  description = "Cognito Hosted UI domain"
+  value       = "https://${aws_cognito_user_pool_domain.main.domain}.auth.${var.aws_region}.amazoncognito.com"
+}
+
+output "issuer" {
+  description = "JWT issuer URL"
+  value       = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+}
+```
+
+**Deploy Terraform:**
+
+```bash
+cd infra/cognito/terraform
+terraform init
+terraform plan -var="environment=dev"
+terraform apply -var="environment=dev"
+
+# Save outputs to .env
+terraform output -json > outputs.json
+```
+
+### 2. Redis Docker Configuration
+
+**File: `infra/redis/docker-compose.yaml`**
+
+```yaml
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: prospectflow-redis
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+      --requirepass ${REDIS_PASSWORD:-changeme}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - prospectflow-network
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  prospectflow-network:
+    external: true
+```
+
+**File: `infra/redis/redis.conf`**
+
+```conf
+# Redis Configuration for ProspectFlow Sessions
+
+# Network
+bind 0.0.0.0
+protected-mode yes
+port 6379
+
+# General
+daemonize no
+loglevel notice
+
+# Persistence
+save 900 1
+save 300 10
+save 60 10000
+stop-writes-on-bgsave-error yes
+rdbcompression yes
+rdbchecksum yes
+dbfilename dump.rdb
+dir /data
+
+# AOF
+appendonly yes
+appendfilename "appendonly.aof"
+appendfsync everysec
+no-appendfsync-on-rewrite no
+
+# Memory Management
+maxmemory 256mb
+maxmemory-policy allkeys-lru
+maxmemory-samples 5
+
+# Lazy freeing
+lazyfree-lazy-eviction yes
+lazyfree-lazy-expire yes
+lazyfree-lazy-server-del yes
+
+# Slow log
+slowlog-log-slower-than 10000
+slowlog-max-len 128
+```
+
+**Start Redis:**
+
+```bash
+cd infra/redis
+docker-compose up -d
+docker-compose logs -f redis  # Check logs
+```
+
+---
+
+## Testing Requirements
+
+### Unit Tests
+
+**File: `tests/unit/services/auth.service.test.ts`**
+
+```typescript
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { AuthService } from '../../../src/services/auth.service.js';
+import { UserRepository } from '../../../src/repositories/user.repository.js';
+import { AuthenticationError } from '../../../src/errors/AuthenticationError.js';
+
+// Mock UserRepository
+vi.mock('../../../src/repositories/user.repository.js');
+
+describe('AuthService', () => {
+  let authService: AuthService;
+  let userRepository: UserRepository;
+
+  beforeEach(() => {
+    userRepository = new UserRepository(null as any);
+    authService = new AuthService(userRepository);
+  });
+
+  describe('login', () => {
+    it('should authenticate valid credentials', async () => {
+      // Mock data
+      const mockUser = {
+        id: 'user-123',
+        email: 'test@example.com',
+        password_hash: await authService.hashPassword('Password123!'),
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      const mockOrgs = [{
+        organisation_id: 'org-123',
+        role: 'admin',
+        organisation_name: 'Test Org',
+        organisation_slug: 'test-org',
+      }];
+
+      vi.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
+      vi.spyOn(userRepository, 'getUserOrganisations').mockResolvedValue(mockOrgs);
+      vi.spyOn(userRepository, 'saveRefreshToken').mockResolvedValue('token-id');
+
+      // Execute
+      const result = await authService.login('test@example.com', 'Password123!');
+
+      // Assert
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+      expect(result.user.email).toBe('test@example.com');
+      expect(result.user.role).toBe('admin');
+    });
+
+    it('should reject invalid password', async () => {
+      const mockUser = {
+        id: 'user-123',
+        email: 'test@example.com',
+        password_hash: await authService.hashPassword('CorrectPassword123!'),
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      vi.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
+
+      await expect(
+        authService.login('test@example.com', 'WrongPassword')
+      ).rejects.toThrow(AuthenticationError);
+    });
+
+    it('should reject non-existent user', async () => {
+      vi.spyOn(userRepository, 'findByEmail').mockResolvedValue(null);
+
+      await expect(
+        authService.login('nonexistent@example.com', 'password')
+      ).rejects.toThrow(AuthenticationError);
+    });
+  });
+
+  describe('verifyPassword', () => {
+    it('should verify correct password', async () => {
+      const password = 'TestPassword123!';
+      const hash = await authService.hashPassword(password);
+      const isValid = await authService.verifyPassword(password, hash);
+      expect(isValid).toBe(true);
+    });
+
+    it('should reject incorrect password', async () => {
+      const hash = await authService.hashPassword('CorrectPassword123!');
+      const isValid = await authService.verifyPassword('WrongPassword', hash);
+      expect(isValid).toBe(false);
+    });
+  });
+});
+```
+
+### Integration Tests
+
+**File: `tests/integration/auth.test.ts`**
+
+```typescript
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import request from 'supertest';
+import { app } from '../../src/app.js';
+import { pool } from '../../src/config/database.js';
+
+describe('Auth Integration Tests', () => {
+  let testUserId: string;
+  let testOrgId: string;
+  let accessToken: string;
+  let refreshToken: string;
+
+  beforeAll(async () => {
+    // Set up test data
+    const orgResult = await pool.query(
+      `INSERT INTO iam.organisations (name, slug) VALUES ($1, $2) RETURNING id`,
+      ['Test Org', 'test-org']
+    );
+    testOrgId = orgResult.rows[0].id;
+
+    // Create test user with hashed password
+    const bcrypt = await import('bcrypt');
+    const passwordHash = await bcrypt.hash('TestPassword123!', 10);
+
+    const userResult = await pool.query(
+      `INSERT INTO iam.users (email, password_hash) VALUES ($1, $2) RETURNING id`,
+      ['test@example.com', passwordHash]
+    );
+    testUserId = userResult.rows[0].id;
+
+    // Link user to org
+    await pool.query(
+      `INSERT INTO iam.organisation_users (organisation_id, user_id, role) VALUES ($1, $2, $3)`,
+      [testOrgId, testUserId, 'admin']
+    );
+  });
+
+  afterAll(async () => {
+    // Clean up test data
+    await pool.query('DELETE FROM iam.organisation_users WHERE user_id = $1', [testUserId]);
+    await pool.query('DELETE FROM iam.users WHERE id = $1', [testUserId]);
+    await pool.query('DELETE FROM iam.organisations WHERE id = $1', [testOrgId]);
+    await pool.end();
+  });
+
+  describe('POST /api/v1/auth/login', () => {
+    it('should login with valid credentials', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'test@example.com',
+          password: 'TestPassword123!',
+        })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('accessToken');
+      expect(response.body.data).toHaveProperty('refreshToken');
+      expect(response.body.data.user.email).toBe('test@example.com');
+
+      // Save tokens for other tests
+      accessToken = response.body.data.accessToken;
+      refreshToken = response.body.data.refreshToken;
+    });
+
+    it('should reject invalid password', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'test@example.com',
+          password: 'WrongPassword',
+        })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.message).toContain('Invalid email or password');
+    });
+
+    it('should reject non-existent user', async () => {
+      await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'nonexistent@example.com',
+          password: 'password',
+        })
+        .expect(401);
+    });
+
+    it('should reject invalid email format', async () => {
+      await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'invalid-email',
+          password: 'password',
+        })
+        .expect(400);
+    });
+  });
+
+  describe('GET /api/v1/auth/me', () => {
+    it('should return user info with valid token', async () => {
+      const response = await request(app)
+        .get('/api/v1/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(200);
+
+      expect(response.body.data.email).toBe('test@example.com');
+      expect(response.body.data.role).toBe('admin');
+    });
+
+    it('should reject request without token', async () => {
+      await request(app)
+        .get('/api/v1/auth/me')
+        .expect(401);
+    });
+
+    it('should reject request with invalid token', async () => {
+      await request(app)
+        .get('/api/v1/auth/me')
+        .set('Authorization', 'Bearer invalid-token')
+        .expect(401);
+    });
+  });
+
+  describe('POST /api/v1/auth/refresh', () => {
+    it('should refresh access token with valid refresh token', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/refresh')
+        .send({ refreshToken })
+        .expect(200);
+
+      expect(response.body.data).toHaveProperty('accessToken');
+      expect(response.body.data.expiresIn).toBe(86400);
+    });
+
+    it('should reject invalid refresh token', async () => {
+      await request(app)
+        .post('/api/v1/auth/refresh')
+        .send({ refreshToken: 'invalid-token' })
+        .expect(401);
+    });
+  });
+
+  describe('POST /api/v1/auth/logout', () => {
+    it('should logout successfully', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/logout')
+        .send({ refreshToken })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should reject refresh token after logout', async () => {
+      await request(app)
+        .post('/api/v1/auth/refresh')
+        .send({ refreshToken })
+        .expect(401);
+    });
+  });
+});
+```
+
+---
+
+## Dependencies & Integration
+
+### Depends On
+
+✅ **Story 0.1: Multi-tenant PostgreSQL Database Setup**
+
+- IAM schema tables: `users`, `organisations`, `organisation_users`
+- Multi-tenant patterns established
+- Database connection pool configured
+
+✅ **Story 0.2: Express.js API Foundation**
+
+- Layered architecture (Controller/Service/Repository)
+- Error handling middleware
+- Zod validation middleware
+- Express server setup
+
+### Blocks These Stories
+
+- **Story 1.1: Create Campaign** - Requires authentication
+- **Story 2.1: CSV Upload** - Needs organization context
+- **All future API endpoints** - Require auth middleware
+
+### No Direct Dependencies On
+
+- **Story 0.3: RabbitMQ** - Independent (can run in parallel)
+
+---
+
+## Security Checklist
+
+### Pre-Implementation
+
+- [ ] Generate secure JWT secrets (32+ characters, random)
+- [ ] Never commit secrets to git
+- [ ] Use environment variables for all secrets
+- [ ] Plan password validation rules
+
+### Implementation
+
+- [ ] Use bcrypt for password hashing (salt rounds = 10)
+- [ ] Never log passwords or tokens
+- [ ] Hash refresh tokens before database storage
+- [ ] Include organisation_id in all JWT payloads
+- [ ] Set appropriate token expiration (24h access, 7d refresh)
+- [ ] Implement rate limiting on auth endpoints
+- [ ] Use helmet.js for security headers
+- [ ] Enable CORS with credentials
+
+### Testing
+
+- [ ] Test token expiration handling
+- [ ] Test invalid token scenarios
+- [ ] Test multi-tenant isolation (user can't access other org's data)
+- [ ] Test password hashing and verification
+- [ ] Test refresh token revocation on logout
+- [ ] Test rate limiting enforcement
+
+### Deployment
+
+- [ ] Rotate JWT secrets in production
+- [ ] Use environment-specific secrets (dev/staging/prod)
+- [ ] Enable HTTPS in production
+- [ ] Monitor authentication failures
+- [ ] Set up alerts for suspicious activity
+
+---
+
+## Definition of Done
+
+### Code Complete
+
+- [ ] V6 migration file created and tested
+- [ ] UserRepository implemented with all methods
+- [ ] AuthService implemented with hash, verify, token methods
+- [ ] AuthController implemented for login, refresh, logout, me
+- [ ] Auth middleware for JWT validation
+- [ ] Role-based authorization middleware
+- [ ] Custom error classes created
+- [ ] Zod schemas for auth requests
+- [ ] Express Request type extended
+- [ ] Auth routes configured and mounted
+- [ ] App integration complete (CORS, error handling)
+- [ ] Server startup validation for JWT secrets
+
+### Testing Complete
+
+- [ ] Unit tests for AuthService (>70% coverage)
+- [ ] Unit tests for UserRepository
+- [ ] Unit tests for auth middleware
+- [ ] Integration test: successful login
+- [ ] Integration test: invalid credentials
+- [ ] Integration test: token refresh
+- [ ] Integration test: token expiration
+- [ ] Integration test: logout
+- [ ] Integration test: protected route access
+- [ ] Integration test: multi-tenant isolation
+- [ ] Security test: rate limiting
+
+### Documentation Complete
+
+- [ ] API documentation updated with auth endpoints
+- [ ] JWT payload structure documented
+- [ ] Environment variables documented
+- [ ] Authentication flow diagram added
+- [ ] Security best practices documented
+- [ ] Example requests/responses provided
+
+### Security Validated
+
+- [ ] JWT secrets are 32+ characters
+- [ ] No secrets in git repository
+- [ ] Passwords hashed with bcrypt
+- [ ] Tokens expire appropriately
+- [ ] Rate limiting applied
+- [ ] All queries include organisation_id
+- [ ] Error messages don't leak info
+- [ ] HTTPS configured (production)
+
+### Deployment Ready
+
+- [ ] Docker environment variables configured
+- [ ] Database migration applied
+- [ ] Health check endpoint includes auth status
+- [ ] Monitoring and logging configured
+- [ ] Sentry error tracking enabled
+- [ ] Production secrets rotated
+
+---
+
+## File Checklist
+
+### New Files Created
+
+- [ ] `infra/postgres/db/migrations/V6__create_refresh_tokens_table.sql`
+- [ ] `apps/ingest-api/src/types/auth.ts`
+- [ ] `apps/ingest-api/src/types/express.d.ts`
+- [ ] `apps/ingest-api/src/schemas/auth.schema.ts`
+- [ ] `apps/ingest-api/src/errors/AuthenticationError.ts`
+- [ ] `apps/ingest-api/src/errors/AuthorizationError.ts`
+- [ ] `apps/ingest-api/src/repositories/user.repository.ts`
+- [ ] `apps/ingest-api/src/services/auth.service.ts`
+- [ ] `apps/ingest-api/src/middlewares/auth.middleware.ts`
+- [ ] `apps/ingest-api/src/controllers/auth.controller.ts`
+- [ ] `apps/ingest-api/src/routes/auth.routes.ts`
+- [ ] `tests/unit/services/auth.service.test.ts`
+- [ ] `tests/unit/repositories/user.repository.test.ts`
+- [ ] `tests/unit/middlewares/auth.middleware.test.ts`
+- [ ] `tests/integration/auth.test.ts`
+
+### Files Modified
+
+- [ ] `apps/ingest-api/src/config/env.ts` - Add JWT env vars
+- [ ] `apps/ingest-api/src/routes/index.ts` - Mount auth routes
+- [ ] `apps/ingest-api/src/app.ts` - Update CORS config
+- [ ] `apps/ingest-api/src/server.ts` - Add secret validation
+- [ ] `apps/ingest-api/package.json` - Add bcrypt dependency
+- [ ] `apps/ingest-api/.env.example` - Add JWT secrets
+- [ ] `apps/ingest-api/tsconfig.json` - Add types directory
+
+---
+
+## Completion Notes
+
+**Story successfully prepared for development!**
+
+This story file contains:
+
+✅ **Complete implementation specifications** - Every file, function, and data structure defined  
+✅ **Comprehensive security guidance** - JWT structure, bcrypt settings, multi-tenant isolation  
+✅ **Full code examples** - Ready-to-implement controller, service, repository, middleware  
+✅ **Database schema details** - Complete migration with indexes and constraints  
+✅ **Testing requirements** - Unit and integration tests with specific scenarios  
+✅ **Architectural compliance** - Follows established patterns from stories 0.1, 0.2, 0.3  
+✅ **Dependency analysis** - Clear blockers and integration points  
+✅ **Security checklist** - Pre-implementation through deployment validation
+
+**Developer has everything needed for flawless implementation!**
+
+**Next Steps:**
+
+1. Run this story with dev agent: `dev-story 0-4`
+2. Dev will implement following all specifications
+3. Run code-review when complete: marks story as 'done'
+4. Epic 0 can continue with stories 0.5-0.9
+
+---
+
+## References
+
+- **Epic Source:** [doc/planning-artifacts/epics.md](../../planning-artifacts/epics.md#story-e04-authentication--authorization-system)
+- **Architecture:** [doc/ARCHITECTURE.md](../../ARCHITECTURE.md)
+- **Database Schema:** [infra/postgres/db/migrations/V1__create_initial_schema.sql](../../../infra/postgres/db/migrations/V1__create_initial_schema.sql)
+- **Previous Story:** [0-3-rabbitmq-message-queue-configuration.md](./0-3-rabbitmq-message-queue-configuration.md)
+- **API Foundation:** [apps/ingest-api/src/](../../../apps/ingest-api/src/)
+
+---
+
+## Dev Agent Record
+
+### Agent Model Used
+
+_To be filled by dev agent_
+
+### Debug Log References
+
+_To be filled by dev agent_
+
+### Completion Notes List
+
+_To be filled by dev agent_
+
+### File List
+
+_To be filled by dev agent_
