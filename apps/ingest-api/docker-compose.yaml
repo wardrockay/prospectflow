@@ -19,7 +19,7 @@ services:
     networks:
       - prospectflow-network
     depends_on:
-      - prospectflow-postgres
+      - postgres
 
 networks:
   prospectflow-network:
