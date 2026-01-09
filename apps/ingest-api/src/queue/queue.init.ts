@@ -48,11 +48,14 @@ export async function initializeQueues(client: RabbitMQClient): Promise<void> {
 
     await channel.close();
 
-    logger.info({
-      queues: Object.values(QUEUES),
-      dlqs: Object.values(DLQ_NAMES),
-      exchanges: Object.values(EXCHANGES),
-    }, 'RabbitMQ queues initialized successfully');
+    logger.info(
+      {
+        queues: Object.values(QUEUES),
+        dlqs: Object.values(DLQ_NAMES),
+        exchanges: Object.values(EXCHANGES),
+      },
+      'RabbitMQ queues initialized successfully',
+    );
   } catch (error) {
     logger.error({ error }, 'Failed to initialize RabbitMQ queues');
     throw error;

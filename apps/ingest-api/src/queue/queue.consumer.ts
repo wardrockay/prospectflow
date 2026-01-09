@@ -40,7 +40,7 @@ export abstract class QueueConsumer {
       const prefetchCount = this.PREFETCH_COUNT;
 
       this.channel = rabbitMQClient.createChannelWrapper();
-      
+
       // Configure channel with prefetch using addSetup
       await this.channel.addSetup(async (channel: ConfirmChannel) => {
         await channel.prefetch(prefetchCount);
@@ -49,10 +49,13 @@ export abstract class QueueConsumer {
 
       await this.channel.waitForConnect();
 
-      logger.info({
-        queue: queueName,
-        prefetch: prefetchCount,
-      }, 'Starting consumer');
+      logger.info(
+        {
+          queue: queueName,
+          prefetch: prefetchCount,
+        },
+        'Starting consumer',
+      );
 
       // Start consuming messages
       await this.channel.consume(
@@ -71,10 +74,13 @@ export abstract class QueueConsumer {
       this.isConsuming = true;
       logger.info({ queue: queueName }, 'Consumer started successfully');
     } catch (error) {
-      logger.error({
-        queue: this.queueName,
-        error: (error as Error).message,
-      }, 'Failed to start consumer');
+      logger.error(
+        {
+          queue: this.queueName,
+          error: (error as Error).message,
+        },
+        'Failed to start consumer',
+      );
       throw error;
     }
   }
@@ -96,10 +102,13 @@ export abstract class QueueConsumer {
       this.isConsuming = false;
       logger.info({ queue: this.queueName }, 'Consumer stopped');
     } catch (error) {
-      logger.error({
-        queue: this.queueName,
-        error: (error as Error).message,
-      }, 'Error stopping consumer');
+      logger.error(
+        {
+          queue: this.queueName,
+          error: (error as Error).message,
+        },
+        'Error stopping consumer',
+      );
       throw error;
     }
   }
@@ -117,21 +126,27 @@ export abstract class QueueConsumer {
       job = JSON.parse(content) as QueueJob;
     } catch (error) {
       // Invalid JSON - send to DLQ immediately
-      logger.error({
-        queue: this.queueName,
-        error: (error as Error).message,
-      }, 'Failed to parse message');
+      logger.error(
+        {
+          queue: this.queueName,
+          error: (error as Error).message,
+        },
+        'Failed to parse message',
+      );
       this.channel!.nack(msg, false, false); // Don't requeue
       return;
     }
 
     try {
-      logger.info({
-        queue: this.queueName,
-        jobId: job.id,
-        jobType: job.type,
-        retryCount: job.retry_count,
-      }, 'Processing message');
+      logger.info(
+        {
+          queue: this.queueName,
+          jobId: job.id,
+          jobType: job.type,
+          retryCount: job.retry_count,
+        },
+        'Processing message',
+      );
 
       // Validate job structure
       this.validateJob(job);
@@ -142,19 +157,25 @@ export abstract class QueueConsumer {
       // Success - acknowledge message
       this.channel!.ack(msg);
 
-      logger.info({
-        queue: this.queueName,
-        jobId: job.id,
-      }, 'Message processed successfully');
+      logger.info(
+        {
+          queue: this.queueName,
+          jobId: job.id,
+        },
+        'Message processed successfully',
+      );
     } catch (error) {
       const err = error as Error;
 
-      logger.error({
-        queue: this.queueName,
-        jobId: job?.id,
-        error: err.message,
-        stack: err.stack,
-      }, 'Error processing message');
+      logger.error(
+        {
+          queue: this.queueName,
+          jobId: job?.id,
+          error: err.message,
+          stack: err.stack,
+        },
+        'Error processing message',
+      );
 
       // Handle error with retry logic
       await this.handleError(msg, job, err);
@@ -171,21 +192,27 @@ export abstract class QueueConsumer {
   ): Promise<void> {
     if (!job) {
       // Invalid message format - send to DLQ immediately
-      logger.error({
-        queue: this.queueName,
-        error: error.message,
-      }, 'Invalid message format - routing to DLQ');
+      logger.error(
+        {
+          queue: this.queueName,
+          error: error.message,
+        },
+        'Invalid message format - routing to DLQ',
+      );
       this.channel!.nack(msg, false, false); // Don't requeue
       return;
     }
 
     // Check if this is a validation error (don't retry validation errors)
     if (error.message.includes('Invalid job:')) {
-      logger.error({
-        queue: this.queueName,
-        jobId: job.id,
-        error: error.message,
-      }, 'Job validation failed - routing to DLQ');
+      logger.error(
+        {
+          queue: this.queueName,
+          jobId: job.id,
+          error: error.message,
+        },
+        'Job validation failed - routing to DLQ',
+      );
       this.channel!.nack(msg, false, false); // Don't requeue
       this.onError(error, job);
       return;
@@ -196,23 +223,29 @@ export abstract class QueueConsumer {
       // Increment retry count and requeue
       job.retry_count++;
 
-      logger.warn({
-        queue: this.queueName,
-        jobId: job.id,
-        retryCount: job.retry_count,
-        maxRetries: this.MAX_RETRIES,
-      }, 'Requeuing message for retry');
+      logger.warn(
+        {
+          queue: this.queueName,
+          jobId: job.id,
+          retryCount: job.retry_count,
+          maxRetries: this.MAX_RETRIES,
+        },
+        'Requeuing message for retry',
+      );
 
       // NACK with requeue
       this.channel!.nack(msg, false, true);
     } else {
       // Max retries exceeded - send to DLQ
-      logger.error({
-        queue: this.queueName,
-        jobId: job.id,
-        retryCount: job.retry_count,
-        maxRetries: this.MAX_RETRIES,
-      }, 'Max retries exceeded - routing to DLQ');
+      logger.error(
+        {
+          queue: this.queueName,
+          jobId: job.id,
+          retryCount: job.retry_count,
+          maxRetries: this.MAX_RETRIES,
+        },
+        'Max retries exceeded - routing to DLQ',
+      );
 
       // NACK without requeue (routes to DLQ via dead letter exchange)
       this.channel!.nack(msg, false, false);
@@ -229,10 +262,7 @@ export abstract class QueueConsumer {
     const timeout = this.getProcessTimeout();
 
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(
-        () => reject(new Error(`Job processing timeout after ${timeout}ms`)),
-        timeout,
-      );
+      setTimeout(() => reject(new Error(`Job processing timeout after ${timeout}ms`)), timeout);
     });
 
     await Promise.race([this.processJob(job), timeoutPromise]);
@@ -281,11 +311,14 @@ export abstract class QueueConsumer {
    */
   protected onError(error: Error, job: QueueJob): void {
     // Default implementation - just log
-    logger.error({
-      queue: this.queueName,
-      jobId: job.id,
-      error: error.message,
-    }, 'Job processing failed');
+    logger.error(
+      {
+        queue: this.queueName,
+        jobId: job.id,
+        error: error.message,
+      },
+      'Job processing failed',
+    );
   }
 
   /**

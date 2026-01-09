@@ -1149,6 +1149,7 @@ docker compose up -d
 ✅ **Story status synced** (done in sprint-status.yaml)
 
 **Production Readiness:**
+
 - Code compiles with TypeScript strict mode
 - Comprehensive error handling and logging
 - Proper resource cleanup and graceful shutdown
@@ -1156,6 +1157,7 @@ docker compose up -d
 - Ready for integration testing with live RabbitMQ
 
 **Next Steps:**
+
 1. Start RabbitMQ: `cd infra/rabbitmq && docker compose up -d`
 2. Run integration tests: `cd apps/ingest-api && pnpm test tests/integration`
 3. Deploy to staging environment

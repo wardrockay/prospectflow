@@ -80,23 +80,29 @@ export class QueuePublisher {
         // Race between publish and timeout
         await Promise.race([publishPromise, timeoutPromise]);
 
-        logger.info({
-          queue,
-          jobId: job.id,
-          attempt: attempt + 1,
-        }, 'Message published successfully');
+        logger.info(
+          {
+            queue,
+            jobId: job.id,
+            attempt: attempt + 1,
+          },
+          'Message published successfully',
+        );
 
         return true;
       } catch (error) {
         lastError = error as Error;
 
-        logger.warn({
-          queue,
-          jobId: job.id,
-          attempt: attempt + 1,
-          maxRetries: this.MAX_RETRIES + 1,
-          error: (error as Error).message,
-        }, 'Publish attempt failed');
+        logger.warn(
+          {
+            queue,
+            jobId: job.id,
+            attempt: attempt + 1,
+            maxRetries: this.MAX_RETRIES + 1,
+            error: (error as Error).message,
+          },
+          'Publish attempt failed',
+        );
 
         // Don't retry if this was the last attempt
         if (attempt >= this.MAX_RETRIES) {
@@ -109,11 +115,14 @@ export class QueuePublisher {
     }
 
     // Both attempts failed
-    logger.error({
-      queue,
-      jobId: job.id,
-      error: lastError?.message,
-    }, 'Failed to publish message after retries');
+    logger.error(
+      {
+        queue,
+        jobId: job.id,
+        error: lastError?.message,
+      },
+      'Failed to publish message after retries',
+    );
 
     throw new Error(
       `Failed to publish message to queue ${queue} after ${this.MAX_RETRIES + 1} attempts: ${
@@ -136,10 +145,13 @@ export class QueuePublisher {
       errors: [],
     };
 
-    logger.info({
-      queue,
-      totalJobs: jobs.length,
-    }, 'Starting batch publish');
+    logger.info(
+      {
+        queue,
+        totalJobs: jobs.length,
+      },
+      'Starting batch publish',
+    );
 
     for (const job of jobs) {
       try {
@@ -154,12 +166,15 @@ export class QueuePublisher {
       }
     }
 
-    logger.info({
-      queue,
-      successful: result.successful,
-      failed: result.failed,
-      total: jobs.length,
-    }, 'Batch publish completed');
+    logger.info(
+      {
+        queue,
+        successful: result.successful,
+        failed: result.failed,
+        total: jobs.length,
+      },
+      'Batch publish completed',
+    );
 
     return result;
   }
