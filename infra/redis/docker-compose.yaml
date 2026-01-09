@@ -4,21 +4,20 @@ services:
     container_name: prospectflow-redis
     hostname: redis
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme} --appendonly yes
+    command: redis-server /usr/local/etc/redis/redis.conf
     ports:
       - '6379:6379'
     volumes:
-      - redis_data:/data
+      - ./data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
     healthcheck:
-      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     networks:
       - prospectflow-network
-
-volumes:
-  redis_data:
 
 networks:
   prospectflow-network:

@@ -1,0 +1,10 @@
+# Redis data directory
+data/
+
+# Redis persistence files
+*.rdb
+*.aof
+*.aof.manifest
+
+# Logs
+*.log

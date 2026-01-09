@@ -57,7 +57,7 @@ development_status:
   0-1-multi-tenant-postgresql-database-setup: done
   0-2-express-js-api-foundation-with-layered-architecture: done
   0-3-rabbitmq-message-queue-configuration: done
-  0-4-aws-cognito-authentication-integration: ready-for-dev
+  0-4-aws-cognito-authentication-integration: in-progress
   0-5-structured-logging-with-pino: backlog
   0-6-error-tracking-with-sentry: backlog
   0-7-prometheus-metrics-grafana-dashboards: backlog
