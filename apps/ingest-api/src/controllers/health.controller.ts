@@ -6,10 +6,17 @@ import { BaseController } from './base.controller.js';
  * Health Controller for health check endpoints
  */
 export class HealthController extends BaseController {
-  constructor(private healthService: HealthService) {
+  constructor(private readonly healthService: HealthService) {
     super();
   }
 
+  /**
+   * Health check endpoint handler
+   * @param req - Express request object
+   * @param res - Express response object
+   * @param next - Express next function for error handling
+   * @returns Promise<void>
+   */
   async check(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await this.healthService.check();

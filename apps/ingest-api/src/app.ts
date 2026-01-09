@@ -1,5 +1,4 @@
 // src/app.ts
-import { logger } from './utils/logger.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';

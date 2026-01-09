@@ -15,7 +15,11 @@ export class BaseController {
   }
 
   /**
-   * Send error response (should be handled by error middleware instead)
+   * Send error response
+   * @deprecated Use error middleware instead - throw AppError and let errorHandler catch it
+   * @example
+   * // Don't use: this.sendError(res, 'Error', 400)
+   * // Instead: throw new ValidationError('Error message')
    */
   protected sendError(res: Response, message: string, statusCode: number = 500) {
     res.status(statusCode).json({

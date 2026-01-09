@@ -6,10 +6,15 @@ import { HealthCheckResponse } from '../schemas/health.schema.js';
  * Health Service for performing health checks
  */
 export class HealthService extends BaseService {
-  constructor(private healthRepository: HealthRepository) {
+  constructor(private readonly healthRepository: HealthRepository) {
     super();
   }
 
+  /**
+   * Perform comprehensive health check including database connectivity
+   * @returns Promise<HealthCheckResponse> Health status with timestamp and database info
+   * @throws {DatabaseError} If unable to connect to database
+   */
   async check(): Promise<HealthCheckResponse> {
     this.logEvent('Performing health check');
 
