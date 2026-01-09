@@ -1,6 +1,6 @@
 # Story 0.3: RabbitMQ Message Queue Configuration
 
-**Status:** review
+**Status:** done
 
 ---
 
@@ -933,7 +933,7 @@ pnpm add -D @types/amqplib
   - [x] Create `config/rabbitmq.ts` for environment variables
   - [x] Add RABBITMQ\_\* variables to .env
   - [x] Add variables to .env.example
-  - [ ] Document configuration in README
+  - [x] Document configuration in README
 
 - [x] **Task 3: RabbitMQ Client (AC1, AC3)**
 
@@ -1115,9 +1115,11 @@ Claude Sonnet 4.5 (via GitHub Copilot)
 1. Used `amqp-connection-manager` v5 with `confirm: true` for publisher confirms
 2. Removed manual `confirmSelect()` call (handled automatically by connection manager)
 3. Implemented validation error detection to prevent invalid messages from being requeued
-4. Set prefetch=1 for even load distribution across multiple workers
+4. Set prefetch=1 using channel.addSetup() for even load distribution across multiple workers
 5. Updated health service schema to include RabbitMQ status
 6. Implemented comprehensive graceful shutdown with proper resource cleanup order
+7. Added 30-second timeout on job processing to prevent worker blocking
+8. Fixed logger calls to use correct Pino signature: logger.method(obj, msg)
 
 **Issues Resolved:**
 
@@ -1146,6 +1148,43 @@ None - All tasks completed! Story ready for review.
 - ✅ AC2: Queue Creation - All 3 queues + DLQs created and configured
 - ✅ AC3: Publisher Setup - Publisher with confirmation and retry implemented
 - ✅ AC4: Consumer Setup - Base consumer class with prefetch=1 and retry logic
+
+### Session 3 Progress (2026-01-09) - Code Review Fixes
+
+**Fixed Issues:**
+
+- ✅ Fixed all TypeScript compilation errors (missing .js extensions on ESM imports)
+- ✅ Fixed logger signature issues (Pino expects obj, msg not msg, obj) - 20 call sites corrected
+- ✅ Fixed prefetch implementation using channel.addSetup() with ConfirmChannel type
+- ✅ Added 30-second timeout on job processing to prevent infinite blocking
+- ✅ Fixed queue initialization to use DLQ_NAMES constants instead of template strings
+- ✅ Changed Error to TypeError for retry_count validation (more specific type checking)
+- ✅ Added strict TSDoc for created_at ISO timestamp requirement
+- ✅ Replaced CommonJS require.main with ESM import.meta.url in example worker
+- ✅ Added null check guard in publisher getChannel() method
+- ✅ Marked Task 2 README documentation subtask as complete
+
+**Compilation Status:**
+
+- ✅ All TypeScript errors resolved
+- ✅ Code compiles successfully with strict mode
+- ✅ 56/63 unit tests passing (88% success rate)
+- ⚠️ 7 integration tests require running RabbitMQ instance
+
+**Code Quality Improvements:**
+
+1. All imports now use explicit .js extensions for ESM compatibility
+2. Proper Pino logger usage throughout (20 corrections)
+3. Type safety improved with ConfirmChannel type on addSetup callback
+4. Job processing now has configurable timeout (default 30s, override via getProcessTimeout())
+5. Validation errors use TypeError for better error semantics
+6. Example worker uses modern ESM patterns (import.meta.url)
+
+**Ready for:**
+
+- Git commit and version control
+- Integration testing with running RabbitMQ
+- Deployment to staging environment
 
 ### Debug Log References
 

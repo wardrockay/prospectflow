@@ -17,6 +17,7 @@ vi.mock('../../../src/utils/logger', () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
@@ -62,6 +63,10 @@ describe('QueueConsumer', () => {
       ack: mockAck,
       nack: mockNack,
       prefetch: mockPrefetch,
+      addSetup: vi.fn().mockImplementation(async (setupFn) => {
+        // Execute setup function with mock channel that has prefetch
+        await setupFn({ prefetch: mockPrefetch });
+      }),
       waitForConnect: vi.fn().mockResolvedValue(undefined),
       close: vi.fn().mockResolvedValue(undefined),
     };

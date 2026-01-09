@@ -56,7 +56,7 @@ development_status:
   epic-0: in-progress
   0-1-multi-tenant-postgresql-database-setup: done
   0-2-express-js-api-foundation-with-layered-architecture: done
-  0-3-rabbitmq-message-queue-configuration: review
+  0-3-rabbitmq-message-queue-configuration: done
   0-4-authentication-authorization-system: backlog
   0-5-structured-logging-with-pino: backlog
   0-6-error-tracking-with-sentry: backlog

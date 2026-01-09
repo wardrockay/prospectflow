@@ -1,8 +1,8 @@
 import { ChannelWrapper } from 'amqp-connection-manager';
-import { ConsumeMessage } from 'amqplib';
-import { rabbitMQClient } from './rabbitmq.client';
-import { QueueJob } from './queue.config';
-import { logger } from '../utils/logger';
+import { ConsumeMessage, ConfirmChannel } from 'amqplib';
+import { rabbitMQClient } from './rabbitmq.client.js';
+import { QueueJob } from './queue.config.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Abstract base class for queue consumers
@@ -31,28 +31,35 @@ export abstract class QueueConsumer {
    */
   async start(): Promise<void> {
     if (this.isConsuming) {
-      logger.warn('Consumer already started', { queue: this.queueName });
+      logger.warn({ queue: this.queueName }, 'Consumer already started');
       return;
     }
 
     try {
+      const queueName = this.queueName;
+      const prefetchCount = this.PREFETCH_COUNT;
+
       this.channel = rabbitMQClient.createChannelWrapper();
+      
+      // Configure channel with prefetch using addSetup
+      await this.channel.addSetup(async (channel: ConfirmChannel) => {
+        await channel.prefetch(prefetchCount);
+        logger.debug({ prefetch: prefetchCount }, 'Channel prefetch configured');
+      });
+
       await this.channel.waitForConnect();
 
-      // Set prefetch to 1 for even distribution across workers
-      await this.channel.prefetch(this.PREFETCH_COUNT);
-
-      logger.info('Starting consumer', {
-        queue: this.queueName,
-        prefetch: this.PREFETCH_COUNT,
-      });
+      logger.info({
+        queue: queueName,
+        prefetch: prefetchCount,
+      }, 'Starting consumer');
 
       // Start consuming messages
       await this.channel.consume(
-        this.queueName,
+        queueName,
         async (msg: ConsumeMessage | null) => {
           if (!msg) {
-            logger.warn('Received null message', { queue: this.queueName });
+            logger.warn({ queue: queueName }, 'Received null message');
             return;
           }
 
@@ -62,12 +69,12 @@ export abstract class QueueConsumer {
       );
 
       this.isConsuming = true;
-      logger.info('Consumer started successfully', { queue: this.queueName });
+      logger.info({ queue: queueName }, 'Consumer started successfully');
     } catch (error) {
-      logger.error('Failed to start consumer', {
+      logger.error({
         queue: this.queueName,
         error: (error as Error).message,
-      });
+      }, 'Failed to start consumer');
       throw error;
     }
   }
@@ -87,12 +94,12 @@ export abstract class QueueConsumer {
       }
 
       this.isConsuming = false;
-      logger.info('Consumer stopped', { queue: this.queueName });
+      logger.info({ queue: this.queueName }, 'Consumer stopped');
     } catch (error) {
-      logger.error('Error stopping consumer', {
+      logger.error({
         queue: this.queueName,
         error: (error as Error).message,
-      });
+      }, 'Error stopping consumer');
       throw error;
     }
   }
@@ -110,44 +117,44 @@ export abstract class QueueConsumer {
       job = JSON.parse(content) as QueueJob;
     } catch (error) {
       // Invalid JSON - send to DLQ immediately
-      logger.error('Failed to parse message', {
+      logger.error({
         queue: this.queueName,
         error: (error as Error).message,
-      });
+      }, 'Failed to parse message');
       this.channel!.nack(msg, false, false); // Don't requeue
       return;
     }
 
     try {
-      logger.info('Processing message', {
+      logger.info({
         queue: this.queueName,
         jobId: job.id,
         jobType: job.type,
         retryCount: job.retry_count,
-      });
+      }, 'Processing message');
 
       // Validate job structure
       this.validateJob(job);
 
-      // Process the job
-      await this.processJob(job);
+      // Process the job with timeout (30 seconds default)
+      await this.processJobWithTimeout(job);
 
       // Success - acknowledge message
       this.channel!.ack(msg);
 
-      logger.info('Message processed successfully', {
+      logger.info({
         queue: this.queueName,
         jobId: job.id,
-      });
+      }, 'Message processed successfully');
     } catch (error) {
       const err = error as Error;
 
-      logger.error('Error processing message', {
+      logger.error({
         queue: this.queueName,
         jobId: job?.id,
         error: err.message,
         stack: err.stack,
-      });
+      }, 'Error processing message');
 
       // Handle error with retry logic
       await this.handleError(msg, job, err);
@@ -164,21 +171,21 @@ export abstract class QueueConsumer {
   ): Promise<void> {
     if (!job) {
       // Invalid message format - send to DLQ immediately
-      logger.error('Invalid message format - routing to DLQ', {
+      logger.error({
         queue: this.queueName,
         error: error.message,
-      });
+      }, 'Invalid message format - routing to DLQ');
       this.channel!.nack(msg, false, false); // Don't requeue
       return;
     }
 
     // Check if this is a validation error (don't retry validation errors)
     if (error.message.includes('Invalid job:')) {
-      logger.error('Job validation failed - routing to DLQ', {
+      logger.error({
         queue: this.queueName,
         jobId: job.id,
         error: error.message,
-      });
+      }, 'Job validation failed - routing to DLQ');
       this.channel!.nack(msg, false, false); // Don't requeue
       this.onError(error, job);
       return;
@@ -189,23 +196,23 @@ export abstract class QueueConsumer {
       // Increment retry count and requeue
       job.retry_count++;
 
-      logger.warn('Requeuing message for retry', {
+      logger.warn({
         queue: this.queueName,
         jobId: job.id,
         retryCount: job.retry_count,
         maxRetries: this.MAX_RETRIES,
-      });
+      }, 'Requeuing message for retry');
 
       // NACK with requeue
       this.channel!.nack(msg, false, true);
     } else {
       // Max retries exceeded - send to DLQ
-      logger.error('Max retries exceeded - routing to DLQ', {
+      logger.error({
         queue: this.queueName,
         jobId: job.id,
         retryCount: job.retry_count,
         maxRetries: this.MAX_RETRIES,
-      });
+      }, 'Max retries exceeded - routing to DLQ');
 
       // NACK without requeue (routes to DLQ via dead letter exchange)
       this.channel!.nack(msg, false, false);
@@ -213,6 +220,30 @@ export abstract class QueueConsumer {
 
     // Call error handler for custom error handling
     this.onError(error, job);
+  }
+
+  /**
+   * Process job with timeout to prevent infinite blocking
+   */
+  private async processJobWithTimeout(job: QueueJob): Promise<void> {
+    const timeout = this.getProcessTimeout();
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(
+        () => reject(new Error(`Job processing timeout after ${timeout}ms`)),
+        timeout,
+      );
+    });
+
+    await Promise.race([this.processJob(job), timeoutPromise]);
+  }
+
+  /**
+   * Get processing timeout in milliseconds
+   * Override in subclass to customize
+   */
+  protected getProcessTimeout(): number {
+    return 30000; // 30 seconds default
   }
 
   /**
@@ -237,7 +268,7 @@ export abstract class QueueConsumer {
     }
 
     if (typeof job.retry_count !== 'number') {
-      throw new Error('Invalid job: missing or invalid retry_count');
+      throw new TypeError('Invalid job: missing or invalid retry_count');
     }
 
     if (!job.payload || typeof job.payload !== 'object') {
@@ -250,11 +281,11 @@ export abstract class QueueConsumer {
    */
   protected onError(error: Error, job: QueueJob): void {
     // Default implementation - just log
-    logger.error('Job processing failed', {
+    logger.error({
       queue: this.queueName,
       jobId: job.id,
       error: error.message,
-    });
+    }, 'Job processing failed');
   }
 
   /**

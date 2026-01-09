@@ -10,7 +10,8 @@ export interface QueueJob {
   type: string; // 'draft_generation' | 'followup_scheduling' | 'reply_detection'
   organisation_id: string; // UUID (for multi-tenant isolation)
   payload: Record<string, any>;
-  created_at: string; // ISO timestamp
+  /** ISO 8601 timestamp (e.g., '2026-01-09T10:30:00.000Z') - MUST be valid ISO format */
+  created_at: string;
   retry_count: number; // Current retry attempt
 }
 

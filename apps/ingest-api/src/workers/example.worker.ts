@@ -59,8 +59,10 @@ export class ExampleWorker extends QueueConsumer {
   }
 }
 
-// Allow running worker directly from command line
-if (require.main === module) {
+// Allow running worker directly from command line (ESM)
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+
+if (isMainModule) {
   const worker = new ExampleWorker();
 
   // Handle graceful shutdown

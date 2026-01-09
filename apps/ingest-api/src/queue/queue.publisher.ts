@@ -1,7 +1,7 @@
 import { ChannelWrapper } from 'amqp-connection-manager';
-import { rabbitMQClient } from './rabbitmq.client';
-import { QueueJob } from './queue.config';
-import { logger } from '../utils/logger';
+import { rabbitMQClient } from './rabbitmq.client.js';
+import { QueueJob } from './queue.config.js';
+import { logger } from '../utils/logger.js';
 
 export interface PublishOptions {
   persistent?: boolean; // default: true
@@ -31,6 +31,9 @@ export class QueuePublisher {
     if (!this.channel) {
       this.channel = rabbitMQClient.createChannelWrapper();
       await this.channel.waitForConnect();
+    }
+    if (!this.channel) {
+      throw new Error('Failed to create channel wrapper');
     }
     return this.channel;
   }
@@ -77,23 +80,23 @@ export class QueuePublisher {
         // Race between publish and timeout
         await Promise.race([publishPromise, timeoutPromise]);
 
-        logger.info('Message published successfully', {
+        logger.info({
           queue,
           jobId: job.id,
           attempt: attempt + 1,
-        });
+        }, 'Message published successfully');
 
         return true;
       } catch (error) {
         lastError = error as Error;
 
-        logger.warn('Publish attempt failed', {
+        logger.warn({
           queue,
           jobId: job.id,
           attempt: attempt + 1,
           maxRetries: this.MAX_RETRIES + 1,
           error: (error as Error).message,
-        });
+        }, 'Publish attempt failed');
 
         // Don't retry if this was the last attempt
         if (attempt >= this.MAX_RETRIES) {
@@ -106,11 +109,11 @@ export class QueuePublisher {
     }
 
     // Both attempts failed
-    logger.error('Failed to publish message after retries', {
+    logger.error({
       queue,
       jobId: job.id,
       error: lastError?.message,
-    });
+    }, 'Failed to publish message after retries');
 
     throw new Error(
       `Failed to publish message to queue ${queue} after ${this.MAX_RETRIES + 1} attempts: ${
@@ -133,10 +136,10 @@ export class QueuePublisher {
       errors: [],
     };
 
-    logger.info('Starting batch publish', {
+    logger.info({
       queue,
       totalJobs: jobs.length,
-    });
+    }, 'Starting batch publish');
 
     for (const job of jobs) {
       try {
@@ -151,12 +154,12 @@ export class QueuePublisher {
       }
     }
 
-    logger.info('Batch publish completed', {
+    logger.info({
       queue,
       successful: result.successful,
       failed: result.failed,
       total: jobs.length,
-    });
+    }, 'Batch publish completed');
 
     return result;
   }
