@@ -27,10 +27,10 @@ async function initialize() {
 
     logger.info('🎉 Application initialization complete');
   } catch (error) {
-    logger.error('Failed to initialize application', {
-      error: (error as Error).message,
-      stack: (error as Error).stack,
-    });
+    logger.error(
+      { error: (error as Error).message, stack: (error as Error).stack },
+      'Failed to initialize application',
+    );
     throw error;
   }
 }
@@ -71,16 +71,18 @@ async function shutdown(signal: string) {
     logger.info('✅ RabbitMQ connection closed');
 
     // 3. Close database pool
-    await pool.end();
-    logger.info('✅ Database pool closed');
+    if (pool) {
+      await pool.end();
+      logger.info('✅ Database pool closed');
+    }
 
     logger.info('🎉 Graceful shutdown complete');
     process.exit(0);
   } catch (error) {
-    logger.error('Error during shutdown', {
-      error: (error as Error).message,
-      stack: (error as Error).stack,
-    });
+    logger.error(
+      { error: (error as Error).message, stack: (error as Error).stack },
+      'Error during shutdown',
+    );
     process.exit(1);
   }
 }
@@ -91,18 +93,13 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  logger.error('Uncaught exception', {
-    error: error.message,
-    stack: error.stack,
-  });
+  logger.error({ error: error.message, stack: error.stack }, 'Uncaught exception');
   shutdown('uncaughtException');
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled promise rejection', {
-    reason,
-  });
+  logger.error({ reason }, 'Unhandled promise rejection');
   shutdown('unhandledRejection');
 });
 
@@ -112,9 +109,7 @@ process.on('unhandledRejection', (reason) => {
     await initialize();
     startServer();
   } catch (error) {
-    logger.error('Failed to start application', {
-      error: (error as Error).message,
-    });
+    logger.error({ error: (error as Error).message }, 'Failed to start application');
     process.exit(1);
   }
 })();

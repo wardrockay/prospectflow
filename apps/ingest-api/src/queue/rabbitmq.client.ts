@@ -32,7 +32,19 @@ export class RabbitMQClient extends EventEmitter {
     }
 
     if (this.connecting) {
-      logger.info('RabbitMQ connection in progress');
+      logger.info('RabbitMQ connection in progress, waiting...');
+      // Wait for existing connection attempt
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Connection wait timeout')), 15000);
+        this.once('connected', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+        this.once('error', (err) => {
+          clearTimeout(timeout);
+          reject(err);
+        });
+      });
       return;
     }
 
@@ -45,7 +57,11 @@ export class RabbitMQClient extends EventEmitter {
       // Create connection with automatic reconnection
       this.connection = amqp.connect([url], {
         heartbeatIntervalInSeconds: 60,
-        reconnectTimeInSeconds: 1,
+        reconnectTimeInSeconds: 2,
+        connectionOptions: {
+          // Add connection timeout
+          timeout: 10000,
+        },
       });
 
       // Connection event handlers
@@ -72,11 +88,12 @@ export class RabbitMQClient extends EventEmitter {
         this.emit('error', err);
       });
 
-      // Wait for initial connection
+      // Wait for initial connection with extended timeout
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
-          reject(new Error('RabbitMQ connection timeout'));
-        }, 10000);
+          this.connecting = false;
+          reject(new Error('RabbitMQ connection timeout after 15s'));
+        }, 15000);
 
         this.once('connected', () => {
           clearTimeout(timeout);
@@ -85,6 +102,7 @@ export class RabbitMQClient extends EventEmitter {
 
         this.once('error', (err) => {
           clearTimeout(timeout);
+          this.connecting = false;
           reject(err);
         });
       });

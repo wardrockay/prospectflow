@@ -5,6 +5,11 @@ import { env } from './env.js';
 let pool: Pool | null = null;
 
 /**
+ * Direct export of pool for server shutdown
+ */
+export { pool };
+
+/**
  * Récupère ou crée le pool de connexions PostgreSQL
  */
 export const getPool = (): Pool => {

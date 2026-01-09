@@ -1,6 +1,6 @@
-import { QueueConsumer } from '../queue/queue.consumer';
-import { QueueJob } from '../queue/queue.config';
-import { logger } from '../utils/logger';
+import { QueueConsumer } from '../queue/queue.consumer.js';
+import { QueueJob } from '../queue/queue.config.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Example worker implementation for testing queue functionality
@@ -19,20 +19,20 @@ export class ExampleWorker extends QueueConsumer {
    * @param job - The job to process
    */
   async processJob(job: QueueJob): Promise<void> {
-    logger.info('Example worker processing job', {
-      jobId: job.id,
-      jobType: job.type,
-      organisationId: job.organisation_id,
-      payload: job.payload,
-    });
+    logger.info(
+      {
+        jobId: job.id,
+        jobType: job.type,
+        organisationId: job.organisation_id,
+        payload: job.payload,
+      },
+      'Example worker processing job',
+    );
 
     // Simulate some processing work
     await this.simulateWork(1000);
 
-    logger.info('Example worker completed job', {
-      jobId: job.id,
-      processingTime: '1000ms',
-    });
+    logger.info({ jobId: job.id, processingTime: '1000ms' }, 'Example worker completed job');
   }
 
   /**
@@ -48,11 +48,10 @@ export class ExampleWorker extends QueueConsumer {
    * Custom error handler
    */
   protected onError(error: Error, job: QueueJob): void {
-    logger.error('Example worker error handler', {
-      jobId: job.id,
-      error: error.message,
-      stack: error.stack,
-    });
+    logger.error(
+      { jobId: job.id, error: error.message, stack: error.stack },
+      'Example worker error handler',
+    );
 
     // Add custom error handling logic here
     // e.g., send alerts, update database, etc.
@@ -74,7 +73,7 @@ if (isMainModule) {
       logger.info('Worker shut down successfully');
       process.exit(0);
     } catch (error) {
-      logger.error('Error during shutdown', { error: (error as Error).message });
+      logger.error({ error: (error as Error).message }, 'Error during shutdown');
       process.exit(1);
     }
   };
@@ -89,7 +88,7 @@ if (isMainModule) {
       logger.info('Example worker started successfully');
     })
     .catch((error) => {
-      logger.error('Failed to start worker', { error: error.message });
+      logger.error({ error: (error as any).message }, 'Failed to start worker');
       process.exit(1);
     });
 }
