@@ -1,16 +1,16 @@
 ---
-workflow: "[CS] Create Story"
-generated: "2025-01-XX"
-version: "1.0"
-status: "Complete"
+workflow: '[CS] Create Story'
+generated: '2025-01-XX'
+version: '1.1'
+status: 'Complete'
 inputDocuments:
   - PRD-ProspectFlow.md
   - ARCHITECTURE.md
   - sprint-status.yaml
   - UX Design Documentation
 totalEpics: 14
-totalStories: 78
-estimatedTotalStoryPoints: 284
+totalStories: 79
+estimatedTotalStoryPoints: 287
 ---
 
 # ProspectFlow - Epic & User Story Breakdown
@@ -41,14 +41,15 @@ This document provides comprehensive user stories with detailed acceptance crite
 ## Epic E0: Foundation Infrastructure & Architecture
 
 **Priority:** P0 (MVP Foundation)  
-**Status:** Not Started  
-**Estimated Story Points:** 34  
+**Status:** In Progress  
+**Estimated Story Points:** 37  
 **Dependencies:** None (Starting Point)  
 **Requirements Covered:** NFR3, NFR4, NFR5, NFR14, NFR15, NFR16
 
 **Epic Goal:** Establish the core technical infrastructure, multi-tenant architecture, authentication, monitoring, and deployment pipeline that all other features will be built upon.
 
 **Success Criteria:**
+
 - Multi-tenant PostgreSQL database operational with all schemas
 - Authentication and authorization working
 - Docker-based deployment pipeline functional
@@ -80,12 +81,13 @@ So that **all customer data is securely separated and the system can scale to 10
 **Given** the database is running  
 **When** the schema migration runs  
 **Then** the following schemas should be created:
-  - `iam` (organizations, users, org_users tables)
-  - `crm` (companies, people, positions tables)
-  - `outreach` (campaigns, steps, tasks, messages, prompts tables)
-  - `tracking` (pixels, stats tables)  
-**And** each table should include `organisation_id` as part of composite primary key  
-**And** all foreign keys should include `organisation_id` for referential integrity
+
+- `iam` (organizations, users, org_users tables)
+- `crm` (companies, people, positions tables)
+- `outreach` (campaigns, steps, tasks, messages, prompts tables)
+- `tracking` (pixels, stats tables)  
+  **And** each table should include `organisation_id` as part of composite primary key  
+  **And** all foreign keys should include `organisation_id` for referential integrity
 
 **AC3: Multi-tenant Data Isolation**
 
@@ -104,6 +106,7 @@ So that **all customer data is securely separated and the system can scale to 10
 **And** migration failure should rollback automatically
 
 **Technical Considerations:**
+
 - Use composite primary keys: (organisation_id, id)
 - Create appropriate indexes for common queries
 - Set up row-level security policies if needed
@@ -111,6 +114,7 @@ So that **all customer data is securely separated and the system can scale to 10
 - Set up database backups (daily, 30-day retention)
 
 **Definition of Done:**
+
 - [ ] PostgreSQL 18 running in Docker container
 - [ ] All four schemas created with tables
 - [ ] Flyway migrations working
@@ -146,11 +150,12 @@ So that **the codebase is maintainable, testable, and follows best practices**.
 **Given** the API receives a request  
 **When** the request flows through the system  
 **Then** it should follow this layer pattern:
-  - **Controller Layer**: Request validation (Zod schemas), response formatting
-  - **Service Layer**: Business logic, orchestration
-  - **Repository Layer**: Database operations, queries  
-**And** each layer should have clear responsibilities  
-**And** no layer should skip or bypass another
+
+- **Controller Layer**: Request validation (Zod schemas), response formatting
+- **Service Layer**: Business logic, orchestration
+- **Repository Layer**: Database operations, queries  
+  **And** each layer should have clear responsibilities  
+  **And** no layer should skip or bypass another
 
 **AC3: Zod Validation Middleware**
 
@@ -170,6 +175,7 @@ So that **the codebase is maintainable, testable, and follows best practices**.
 **And** log the full error details with context
 
 **Technical Considerations:**
+
 - Use async/await with proper error handling
 - Implement dependency injection for testability
 - Use Express.Router for modular route organization
@@ -178,6 +184,7 @@ So that **the codebase is maintainable, testable, and follows best practices**.
 - Use helmet.js for security headers
 
 **Definition of Done:**
+
 - [ ] Express server running with TypeScript
 - [ ] Controller/Service/Repository layers implemented
 - [ ] Zod validation working on sample endpoint
@@ -213,11 +220,12 @@ So that **long-running tasks (research, drafts, follow-ups) don't block API resp
 **Given** RabbitMQ is running  
 **When** the application initializes  
 **Then** the following queues should be created:
-  - `draft_queue` (email draft generation jobs)
-  - `followup_queue` (follow-up scheduling jobs)
-  - `reply_queue` (reply detection jobs)  
-**And** queues should be durable (survive restarts)  
-**And** dead letter queue should be configured for failed messages
+
+- `draft_queue` (email draft generation jobs)
+- `followup_queue` (follow-up scheduling jobs)
+- `reply_queue` (reply detection jobs)  
+  **And** queues should be durable (survive restarts)  
+  **And** dead letter queue should be configured for failed messages
 
 **AC3: Publisher Setup**
 
@@ -237,6 +245,7 @@ So that **long-running tasks (research, drafts, follow-ups) don't block API resp
 **And** negative acknowledge (NACK) failed processing for retry
 
 **Technical Considerations:**
+
 - Use amqplib or amqp-connection-manager for Node.js
 - Implement connection retry logic
 - Set message TTL for stale jobs
@@ -245,6 +254,7 @@ So that **long-running tasks (research, drafts, follow-ups) don't block API resp
 - Monitor queue depth and consumer lag
 
 **Definition of Done:**
+
 - [ ] RabbitMQ running in Docker
 - [ ] All queues created and configured
 - [ ] Publisher utility function working
@@ -272,13 +282,14 @@ So that **only authenticated users can access their organization's data**.
 **Given** a user successfully logs in  
 **When** authentication is verified  
 **Then** a JWT token should be generated containing:
-  - `user_id` (UUID)
-  - `organisation_id` (UUID)
-  - `email`
-  - `roles` (array)
-  - `exp` (expiration timestamp, 24 hours)  
-**And** the token should be signed with secret key  
-**And** token should be returned to client
+
+- `user_id` (UUID)
+- `organisation_id` (UUID)
+- `email`
+- `roles` (array)
+- `exp` (expiration timestamp, 24 hours)  
+  **And** the token should be signed with secret key  
+  **And** token should be returned to client
 
 **AC2: JWT Token Validation Middleware**
 
@@ -315,6 +326,7 @@ So that **only authenticated users can access their organization's data**.
 **And** refresh token flow should allow seamless renewal
 
 **Technical Considerations:**
+
 - Use bcrypt for password hashing (if implementing password auth)
 - Store JWT secret in environment variable
 - Implement token refresh endpoint
@@ -323,6 +335,7 @@ So that **only authenticated users can access their organization's data**.
 - Consider implementing rate limiting on auth endpoints
 
 **Definition of Done:**
+
 - [ ] JWT generation working
 - [ ] Authentication middleware implemented
 - [ ] Authorization checks in service layer
@@ -335,7 +348,89 @@ So that **only authenticated users can access their organization's data**.
 
 ---
 
-### Story E0.5: Structured Logging with Pino
+### Story E0.5: Extract Auth to Shared Package
+
+**Story Points:** 3
+
+As a **ProspectFlow platform developer**,  
+I want **authentication code extracted into a shared package**,  
+So that **all services (backend APIs, frontend, workers) can reuse the same authentication logic without code duplication**.
+
+**Acceptance Criteria:**
+
+**AC1: Package Structure**
+
+**Given** the auth code exists in ingest-api  
+**When** the extraction is complete  
+**Then** `packages/auth-core` should exist with:
+
+- TypeScript configuration with declaration files
+- Proper package.json with exports for backend and frontend
+- All auth types, middlewares, and services migrated
+  **And** the package should build successfully with `pnpm build`
+
+**AC2: Code Migration**
+
+**Given** auth components exist in `apps/ingest-api/src/`  
+**When** they are migrated to `packages/auth-core/`  
+**Then** the following should be moved:
+
+- `types/cognito.ts` → auth-core types
+- `types/session.ts` → auth-core types
+- `config/cognito.ts` → auth-core config
+- `middlewares/cognito-auth.middleware.ts` → auth-core middlewares
+- `middlewares/session.middleware.ts` → auth-core middlewares
+- `services/session.service.ts` → auth-core services
+- `services/user-sync.service.ts` → auth-core services
+  **And** no auth-related code should remain in ingest-api (except instantiation)
+
+**AC3: Workspace Integration**
+
+**Given** the package is created  
+**When** ingest-api imports from `@prospectflow/auth-core`  
+**Then** TypeScript types should resolve correctly  
+**And** runtime imports should work without errors  
+**And** all existing tests should pass
+
+**AC4: Frontend Compatibility**
+
+**Given** the package has frontend exports  
+**When** importing from `@prospectflow/auth-core/frontend`  
+**Then** only types should be exported (no Node.js dependencies)  
+**And** types should be usable in Nuxt/Vue components
+
+**AC5: No Regressions**
+
+**Given** the migration is complete  
+**When** running all ingest-api tests  
+**Then** all tests should pass  
+**And** the auth flow should work end-to-end  
+**And** session management should be unchanged
+
+**Technical Considerations:**
+
+- Use factory functions for configurable middlewares
+- Make services dependency-injectable (Redis client, DB pool)
+- Keep default exports that read from env vars for convenience
+- Use tsup for bundling with ESM and CJS support
+- Ensure peer dependencies for Express and Redis
+
+**Definition of Done:**
+
+- [ ] Package structure created with proper config
+- [ ] All auth code migrated from ingest-api
+- [ ] Package linked in pnpm workspace
+- [ ] ingest-api imports updated to use package
+- [ ] All existing tests pass
+- [ ] Frontend exports available without Node.js deps
+- [ ] README documentation complete
+- [ ] Package tests with >80% coverage
+
+**Dependencies:** E0.4 (AWS Cognito Authentication)
+
+---
+
+### Story E0.6: Structured Logging with Pino
 
 **Story Points:** 3
 
@@ -358,36 +453,40 @@ So that **I can easily search, filter, and analyze logs in production**.
 **Given** an API request is received  
 **When** the request middleware runs  
 **Then** it should log:
-  - Request ID (UUID)
-  - HTTP method and path
-  - Request timestamp
-  - User ID and organization ID (if authenticated)
-  - Request duration (in response log)
-  - Response status code  
-**And** sensitive data (passwords, tokens) should be redacted
+
+- Request ID (UUID)
+- HTTP method and path
+- Request timestamp
+- User ID and organization ID (if authenticated)
+- Request duration (in response log)
+- Response status code  
+  **And** sensitive data (passwords, tokens) should be redacted
 
 **AC3: Error Logging**
 
 **Given** an error occurs in the application  
 **When** the error handler catches it  
 **Then** it should log:
-  - Error message and stack trace
-  - Request context (user, org, endpoint)
-  - Timestamp
-  - Error type/code  
-**And** logs should be at appropriate level (error, warn, info, debug)
+
+- Error message and stack trace
+- Request context (user, org, endpoint)
+- Timestamp
+- Error type/code  
+  **And** logs should be at appropriate level (error, warn, info, debug)
 
 **AC4: Performance Logging**
 
 **Given** a long-running operation completes  
 **When** the operation finishes  
 **Then** it should log:
-  - Operation name
-  - Duration in milliseconds
-  - Success/failure status
-  - Key metrics (records processed, etc.)
+
+- Operation name
+- Duration in milliseconds
+- Success/failure status
+- Key metrics (records processed, etc.)
 
 **Technical Considerations:**
+
 - Use child loggers for different modules
 - Include correlation IDs for request tracing
 - Log sampling for high-volume operations
@@ -395,6 +494,7 @@ So that **I can easily search, filter, and analyze logs in production**.
 - Consider using pino-pretty for development
 
 **Definition of Done:**
+
 - [ ] Pino configured and working
 - [ ] Request logging implemented
 - [ ] Error logging implemented
@@ -407,7 +507,7 @@ So that **I can easily search, filter, and analyze logs in production**.
 
 ---
 
-### Story E0.6: Error Tracking with Sentry
+### Story E0.7: Error Tracking with Sentry
 
 **Story Points:** 2
 
@@ -439,22 +539,25 @@ So that **I'm notified immediately when production errors occur**.
 **Given** an error is captured  
 **When** Sentry processes it  
 **Then** it should include:
-  - User ID and organization ID
-  - Request URL and method
-  - Environment variables (non-sensitive)
-  - Breadcrumbs (recent actions leading to error)
-  - Custom tags (service name, operation type)
+
+- User ID and organization ID
+- Request URL and method
+- Environment variables (non-sensitive)
+- Breadcrumbs (recent actions leading to error)
+- Custom tags (service name, operation type)
 
 **AC4: Alerting Configuration**
 
 **Given** an error occurs in production  
 **When** Sentry captures it  
 **Then** alerts should be sent based on rules:
-  - Critical errors: immediate Slack/email
-  - New error types: daily digest
-  - Error threshold exceeded: alert on spike
+
+- Critical errors: immediate Slack/email
+- New error types: daily digest
+- Error threshold exceeded: alert on spike
 
 **Technical Considerations:**
+
 - Use Sentry's Express integration
 - Filter out expected errors (400 validation errors)
 - Set release tracking for deployment correlation
@@ -462,6 +565,7 @@ So that **I'm notified immediately when production errors occur**.
 - Monitor Sentry quota usage
 
 **Definition of Done:**
+
 - [ ] Sentry initialized in application
 - [ ] Errors automatically captured
 - [ ] Context information included
@@ -469,11 +573,11 @@ So that **I'm notified immediately when production errors occur**.
 - [ ] Test error verified in Sentry dashboard
 - [ ] Team notified of setup
 
-**Dependencies:** E0.2 (API Foundation), E0.5 (Logging)
+**Dependencies:** E0.2 (API Foundation), E0.6 (Logging)
 
 ---
 
-### Story E0.7: Prometheus Metrics & Grafana Dashboards
+### Story E0.8: Prometheus Metrics & Grafana Dashboards
 
 **Story Points:** 5
 
@@ -496,35 +600,39 @@ So that **I can monitor system health and performance in real-time**.
 **Given** the application is running  
 **When** Prometheus scrapes the `/metrics` endpoint  
 **Then** the following metrics should be available:
-  - **HTTP Metrics**: Request count, duration histogram, response codes
-  - **Business Metrics**: Emails sent, drafts generated, prospects processed
-  - **System Metrics**: CPU usage, memory usage, event loop lag
-  - **Database Metrics**: Query duration, connection pool usage
-  - **Queue Metrics**: Message count, processing duration, failures
+
+- **HTTP Metrics**: Request count, duration histogram, response codes
+- **Business Metrics**: Emails sent, drafts generated, prospects processed
+- **System Metrics**: CPU usage, memory usage, event loop lag
+- **Database Metrics**: Query duration, connection pool usage
+- **Queue Metrics**: Message count, processing duration, failures
 
 **AC3: Grafana Dashboard Creation**
 
 **Given** Grafana is configured with Prometheus datasource  
 **When** the dashboard is loaded  
 **Then** it should display:
-  - **Overview Panel**: System health, request rate, error rate
-  - **API Performance**: Endpoint latency (p50, p95, p99), throughput
-  - **Database Panel**: Query performance, connection pool
-  - **Queue Panel**: Queue depth, consumer lag, processing rate
-  - **Business Metrics**: Emails sent/hour, draft success rate
+
+- **Overview Panel**: System health, request rate, error rate
+- **API Performance**: Endpoint latency (p50, p95, p99), throughput
+- **Database Panel**: Query performance, connection pool
+- **Queue Panel**: Queue depth, consumer lag, processing rate
+- **Business Metrics**: Emails sent/hour, draft success rate
 
 **AC4: Alerting Rules**
 
 **Given** Prometheus has alerting rules configured  
 **When** a threshold is breached  
 **Then** an alert should fire:
-  - API error rate > 5% for 5 minutes
-  - Database query time > 500ms (p95)
-  - Queue depth > 1000 messages
-  - Memory usage > 80%  
-**And** alerts should route to Slack/PagerDuty
+
+- API error rate > 5% for 5 minutes
+- Database query time > 500ms (p95)
+- Queue depth > 1000 messages
+- Memory usage > 80%  
+  **And** alerts should route to Slack/PagerDuty
 
 **Technical Considerations:**
+
 - Use prom-client library for Node.js
 - Implement custom metrics for business KPIs
 - Use histogram for latency (not gauge)
@@ -533,6 +641,7 @@ So that **I can monitor system health and performance in real-time**.
 - Create dashboard templates for each service
 
 **Definition of Done:**
+
 - [ ] Prometheus scraping metrics
 - [ ] Application exposing metrics
 - [ ] Grafana dashboard created
@@ -545,7 +654,7 @@ So that **I can monitor system health and performance in real-time**.
 
 ---
 
-### Story E0.8: Docker Compose Orchestration
+### Story E0.9: Docker Compose Orchestration
 
 **Story Points:** 3
 
@@ -560,13 +669,14 @@ So that **the entire stack can be deployed consistently across environments**.
 **Given** docker-compose.yml is defined  
 **When** `docker-compose up` is run  
 **Then** all services should start in correct order:
-  1. PostgreSQL
-  2. RabbitMQ
-  3. Redis
-  4. ClickHouse
-  5. API services (Ingest, Campaign, Tracking)
-  6. Workers (Draft, Followup, Reply Detector)
-  7. Monitoring (Prometheus, Grafana)
+
+1. PostgreSQL
+2. RabbitMQ
+3. Redis
+4. ClickHouse
+5. API services (Ingest, Campaign, Tracking)
+6. Workers (Draft, Followup, Reply Detector)
+7. Monitoring (Prometheus, Grafana)
 
 **AC2: Service Configuration**
 
@@ -594,6 +704,7 @@ So that **the entire stack can be deployed consistently across environments**.
 **And** use production image tags
 
 **Technical Considerations:**
+
 - Use multi-stage Docker builds for smaller images
 - Implement health checks with retry logic
 - Use Docker secrets for sensitive configuration
@@ -602,6 +713,7 @@ So that **the entire stack can be deployed consistently across environments**.
 - Use Docker networks for isolation
 
 **Definition of Done:**
+
 - [ ] docker-compose.yml complete
 - [ ] All services start successfully
 - [ ] Service dependencies configured
@@ -614,7 +726,7 @@ So that **the entire stack can be deployed consistently across environments**.
 
 ---
 
-### Story E0.9: CI/CD Pipeline with GitHub Actions
+### Story E0.10: CI/CD Pipeline with GitHub Actions
 
 **Story Points:** 5
 
@@ -629,13 +741,14 @@ So that **code changes are validated and deployed consistently**.
 **Given** code is pushed to GitHub  
 **When** the CI pipeline runs  
 **Then** it should execute:
-  1. Lint check (ESLint)
-  2. TypeScript compilation
-  3. Unit tests (Vitest)
-  4. Integration tests
-  5. Build Docker images  
-**And** pipeline should fail if any step fails  
-**And** run time should be < 10 minutes
+
+1. Lint check (ESLint)
+2. TypeScript compilation
+3. Unit tests (Vitest)
+4. Integration tests
+5. Build Docker images  
+   **And** pipeline should fail if any step fails  
+   **And** run time should be < 10 minutes
 
 **AC2: Automated Testing**
 
@@ -650,13 +763,14 @@ So that **code changes are validated and deployed consistently**.
 **Given** CI pipeline passes on main branch  
 **When** deployment is triggered  
 **Then** it should:
-  1. Build production Docker images
-  2. Tag with version/commit SHA
-  3. Push to container registry
-  4. Deploy to staging environment
-  5. Run smoke tests
-  6. Deploy to production (manual approval)  
-**And** rollback capability should be available
+
+1. Build production Docker images
+2. Tag with version/commit SHA
+3. Push to container registry
+4. Deploy to staging environment
+5. Run smoke tests
+6. Deploy to production (manual approval)  
+   **And** rollback capability should be available
 
 **AC4: Environment Management**
 
@@ -667,6 +781,7 @@ So that **code changes are validated and deployed consistently**.
 **And** deployment status should be visible
 
 **Technical Considerations:**
+
 - Use GitHub Actions workflows
 - Cache dependencies for faster builds
 - Run tests in parallel when possible
@@ -675,6 +790,7 @@ So that **code changes are validated and deployed consistently**.
 - Set up branch protection rules
 
 **Definition of Done:**
+
 - [ ] GitHub Actions workflows created
 - [ ] Lint and tests automated
 - [ ] Docker image build automated
@@ -698,6 +814,7 @@ So that **code changes are validated and deployed consistently**.
 **Epic Goal:** Enable users to create, view, and manage outreach campaigns with proper validation and status tracking.
 
 **Success Criteria:**
+
 - Users can create campaigns with required fields
 - Campaign list displays all campaigns with status
 - Campaign validation prevents incomplete submissions
@@ -720,21 +837,23 @@ So that **I can organize my prospecting efforts and track results per campaign**
 **Given** I am on the campaigns page  
 **When** I click "Create New Campaign"  
 **Then** a campaign creation form should display with fields:
-  - Campaign Name (required, max 100 chars)
-  - Value Proposition (required, max 150 chars)
-  - Template Selection (dropdown, required)  
-**And** all fields should have inline validation  
-**And** character count should display for limited fields
+
+- Campaign Name (required, max 100 chars)
+- Value Proposition (required, max 150 chars)
+- Template Selection (dropdown, required)  
+  **And** all fields should have inline validation  
+  **And** character count should display for limited fields
 
 **AC2: Field Validation**
 
 **Given** I am filling out the campaign form  
 **When** I enter invalid data  
 **Then** validation errors should display:
-  - Campaign Name: "Required" if empty
-  - Value Proposition: "Required" if empty, "Max 150 characters" if exceeded
-  - Template: "Please select a template" if not selected  
-**And** submit button should be disabled until all fields are valid
+
+- Campaign Name: "Required" if empty
+- Value Proposition: "Required" if empty, "Max 150 characters" if exceeded
+- Template: "Please select a template" if not selected  
+  **And** submit button should be disabled until all fields are valid
 
 **AC3: Successful Campaign Creation**
 
@@ -742,12 +861,13 @@ So that **I can organize my prospecting efforts and track results per campaign**
 **When** I click "Create Campaign"  
 **Then** a POST request should be sent to `/api/campaigns`  
 **And** campaign should be saved to database with:
-  - Unique campaign_id (UUID)
-  - organisation_id from authenticated user
-  - Status: "Draft"
-  - created_at timestamp  
-**And** I should be redirected to the campaign detail page  
-**And** success message should display: "Campaign created successfully"
+
+- Unique campaign_id (UUID)
+- organisation_id from authenticated user
+- Status: "Draft"
+- created_at timestamp  
+  **And** I should be redirected to the campaign detail page  
+  **And** success message should display: "Campaign created successfully"
 
 **AC4: Error Handling**
 
@@ -758,12 +878,14 @@ So that **I can organize my prospecting efforts and track results per campaign**
 **And** user should remain on the form
 
 **Technical Considerations:**
+
 - Use Zod schema for server-side validation
 - Generate UUID on server, not client
 - Transaction for campaign + initial step creation
 - Index campaigns by (organisation_id, status) for list queries
 
 **Definition of Done:**
+
 - [ ] Campaign creation form implemented
 - [ ] Frontend validation working
 - [ ] API endpoint implemented (/api/campaigns POST)
@@ -791,35 +913,38 @@ So that **I can track my active prospecting efforts and navigate to specific cam
 **Given** I have created campaigns  
 **When** I navigate to the campaigns page  
 **Then** I should see a table/list displaying:
-  - Campaign Name
-  - Status (Draft, Active, Paused, Completed, Archived)
-  - Total Prospects
-  - Emails Sent
-  - Response Rate
-  - Created Date
-  - Last Updated  
-**And** list should be sorted by Last Updated (descending)
+
+- Campaign Name
+- Status (Draft, Active, Paused, Completed, Archived)
+- Total Prospects
+- Emails Sent
+- Response Rate
+- Created Date
+- Last Updated  
+  **And** list should be sorted by Last Updated (descending)
 
 **AC2: Status Indicators**
 
 **Given** campaigns have different statuses  
 **When** the list displays  
 **Then** each status should have visual indicator:
-  - Draft: Gray badge
-  - Active: Green badge
-  - Paused: Yellow badge
-  - Completed: Blue badge
-  - Archived: Light gray badge  
-**And** status should be clearly readable
+
+- Draft: Gray badge
+- Active: Green badge
+- Paused: Yellow badge
+- Completed: Blue badge
+- Archived: Light gray badge  
+  **And** status should be clearly readable
 
 **AC3: Empty State**
 
 **Given** I have no campaigns  
 **When** I view the campaigns page  
 **Then** an empty state should display:
-  - Illustration/icon
-  - Message: "No campaigns yet"
-  - "Create Your First Campaign" button
+
+- Illustration/icon
+- Message: "No campaigns yet"
+- "Create Your First Campaign" button
 
 **AC4: Campaign Navigation**
 
@@ -836,12 +961,14 @@ So that **I can track my active prospecting efforts and navigate to specific cam
 **And** pagination should be implemented (25 per page) if > 25 campaigns
 
 **Technical Considerations:**
+
 - Query: `SELECT * FROM outreach.campaigns WHERE organisation_id = ? ORDER BY updated_at DESC`
 - Include LEFT JOIN to get prospect counts
 - Implement cursor-based pagination for scalability
 - Cache campaign counts in Redis for performance
 
 **Definition of Done:**
+
 - [ ] Campaign list page implemented
 - [ ] API endpoint (/api/campaigns GET) working
 - [ ] Status badges displaying correctly
@@ -869,28 +996,30 @@ So that **I can see prospects, drafts, and performance metrics for that campaign
 **Given** I click on a campaign from the list  
 **When** the detail page loads  
 **Then** I should see:
-  - Campaign Name (editable inline)
-  - Value Proposition (editable inline)
-  - Template Used
-  - Status (with change status button)
-  - Created Date
-  - Total Prospects
-  - Emails Sent
-  - Response Count
-  - Positive Response Count  
-**And** page should load in < 2 seconds
+
+- Campaign Name (editable inline)
+- Value Proposition (editable inline)
+- Template Used
+- Status (with change status button)
+- Created Date
+- Total Prospects
+- Emails Sent
+- Response Count
+- Positive Response Count  
+  **And** page should load in < 2 seconds
 
 **AC2: Tabs for Different Views**
 
 **Given** I am on campaign detail page  
 **When** I view the tabs  
 **Then** I should see tabs for:
-  - Overview (default, shows metrics)
-  - Prospects (list of all prospects in campaign)
-  - Drafts (pending email drafts)
-  - Sent (sent emails)
-  - Responses (replied emails)  
-**And** clicking a tab should switch the view without page reload
+
+- Overview (default, shows metrics)
+- Prospects (list of all prospects in campaign)
+- Drafts (pending email drafts)
+- Sent (sent emails)
+- Responses (replied emails)  
+  **And** clicking a tab should switch the view without page reload
 
 **AC3: Inline Editing**
 
@@ -906,20 +1035,23 @@ So that **I can see prospects, drafts, and performance metrics for that campaign
 **Given** I want to change campaign status  
 **When** I click "Change Status" dropdown  
 **Then** I should see status options:
-  - Pause Campaign
-  - Resume Campaign
-  - Mark as Completed
-  - Archive Campaign  
-**And** selecting an option should update status  
-**And** confirmation modal should display for Archive
+
+- Pause Campaign
+- Resume Campaign
+- Mark as Completed
+- Archive Campaign  
+  **And** selecting an option should update status  
+  **And** confirmation modal should display for Archive
 
 **Technical Considerations:**
+
 - Single API endpoint: GET /api/campaigns/:campaignId
 - Include aggregated metrics in response
 - Use optimistic UI updates for inline editing
 - Implement validation for status transitions
 
 **Definition of Done:**
+
 - [ ] Campaign detail page implemented
 - [ ] All tabs working
 - [ ] Inline editing functional
@@ -947,10 +1079,11 @@ So that **my active campaign list stays focused and I can declutter my workspace
 **Given** I am viewing a campaign detail page  
 **When** I click "Change Status" > "Archive Campaign"  
 **Then** a confirmation modal should display:
-  - Warning: "This will hide the campaign from your active list"
-  - Checkbox: "I understand this campaign will be archived"
-  - "Archive" button (disabled until checkbox checked)
-  - "Cancel" button
+
+- Warning: "This will hide the campaign from your active list"
+- Checkbox: "I understand this campaign will be archived"
+- "Archive" button (disabled until checkbox checked)
+- "Cancel" button
 
 **AC2: Archive Execution**
 
@@ -984,12 +1117,14 @@ So that **my active campaign list stays focused and I can declutter my workspace
 **And** only status field is changed
 
 **Technical Considerations:**
+
 - Implement soft delete (status change, not row deletion)
 - Filter archived campaigns by default: `WHERE status != 'Archived'`
 - Add database index on status for filter performance
 - Consider archiving after X days of inactivity (future enhancement)
 
 **Definition of Done:**
+
 - [ ] Archive confirmation modal working
 - [ ] Archive status update functional
 - [ ] Show/hide archived filter working
@@ -1013,6 +1148,7 @@ So that **my active campaign list stays focused and I can declutter my workspace
 **Epic Goal:** Enable users to upload prospect lists via CSV with comprehensive validation, duplicate detection, and user-friendly error reporting.
 
 **Success Criteria:**
+
 - CSV files upload and parse correctly
 - All validation rules enforced
 - Duplicate detection working (within upload and against existing)
@@ -1036,22 +1172,24 @@ So that **I can quickly import my target companies without manual data entry**.
 **Given** I am on the campaign detail page  
 **When** I click "Import Prospects"  
 **Then** a file upload modal should display with:
-  - Drag-and-drop area
-  - "Browse Files" button
-  - Accepted format notice: "CSV files only (.csv)"
-  - Sample CSV download link
-  - Maximum file size: 5MB (approximately 5000 rows)
+
+- Drag-and-drop area
+- "Browse Files" button
+- Accepted format notice: "CSV files only (.csv)"
+- Sample CSV download link
+- Maximum file size: 5MB (approximately 5000 rows)
 
 **AC2: CSV Format Requirements Display**
 
 **Given** the import modal is open  
 **When** I view the requirements section  
 **Then** it should clearly state required columns:
-  - `company_name` (required)
-  - `contact_email` (required)
-  - `contact_name` (optional)
-  - `website_url` (optional)  
-**And** show example row: "Acme Corp,sarah@acmecorp.com,Sarah Johnson,https://acmecorp.com"
+
+- `company_name` (required)
+- `contact_email` (required)
+- `contact_name` (optional)
+- `website_url` (optional)  
+  **And** show example row: "Acme Corp,sarah@acmecorp.com,Sarah Johnson,https://acmecorp.com"
 
 **AC3: File Selection**
 
@@ -1078,6 +1216,7 @@ So that **I can quickly import my target companies without manual data entry**.
 **And** the file should be rejected
 
 **Technical Considerations:**
+
 - Use browser FileReader API for client-side parsing
 - Implement file type check before upload
 - Stream large files instead of loading entire file into memory
@@ -1085,6 +1224,7 @@ So that **I can quickly import my target companies without manual data entry**.
 - Show upload progress indicator
 
 **Definition of Done:**
+
 - [ ] File upload modal implemented
 - [ ] Drag-and-drop working
 - [ ] File type validation working
@@ -1112,33 +1252,36 @@ So that **only correctly formatted files are processed**.
 **Given** a CSV file is uploaded  
 **When** the system parses the file  
 **Then** it should:
-  - Detect delimiter (comma, semicolon, tab)
-  - Parse headers from first row
-  - Parse all data rows
-  - Handle quoted fields correctly
-  - Handle newlines within quoted fields  
-**And** parsing should complete in < 5 seconds for 100 rows
+
+- Detect delimiter (comma, semicolon, tab)
+- Parse headers from first row
+- Parse all data rows
+- Handle quoted fields correctly
+- Handle newlines within quoted fields  
+  **And** parsing should complete in < 5 seconds for 100 rows
 
 **AC2: Required Column Detection**
 
 **Given** the CSV is parsed  
 **When** the system checks columns  
 **Then** it should verify presence of:
-  - `company_name` (case-insensitive match)
-  - `contact_email` (case-insensitive match)  
-**And** if missing, return error: "Missing required column: [column_name]"  
-**And** provide column mapping suggestion if similar name found (e.g., "email" → "contact_email")
+
+- `company_name` (case-insensitive match)
+- `contact_email` (case-insensitive match)  
+  **And** if missing, return error: "Missing required column: [column_name]"  
+  **And** provide column mapping suggestion if similar name found (e.g., "email" → "contact_email")
 
 **AC3: Column Mapping**
 
 **Given** column headers don't exactly match expected names  
 **When** the system detects columns  
 **Then** it should suggest mappings:
-  - "email" → "contact_email"
-  - "company" → "company_name"
-  - "name" → "contact_name"
-  - "website" → "website_url"  
-**And** user should be able to confirm or manually map columns
+
+- "email" → "contact_email"
+- "company" → "company_name"
+- "name" → "contact_name"
+- "website" → "website_url"  
+  **And** user should be able to confirm or manually map columns
 
 **AC4: Empty File Handling**
 
@@ -1155,6 +1298,7 @@ So that **only correctly formatted files are processed**.
 **And** show first error location (row number)
 
 **Technical Considerations:**
+
 - Use streaming CSV parser for large files
 - Normalize column names (lowercase, trim whitespace)
 - Implement fuzzy matching for column mapping suggestions
@@ -1162,6 +1306,7 @@ So that **only correctly formatted files are processed**.
 - Log parsing errors for debugging
 
 **Definition of Done:**
+
 - [ ] CSV parser integrated (Papa Parse)
 - [ ] Column detection working
 - [ ] Column mapping working
@@ -1189,57 +1334,63 @@ So that **only valid prospect data is imported into the system**.
 **Given** a prospect row has a contact_email  
 **When** the system validates the email  
 **Then** it should check:
-  - Valid format: `local-part@domain`
-  - Local part: alphanumeric, dots, hyphens, underscores
-  - Domain: valid TLD and structure
-  - No spaces or invalid characters  
-**And** reject emails like: "invalid.email", "@example.com", "user@", "user @example.com"  
-**And** accept emails like: "sarah@acmecorp.com", "sarah.johnson@acme-corp.co.uk"
+
+- Valid format: `local-part@domain`
+- Local part: alphanumeric, dots, hyphens, underscores
+- Domain: valid TLD and structure
+- No spaces or invalid characters  
+  **And** reject emails like: "invalid.email", "@example.com", "user@", "user @example.com"  
+  **And** accept emails like: "sarah@acmecorp.com", "sarah.johnson@acme-corp.co.uk"
 
 **AC2: Company Name Validation**
 
 **Given** a prospect row has a company_name  
 **When** the system validates it  
 **Then** it should check:
-  - Not empty or whitespace only
-  - Length: 1-200 characters
-  - Contains at least one alphabetic character  
-**And** trim leading/trailing whitespace  
-**And** reject: "", "   ", "123", "@#$%"
+
+- Not empty or whitespace only
+- Length: 1-200 characters
+- Contains at least one alphabetic character  
+  **And** trim leading/trailing whitespace  
+  **And** reject: "", " ", "123", "@#$%"
 
 **AC3: Website URL Validation**
 
 **Given** a prospect has a website_url  
 **When** the system validates it  
 **Then** it should check:
-  - Valid URL format
-  - Scheme: http or https
-  - Valid domain structure  
-**And** normalize URL (add https:// if missing, remove trailing slash)  
-**And** accept: "acmecorp.com" → "https://acmecorp.com"  
-**And** reject: "not a url", "ftp://example.com"
+
+- Valid URL format
+- Scheme: http or https
+- Valid domain structure  
+  **And** normalize URL (add https:// if missing, remove trailing slash)  
+  **And** accept: "acmecorp.com" → "https://acmecorp.com"  
+  **And** reject: "not a url", "ftp://example.com"
 
 **AC4: Contact Name Validation**
 
 **Given** a prospect has a contact_name  
 **When** the system validates it  
 **Then** it should check:
-  - Length: 1-100 characters if provided
-  - Trim whitespace  
-**And** allow empty (optional field)
+
+- Length: 1-100 characters if provided
+- Trim whitespace  
+  **And** allow empty (optional field)
 
 **AC5: Validation Error Reporting**
 
 **Given** validation rules are applied to all rows  
 **When** validation completes  
 **Then** for each invalid row, capture:
-  - Row number
-  - Field name that failed
-  - Validation error message
-  - Original value  
-**And** create validation report with all errors
+
+- Row number
+- Field name that failed
+- Validation error message
+- Original value  
+  **And** create validation report with all errors
 
 **Technical Considerations:**
+
 - Use Zod schemas for validation rules
 - Use email-validator library or regex for RFC 5322
 - Use URL constructor for URL validation
@@ -1247,6 +1398,7 @@ So that **only valid prospect data is imported into the system**.
 - Limit error messages to first 100 errors to avoid overwhelming user
 
 **Definition of Done:**
+
 - [ ] Email validation working (RFC 5322 compliant)
 - [ ] Company name validation working
 - [ ] URL validation and normalization working
@@ -1289,10 +1441,11 @@ So that **users don't accidentally add the same prospect multiple times**.
 **Given** duplicates are detected  
 **When** the user reviews validation report  
 **Then** they should have options:
-  - Keep first occurrence, discard duplicates (default)
-  - Choose which row to keep
-  - Skip all duplicates  
-**And** selection should apply before final import
+
+- Keep first occurrence, discard duplicates (default)
+- Choose which row to keep
+- Skip all duplicates  
+  **And** selection should apply before final import
 
 **AC4: Performance**
 
@@ -1302,12 +1455,14 @@ So that **users don't accidentally add the same prospect multiple times**.
 **And** use efficient data structure (Set or Map)
 
 **Technical Considerations:**
+
 - Use Map or Set with lowercase email as key
 - Store row number for reporting first occurrence
 - Consider normalizing emails (trim, lowercase) before comparison
 - Optimize for large datasets (stream processing if needed)
 
 **Definition of Done:**
+
 - [ ] Duplicate detection implemented
 - [ ] Case-insensitive matching working
 - [ ] Error reporting includes duplicates
@@ -1362,12 +1517,14 @@ So that **users don't contact the same person multiple times**.
 **And** show warning in UI: "X duplicates will be added despite existing entries"
 
 **Technical Considerations:**
+
 - Query: `SELECT contact_email, campaign_id, created_at FROM crm.people WHERE organisation_id = ? AND contact_email IN (?) AND created_at > NOW() - INTERVAL '90 days'`
 - Use batch queries (chunks of 100 emails)
 - Cache recent lookups to avoid repeated queries
 - Consider indexing strategy for fast lookups
 
 **Definition of Done:**
+
 - [ ] Campaign-level duplicate check working
 - [ ] 90-day organization duplicate check working
 - [ ] Database query optimized
@@ -1394,55 +1551,60 @@ So that **I can fix issues and successfully import valid prospects**.
 **Given** CSV validation completes  
 **When** the report displays  
 **Then** it should show summary:
-  - Total rows uploaded: X
-  - Valid prospects: Y (green)
-  - Invalid prospects: Z (red)
-  - Duplicates: W (yellow)  
-**And** show donut chart or progress bar visualization
+
+- Total rows uploaded: X
+- Valid prospects: Y (green)
+- Invalid prospects: Z (red)
+- Duplicates: W (yellow)  
+  **And** show donut chart or progress bar visualization
 
 **AC2: Error Detail Table**
 
 **Given** there are validation errors  
 **When** I view the error details  
 **Then** I should see a table with columns:
-  - Row # (sortable)
-  - Company Name
-  - Contact Email
-  - Error Type (Invalid Email, Missing Field, Duplicate)
-  - Error Message  
-**And** table should be sortable by column  
-**And** I should be able to search/filter errors
+
+- Row # (sortable)
+- Company Name
+- Contact Email
+- Error Type (Invalid Email, Missing Field, Duplicate)
+- Error Message  
+  **And** table should be sortable by column  
+  **And** I should be able to search/filter errors
 
 **AC3: User Action Options**
 
 **Given** I review the validation report  
 **When** I choose next steps  
 **Then** I should see action buttons:
-  - "Import Valid Only" (Y prospects) - primary action
-  - "Download Errors" (CSV of invalid rows for fixing)
-  - "Cancel Import"  
-**And** choosing "Import Valid Only" should require confirmation if < 50% valid
+
+- "Import Valid Only" (Y prospects) - primary action
+- "Download Errors" (CSV of invalid rows for fixing)
+- "Cancel Import"  
+  **And** choosing "Import Valid Only" should require confirmation if < 50% valid
 
 **AC4: Download Errors CSV**
 
 **Given** I want to fix errors offline  
 **When** I click "Download Errors"  
 **Then** a CSV file should download containing:
-  - All original columns
-  - Additional column: "Error_Reason"  
-**And** I can fix errors and re-upload
+
+- All original columns
+- Additional column: "Error_Reason"  
+  **And** I can fix errors and re-upload
 
 **AC5: Import Valid Prospects**
 
 **Given** I click "Import Valid Only"  
 **When** the import executes  
 **Then** valid prospects should be inserted into database:
-  - Table: `crm.people`
-  - Status: "New"
-  - Linked to campaign_id
-  - Timestamps: created_at, updated_at  
-**And** success message should display: "Y prospects added to campaign"  
-**And** I should navigate back to campaign detail page
+
+- Table: `crm.people`
+- Status: "New"
+- Linked to campaign_id
+- Timestamps: created_at, updated_at  
+  **And** success message should display: "Y prospects added to campaign"  
+  **And** I should navigate back to campaign detail page
 
 **AC6: Import Progress**
 
@@ -1453,6 +1615,7 @@ So that **I can fix issues and successfully import valid prospects**.
 **And** complete in < 5 seconds for 100 prospects
 
 **Technical Considerations:**
+
 - Build validation report object with summary and errors array
 - Use transaction for batch insert
 - Generate error CSV on backend for consistency
@@ -1460,6 +1623,7 @@ So that **I can fix issues and successfully import valid prospects**.
 - Log all import actions for audit
 
 **Definition of Done:**
+
 - [ ] Validation report UI implemented
 - [ ] Error detail table with sort/filter working
 - [ ] Action buttons functional
@@ -1484,6 +1648,7 @@ So that **I can fix issues and successfully import valid prospects**.
 **Epic Goal:** Automatically research each prospect through web scraping and social media scanning to generate personalized insights and opportunity hooks.
 
 **Success Criteria:**
+
 - Research completes within 2 minutes per prospect
 - Research profiles include business summary and 2-3 hooks
 - Confidence scores accurately reflect research quality
@@ -1524,12 +1689,13 @@ So that **research doesn't block the UI and can be processed at scale**.
 **Given** a research job is dequeued  
 **When** the worker processes it  
 **Then** it should:
-  1. Update prospect status to "Researching"
-  2. Execute research workflow (web scraping + social scanning)
-  3. Generate research profile
-  4. Update prospect status to "Researched" or "Research Failed"
-  5. ACK message to RabbitMQ  
-**And** processing time should be logged
+
+1. Update prospect status to "Researching"
+2. Execute research workflow (web scraping + social scanning)
+3. Generate research profile
+4. Update prospect status to "Researched" or "Research Failed"
+5. ACK message to RabbitMQ  
+   **And** processing time should be logged
 
 **AC4: Job Timeout Handling**
 
@@ -1554,13 +1720,15 @@ So that **research doesn't block the UI and can be processed at scale**.
 **Given** research jobs are processing  
 **When** the user views campaign dashboard  
 **Then** they should see:
-  - Total prospects: X
-  - Researched: Y
-  - In Progress: Z
-  - Failed: W  
-**And** progress bar showing % complete
+
+- Total prospects: X
+- Researched: Y
+- In Progress: Z
+- Failed: W  
+  **And** progress bar showing % complete
 
 **Technical Considerations:**
+
 - Use RabbitMQ with durable queues
 - Implement job locking to prevent duplicate processing
 - Store job state in database for tracking
@@ -1569,6 +1737,7 @@ So that **research doesn't block the UI and can be processed at scale**.
 - Set message TTL for stale jobs (24 hours)
 
 **Definition of Done:**
+
 - [ ] Research queue configured in RabbitMQ
 - [ ] Jobs enqueued on prospect import
 - [ ] Research worker consuming messages
@@ -1597,61 +1766,66 @@ So that **I can extract business information and identify content opportunities*
 **Given** a prospect has a valid website_url  
 **When** the scraper starts  
 **Then** it should attempt to scrape:
-  1. Homepage (/)
-  2. About page (/about, /about-us, /company)
-  3. Services page (/services, /what-we-do)
-  4. Blog/News (if present: /blog, /news, /updates)  
-**And** follow robots.txt rules  
-**And** set User-Agent header identifying the bot  
-**And** respect rate limits (max 1 request per second per domain)
+
+1. Homepage (/)
+2. About page (/about, /about-us, /company)
+3. Services page (/services, /what-we-do)
+4. Blog/News (if present: /blog, /news, /updates)  
+   **And** follow robots.txt rules  
+   **And** set User-Agent header identifying the bot  
+   **And** respect rate limits (max 1 request per second per domain)
 
 **AC2: Content Extraction**
 
 **Given** a page is successfully scraped  
 **When** the HTML is parsed  
 **Then** extract:
-  - Page title and meta description
-  - Main heading (H1)
-  - Body text (cleaned, no HTML tags)
-  - Images with alt text
-  - Links to social media profiles  
-**And** store raw HTML for debugging (temp storage, 24 hours)  
-**And** limit content extraction to 10,000 characters per page
+
+- Page title and meta description
+- Main heading (H1)
+- Body text (cleaned, no HTML tags)
+- Images with alt text
+- Links to social media profiles  
+  **And** store raw HTML for debugging (temp storage, 24 hours)  
+  **And** limit content extraction to 10,000 characters per page
 
 **AC3: Error Handling**
 
 **Given** website scraping encounters an error  
 **When** the error occurs  
 **Then** handle gracefully:
-  - 404 Not Found: Log and skip page
-  - 403 Forbidden / 401 Unauthorized: Skip domain
-  - SSL errors: Try HTTP fallback, then skip
-  - Timeout (30 seconds): Log and skip page
-  - Invalid URL: Mark research as failed  
-**And** continue with remaining pages if some succeed
+
+- 404 Not Found: Log and skip page
+- 403 Forbidden / 401 Unauthorized: Skip domain
+- SSL errors: Try HTTP fallback, then skip
+- Timeout (30 seconds): Log and skip page
+- Invalid URL: Mark research as failed  
+  **And** continue with remaining pages if some succeed
 
 **AC4: Robots.txt Compliance**
 
 **Given** a website has robots.txt  
 **When** the scraper checks it  
 **Then** it should:
-  - Parse robots.txt
-  - Check if bot is allowed on target paths
-  - Skip disallowed paths
-  - Log skipped pages  
-**And** respect crawl-delay directive
+
+- Parse robots.txt
+- Check if bot is allowed on target paths
+- Skip disallowed paths
+- Log skipped pages  
+  **And** respect crawl-delay directive
 
 **AC5: Content Cleaning and Normalization**
 
 **Given** HTML content is extracted  
 **When** text processing occurs  
 **Then** it should:
-  - Remove scripts, styles, navigation
-  - Strip HTML tags
-  - Normalize whitespace
-  - Remove boilerplate (cookie notices, footers)
-  - Extract main content only  
-**And** output clean, readable text
+
+- Remove scripts, styles, navigation
+- Strip HTML tags
+- Normalize whitespace
+- Remove boilerplate (cookie notices, footers)
+- Extract main content only  
+  **And** output clean, readable text
 
 **AC6: Performance**
 
@@ -1662,6 +1836,7 @@ So that **I can extract business information and identify content opportunities*
 **And** use connection pooling for efficiency
 
 **Technical Considerations:**
+
 - Use Cheerio for HTML parsing (fast, lightweight)
 - Use Axios or Got for HTTP requests
 - Implement retry logic with exponential backoff
@@ -1671,6 +1846,7 @@ So that **I can extract business information and identify content opportunities*
 - Consider using Puppeteer for JavaScript-heavy sites (future enhancement)
 
 **Definition of Done:**
+
 - [ ] Website scraper implemented
 - [ ] robots.txt compliance working
 - [ ] Content extraction and cleaning working
@@ -1699,59 +1875,64 @@ So that **I can identify timely personalization hooks**.
 **Given** a website is scraped  
 **When** social media links are found  
 **Then** extract links for:
-  - Instagram (instagram.com/[username])
-  - LinkedIn (linkedin.com/company/[company])
-  - Facebook (facebook.com/[pagename])  
-**And** validate and normalize URLs  
-**And** store in database: `social_profiles` table
+
+- Instagram (instagram.com/[username])
+- LinkedIn (linkedin.com/company/[company])
+- Facebook (facebook.com/[pagename])  
+  **And** validate and normalize URLs  
+  **And** store in database: `social_profiles` table
 
 **AC2: Instagram Public Scraping**
 
 **Given** an Instagram profile URL is found  
 **When** the scraper accesses the page  
 **Then** it should extract:
-  - Recent posts (last 30 days, max 12 posts)
-  - Post captions
-  - Post dates
-  - Like/comment counts (if visible)
-  - Profile bio  
-**And** respect Instagram's rate limits  
-**And** handle private profiles gracefully (skip with log)
+
+- Recent posts (last 30 days, max 12 posts)
+- Post captions
+- Post dates
+- Like/comment counts (if visible)
+- Profile bio  
+  **And** respect Instagram's rate limits  
+  **And** handle private profiles gracefully (skip with log)
 
 **AC3: LinkedIn Company Page Scraping**
 
 **Given** a LinkedIn company page URL is found  
 **When** the scraper accesses the page  
 **Then** it should extract:
-  - Recent posts (last 30 days)
-  - Post text
-  - Post dates
-  - Company description
-  - Employee count (if visible)  
-**And** handle login walls gracefully (limited public data)
+
+- Recent posts (last 30 days)
+- Post text
+- Post dates
+- Company description
+- Employee count (if visible)  
+  **And** handle login walls gracefully (limited public data)
 
 **AC4: Facebook Page Scraping**
 
 **Given** a Facebook page URL is found  
 **When** the scraper accesses the page  
 **Then** it should extract:
-  - Recent posts (last 30 days)
-  - Post text
-  - Post dates
-  - Page about info  
-**And** handle restricted content gracefully
+
+- Recent posts (last 30 days)
+- Post text
+- Post dates
+- Page about info  
+  **And** handle restricted content gracefully
 
 **AC5: Content Analysis for Hooks**
 
 **Given** social media content is scraped  
 **When** analyzing for opportunities  
 **Then** identify patterns:
-  - Recent product launches
-  - Event announcements
-  - Behind-the-scenes content
-  - Customer testimonials
-  - Content gaps (e.g., no video content but lots of photos)  
-**And** store findings with source URLs
+
+- Recent product launches
+- Event announcements
+- Behind-the-scenes content
+- Customer testimonials
+- Content gaps (e.g., no video content but lots of photos)  
+  **And** store findings with source URLs
 
 **AC6: Graceful Degradation**
 
@@ -1766,13 +1947,15 @@ So that **I can identify timely personalization hooks**.
 **Given** multiple prospects are researched concurrently  
 **When** social media scraping occurs  
 **Then** implement rate limits:
-  - Max 10 requests per minute per platform
-  - Randomized delays between requests (2-5 seconds)
-  - Rotating user agents  
-**And** respect platform terms of service  
-**And** implement circuit breaker if repeatedly blocked
+
+- Max 10 requests per minute per platform
+- Randomized delays between requests (2-5 seconds)
+- Rotating user agents  
+  **And** respect platform terms of service  
+  **And** implement circuit breaker if repeatedly blocked
 
 **Technical Considerations:**
+
 - Social media scraping is fragile and may break with layout changes
 - Consider using unofficial APIs or libraries when available
 - Implement caching to avoid re-scraping same profiles
@@ -1782,6 +1965,7 @@ So that **I can identify timely personalization hooks**.
 - Monitor success/failure rates per platform
 
 **Definition of Done:**
+
 - [ ] Social profile discovery working
 - [ ] Instagram scraping implemented
 - [ ] LinkedIn scraping implemented
@@ -1811,58 +1995,64 @@ So that **users have specific, relevant talking points for outreach**.
 **Given** website and social data is collected  
 **When** opportunity analysis runs  
 **Then** identify gaps:
-  - "Has Instagram but no video content"
-  - "Blogs regularly but no visual storytelling"
-  - "Active on LinkedIn but posts are text-only"
-  - "Mentions events but no event coverage videos"  
-**And** rank opportunities by relevance to video production
+
+- "Has Instagram but no video content"
+- "Blogs regularly but no visual storytelling"
+- "Active on LinkedIn but posts are text-only"
+- "Mentions events but no event coverage videos"  
+  **And** rank opportunities by relevance to video production
 
 **AC2: Recent Activity Detection**
 
 **Given** social media posts from last 30 days  
 **When** analyzing for timeliness  
 **Then** identify:
-  - Product launches (keywords: "new", "launch", "introducing")
-  - Events (keywords: "event", "conference", "webinar")
-  - Milestones (keywords: "anniversary", "milestone", "celebrating")
-  - Customer stories (keywords: "customer", "testimonial", "success")  
-**And** prioritize very recent activity (< 7 days) higher
+
+- Product launches (keywords: "new", "launch", "introducing")
+- Events (keywords: "event", "conference", "webinar")
+- Milestones (keywords: "anniversary", "milestone", "celebrating")
+- Customer stories (keywords: "customer", "testimonial", "success")  
+  **And** prioritize very recent activity (< 7 days) higher
 
 **AC3: Industry Pattern Recognition**
 
 **Given** the prospect's industry/sector is identified  
 **When** analyzing opportunities  
 **Then** apply industry-specific templates:
-  - E-commerce: Product demo videos, unboxing content
-  - B2B SaaS: Customer testimonials, explainer videos
-  - Professional services: Thought leadership, team introductions
-  - Restaurants/Retail: Behind-the-scenes, atmosphere videos  
-**And** suggest relevant video types
+
+- E-commerce: Product demo videos, unboxing content
+- B2B SaaS: Customer testimonials, explainer videos
+- Professional services: Thought leadership, team introductions
+- Restaurants/Retail: Behind-the-scenes, atmosphere videos  
+  **And** suggest relevant video types
 
 **AC4: Hook Generation**
 
 **Given** opportunities are identified  
 **When** generating hooks  
 **Then** create 2-3 specific hooks with:
-  - Hook text (1-2 sentences, specific and actionable)
-  - Source URL (link to where insight was found)
-  - Confidence level (High, Medium, Low)
-  - Hook type (Content Gap, Recent Activity, Industry Pattern)  
-**And** prioritize by relevance and timeliness  
-**And** ensure each hook references specific, verifiable information
+
+- Hook text (1-2 sentences, specific and actionable)
+- Source URL (link to where insight was found)
+- Confidence level (High, Medium, Low)
+- Hook type (Content Gap, Recent Activity, Industry Pattern)  
+  **And** prioritize by relevance and timeliness  
+  **And** ensure each hook references specific, verifiable information
 
 **AC5: Hook Quality Criteria**
 
 **Given** a hook is generated  
 **When** validating quality  
 **Then** ensure it meets criteria:
-  - **Specific**: References actual content or activity
-  - **Relevant**: Related to video production opportunity
-  - **Timely**: Based on recent information (< 90 days)
-  - **Actionable**: Clear opportunity for outreach  
-**And** reject generic hooks that could apply to any prospect
+
+- **Specific**: References actual content or activity
+- **Relevant**: Related to video production opportunity
+- **Timely**: Based on recent information (< 90 days)
+- **Actionable**: Clear opportunity for outreach  
+  **And** reject generic hooks that could apply to any prospect
 
 **Technical Considerations:**
+
 - Use keyword matching and NLP for content analysis
 - Implement scoring algorithm for hook relevance
 - Consider using AI (OpenAI GPT) for hook refinement
@@ -1870,6 +2060,7 @@ So that **users have specific, relevant talking points for outreach**.
 - A/B test different hook types to measure effectiveness
 
 **Definition of Done:**
+
 - [ ] Content gap analysis working
 - [ ] Recent activity detection working
 - [ ] Industry pattern recognition implemented
@@ -1898,71 +2089,78 @@ So that **users and the AI drafting system have comprehensive prospect context**
 **Given** website and social data is analyzed  
 **When** generating the business summary  
 **Then** create a concise summary (2-3 sentences) including:
-  - What the company does (products/services)
-  - Industry/sector
-  - Notable characteristics (size, location, focus)  
-**And** extract from About page, homepage, LinkedIn description  
-**And** use clear, professional language
+
+- What the company does (products/services)
+- Industry/sector
+- Notable characteristics (size, location, focus)  
+  **And** extract from About page, homepage, LinkedIn description  
+  **And** use clear, professional language
 
 **AC2: Personalization Hooks Compilation**
 
 **Given** opportunity analysis identified hooks  
 **When** compiling the research profile  
 **Then** include top 2-3 hooks:
-  - Hook text
-  - Source URL
-  - Confidence level (High/Medium/Low)
-  - Hook type
-  - Date discovered  
-**And** sort by relevance score (highest first)
+
+- Hook text
+- Source URL
+- Confidence level (High/Medium/Low)
+- Hook type
+- Date discovered  
+  **And** sort by relevance score (highest first)
 
 **AC3: Confidence Score Calculation**
 
 **Given** research is completed  
 **When** calculating overall confidence score  
 **Then** consider factors:
-  - Data completeness (website found, social profiles found)
-  - Recency of information (< 30 days = higher)
-  - Number of hooks identified
-  - Quality of hooks (specific vs. generic)  
-**And** assign score: **High** (90-100%), **Medium** (60-89%), **Low** (< 60%)  
-**And** include confidence breakdown explanation
+
+- Data completeness (website found, social profiles found)
+- Recency of information (< 30 days = higher)
+- Number of hooks identified
+- Quality of hooks (specific vs. generic)  
+  **And** assign score: **High** (90-100%), **Medium** (60-89%), **Low** (< 60%)  
+  **And** include confidence breakdown explanation
 
 **AC4: Source Attribution**
 
 **Given** all research findings  
 **When** compiling the profile  
 **Then** store source URLs for:
-  - Business summary sources
-  - Each hook's source
-  - Social media profiles discovered  
-**And** ensure all URLs are valid and accessible
+
+- Business summary sources
+- Each hook's source
+- Social media profiles discovered  
+  **And** ensure all URLs are valid and accessible
 
 **AC5: Research Metadata**
 
 **Given** research profile is generated  
 **When** storing to database  
 **Then** include metadata:
-  - research_completed_at (timestamp)
-  - research_duration_seconds
-  - websites_scraped (count)
-  - social_profiles_found (count)
-  - confidence_score
-  - hooks_generated (count)
-  - failed_sources (list)  
-**And** store in `crm.prospect_research` table
+
+- research_completed_at (timestamp)
+- research_duration_seconds
+- websites_scraped (count)
+- social_profiles_found (count)
+- confidence_score
+- hooks_generated (count)
+- failed_sources (list)  
+  **And** store in `crm.prospect_research` table
 
 **AC6: Research Profile Storage**
 
 **Given** research profile is complete  
 **When** saving to database  
 **Then** update:
-  - `crm.people` table: status = "Researched", updated_at
-  - `crm.prospect_research` table: new row with full profile
-  - `research_queue` RabbitMQ: ACK message  
-**And** trigger next step: enqueue draft generation job
+
+- `crm.people` table: status = "Researched", updated_at
+- `crm.prospect_research` table: new row with full profile
+- `research_queue` RabbitMQ: ACK message  
+  **And** trigger next step: enqueue draft generation job
 
 **Technical Considerations:**
+
 - Use structured JSON format for research profile
 - Compress large text fields if needed
 - Index by prospect_id for fast lookup
@@ -1970,6 +2168,7 @@ So that **users and the AI drafting system have comprehensive prospect context**
 - Log all profile generation for quality monitoring
 
 **Definition of Done:**
+
 - [ ] Business summary generation working
 - [ ] Hooks compilation working
 - [ ] Confidence scoring implemented
@@ -1999,13 +2198,14 @@ So that **failed prospects are flagged with clear reasons and can be retried**.
 **Given** research fails for a prospect  
 **When** the failure is processed  
 **Then** classify the failure reason:
-  - "Website Unreachable" (DNS error, timeout)
-  - "Website Blocked" (403, bot detection)
-  - "Insufficient Data" (no content found)
-  - "Invalid URL" (malformed website_url)
-  - "Social Media Unavailable" (all platforms failed)
-  - "Processing Timeout" (exceeded 5 minutes)  
-**And** store failure reason in database
+
+- "Website Unreachable" (DNS error, timeout)
+- "Website Blocked" (403, bot detection)
+- "Insufficient Data" (no content found)
+- "Invalid URL" (malformed website_url)
+- "Social Media Unavailable" (all platforms failed)
+- "Processing Timeout" (exceeded 5 minutes)  
+  **And** store failure reason in database
 
 **AC2: Prospect Status Update**
 
@@ -2021,10 +2221,11 @@ So that **failed prospects are flagged with clear reasons and can be retried**.
 **Given** research fails for multiple prospects  
 **When** batch research completes  
 **Then** notify user:
-  - "X of Y prospects failed research"
-  - Link to view failed prospects
-  - Summary of failure reasons  
-**And** user can review and take action
+
+- "X of Y prospects failed research"
+- Link to view failed prospects
+- Summary of failure reasons  
+  **And** user can review and take action
 
 **AC4: Manual Retry Option**
 
@@ -2052,6 +2253,7 @@ So that **failed prospects are flagged with clear reasons and can be retried**.
 **And** require manual investigation
 
 **Technical Considerations:**
+
 - Store detailed error logs for debugging
 - Implement exponential backoff for retries
 - Monitor failure rates by reason to identify systemic issues
@@ -2059,6 +2261,7 @@ So that **failed prospects are flagged with clear reasons and can be retried**.
 - Alert team if failure rate > 20% for investigation
 
 **Definition of Done:**
+
 - [ ] Failure classification working
 - [ ] Prospect status updates working
 - [ ] User notification implemented
@@ -2083,6 +2286,7 @@ So that **failed prospects are flagged with clear reasons and can be retried**.
 **Epic Goal:** Use AI to generate personalized, professional email drafts based on research profiles, with transparency through confidence scores and reasoning.
 
 **Success Criteria:**
+
 - Drafts generated within 30 seconds per email
 - Each draft includes subject line, body (75-150 words), highlighted personalization
 - AI confidence scores accurately reflect draft quality
@@ -2106,59 +2310,64 @@ So that **the AI consistently produces professional, personalized outreach email
 **Given** an email draft needs to be generated  
 **When** constructing the AI prompt  
 **Then** include sections:
-  1. **System Context**: Role (video production prospecting expert), tone (professional, consultative), constraints (75-150 words)
-  2. **Prospect Context**: Company name, business summary, industry
-  3. **Personalization Hooks**: Top 2-3 hooks with sources
-  4. **Value Proposition**: Campaign value prop (from campaign settings)
-  5. **Output Format**: Subject, opening, value prop, CTA, signature  
-**And** prompt should be modular for easy iteration
+
+1. **System Context**: Role (video production prospecting expert), tone (professional, consultative), constraints (75-150 words)
+2. **Prospect Context**: Company name, business summary, industry
+3. **Personalization Hooks**: Top 2-3 hooks with sources
+4. **Value Proposition**: Campaign value prop (from campaign settings)
+5. **Output Format**: Subject, opening, value prop, CTA, signature  
+   **And** prompt should be modular for easy iteration
 
 **AC2: Personalization Emphasis**
 
 **Given** personalization hooks are included in prompt  
 **When** AI generates the draft  
 **Then** ensure prompt instructs AI to:
-  - Reference at least one specific hook naturally in opening
-  - Connect hook to opportunity for video content
-  - Avoid generic statements
-  - Sound like you've actually reviewed their content  
-**And** mark personalized sections for highlighting
+
+- Reference at least one specific hook naturally in opening
+- Connect hook to opportunity for video content
+- Avoid generic statements
+- Sound like you've actually reviewed their content  
+  **And** mark personalized sections for highlighting
 
 **AC3: Tone and Style Guidelines**
 
 **Given** the prompt includes tone instructions  
 **When** AI generates email  
 **Then** the prompt should enforce:
-  - Professional but conversational
-  - Consultative, not salesy
-  - Curiosity-driven, not pushy
-  - Helpful, offering value not just asking for meetings
-  - No buzzwords or jargon overload  
-**And** provide example phrases for desired tone
+
+- Professional but conversational
+- Consultative, not salesy
+- Curiosity-driven, not pushy
+- Helpful, offering value not just asking for meetings
+- No buzzwords or jargon overload  
+  **And** provide example phrases for desired tone
 
 **AC4: Subject Line Requirements**
 
 **Given** subject line generation is included  
 **When** AI creates subject  
 **Then** prompt should specify:
-  - Length: 30-60 characters
-  - Personalized (include company name or specific insight)
-  - Curiosity-driven (encourage open)
-  - Not clickbait or spammy
-  - Natural, human-written feel  
-**And** provide example subject lines
+
+- Length: 30-60 characters
+- Personalized (include company name or specific insight)
+- Curiosity-driven (encourage open)
+- Not clickbait or spammy
+- Natural, human-written feel  
+  **And** provide example subject lines
 
 **AC5: Call-to-Action Guidelines**
 
 **Given** CTA generation is part of prompt  
 **When** AI creates CTA  
 **Then** prompt should specify:
-  - Low-commitment ask (not "buy" or "sign up")
-  - Suggest quick call or coffee chat
-  - Give recipient easy out
-  - Propose 2-3 time options if appropriate
-  - Keep it light and friendly  
-**And** provide CTA examples
+
+- Low-commitment ask (not "buy" or "sign up")
+- Suggest quick call or coffee chat
+- Give recipient easy out
+- Propose 2-3 time options if appropriate
+- Keep it light and friendly  
+  **And** provide CTA examples
 
 **AC6: Prompt Versioning**
 
@@ -2170,6 +2379,7 @@ So that **the AI consistently produces professional, personalized outreach email
 **And** A/B testing capability for comparison
 
 **Technical Considerations:**
+
 - Use template literals or Handlebars for prompt assembly
 - Store prompts as structured data (JSON or YAML)
 - Implement prompt variables for easy customization
@@ -2178,6 +2388,7 @@ So that **the AI consistently produces professional, personalized outreach email
 - Consider token count optimization for API costs
 
 **Definition of Done:**
+
 - [ ] Base prompt template created
 - [ ] All sections (context, hooks, output format) included
 - [ ] Tone and style guidelines defined
@@ -2214,58 +2425,64 @@ So that **the system can leverage GPT models to create drafts**.
 **Given** a draft generation job is processed  
 **When** calling OpenAI API  
 **Then** send request with:
-  - Model: GPT-4 or GPT-3.5-turbo (configurable)
-  - Prompt: Assembled from template + prospect data
-  - Temperature: 0.7 (balance creativity and consistency)
-  - Max tokens: 400 (for ~150 word email)
-  - Top_p: 1.0  
-**And** include request ID for tracing
+
+- Model: GPT-4 or GPT-3.5-turbo (configurable)
+- Prompt: Assembled from template + prospect data
+- Temperature: 0.7 (balance creativity and consistency)
+- Max tokens: 400 (for ~150 word email)
+- Top_p: 1.0  
+  **And** include request ID for tracing
 
 **AC3: Response Parsing**
 
 **Given** OpenAI returns a completion  
 **When** parsing the response  
 **Then** extract:
-  - Subject line (first line or marked section)
-  - Email body (remaining text)
-  - Check for markers if structured output used  
-**And** validate output format (subject + body present)  
-**And** handle malformed responses gracefully
+
+- Subject line (first line or marked section)
+- Email body (remaining text)
+- Check for markers if structured output used  
+  **And** validate output format (subject + body present)  
+  **And** handle malformed responses gracefully
 
 **AC4: Error Handling**
 
 **Given** OpenAI API call fails  
 **When** the error occurs  
 **Then** handle specific errors:
-  - Rate limit (429): Retry with exponential backoff (5 retries)
-  - Invalid request (400): Log and mark draft as failed
-  - Timeout (> 30 seconds): Retry once, then fail
-  - Network error: Retry 3 times
-  - Insufficient quota: Alert team, mark drafts as failed  
-**And** log all errors with context for debugging
+
+- Rate limit (429): Retry with exponential backoff (5 retries)
+- Invalid request (400): Log and mark draft as failed
+- Timeout (> 30 seconds): Retry once, then fail
+- Network error: Retry 3 times
+- Insufficient quota: Alert team, mark drafts as failed  
+  **And** log all errors with context for debugging
 
 **AC5: Cost Tracking**
 
 **Given** OpenAI API calls incur costs  
 **When** each request completes  
 **Then** track:
-  - Tokens used (prompt + completion)
-  - Cost per request
-  - Cumulative daily cost  
-**And** store in database for reporting  
-**And** alert if daily cost exceeds threshold ($50)
+
+- Tokens used (prompt + completion)
+- Cost per request
+- Cumulative daily cost  
+  **And** store in database for reporting  
+  **And** alert if daily cost exceeds threshold ($50)
 
 **AC6: Performance Optimization**
 
 **Given** multiple drafts need generation  
 **When** processing a batch  
 **Then** implement:
-  - Concurrent requests (max 10 parallel)
-  - Request pooling to avoid rate limits
-  - Caching for repeated research profiles  
-**And** complete 30 drafts in < 5 minutes
+
+- Concurrent requests (max 10 parallel)
+- Request pooling to avoid rate limits
+- Caching for repeated research profiles  
+  **And** complete 30 drafts in < 5 minutes
 
 **Technical Considerations:**
+
 - Use official OpenAI Node.js SDK
 - Implement retry logic with exponential backoff
 - Set request timeout to 30 seconds
@@ -2274,6 +2491,7 @@ So that **the system can leverage GPT models to create drafts**.
 - Have fallback to simpler model (GPT-3.5) if GPT-4 fails
 
 **Definition of Done:**
+
 - [ ] OpenAI SDK integrated
 - [ ] Draft generation working end-to-end
 - [ ] Error handling for all scenarios
@@ -2302,76 +2520,83 @@ So that **draft generation runs asynchronously without blocking other operations
 **Given** the draft worker service is deployed  
 **When** it starts  
 **Then** it should:
-  - Connect to RabbitMQ `draft_queue`
-  - Set prefetch count to 3 (process 3 jobs concurrently)
-  - Log startup message with worker ID  
-**And** register shutdown handlers for graceful termination
+
+- Connect to RabbitMQ `draft_queue`
+- Set prefetch count to 3 (process 3 jobs concurrently)
+- Log startup message with worker ID  
+  **And** register shutdown handlers for graceful termination
 
 **AC2: Job Processing Workflow**
 
 **Given** a draft job is dequeued  
 **When** the worker processes it  
 **Then** execute steps:
-  1. Fetch prospect data (research profile, campaign details)
-  2. Assemble AI prompt from template
-  3. Call OpenAI API
-  4. Parse and validate response
-  5. Calculate confidence score
-  6. Store draft in database
-  7. Update prospect status to "Draft Ready"
-  8. ACK RabbitMQ message  
-**And** log each step with timing
+
+1. Fetch prospect data (research profile, campaign details)
+2. Assemble AI prompt from template
+3. Call OpenAI API
+4. Parse and validate response
+5. Calculate confidence score
+6. Store draft in database
+7. Update prospect status to "Draft Ready"
+8. ACK RabbitMQ message  
+   **And** log each step with timing
 
 **AC3: Draft Storage**
 
 **Given** draft generation succeeds  
 **When** storing the draft  
 **Then** save to `outreach.messages` table:
-  - message_id (UUID)
-  - prospect_id, campaign_id, organisation_id
-  - subject_line, body_text
-  - personalization_highlights (JSON array)
-  - ai_confidence_score
-  - prompt_version_id
-  - generation_duration_ms
-  - status: "Pending Review"
-  - created_at, updated_at  
-**And** use database transaction for consistency
+
+- message_id (UUID)
+- prospect_id, campaign_id, organisation_id
+- subject_line, body_text
+- personalization_highlights (JSON array)
+- ai_confidence_score
+- prompt_version_id
+- generation_duration_ms
+- status: "Pending Review"
+- created_at, updated_at  
+  **And** use database transaction for consistency
 
 **AC4: Personalization Highlighting**
 
 **Given** the draft includes personalized content  
 **When** storing the draft  
 **Then** identify and mark personalized sections:
-  - Extract sentences that reference research hooks
-  - Store character offsets or sentence indices
-  - Store hook IDs referenced  
-**And** store as JSON: `[{start: 45, end: 120, hookId: 'hook-1'}]`
+
+- Extract sentences that reference research hooks
+- Store character offsets or sentence indices
+- Store hook IDs referenced  
+  **And** store as JSON: `[{start: 45, end: 120, hookId: 'hook-1'}]`
 
 **AC5: Draft Failure Handling**
 
 **Given** draft generation fails (AI error, validation failure)  
 **When** the error occurs  
 **Then** the worker should:
-  - Log detailed error with context
-  - Update prospect status: "Draft Failed"
-  - Store failure reason
-  - NACK message for retry (max 2 retries)
-  - Alert on high failure rate (> 10%)
+
+- Log detailed error with context
+- Update prospect status: "Draft Failed"
+- Store failure reason
+- NACK message for retry (max 2 retries)
+- Alert on high failure rate (> 10%)
 
 **AC6: Worker Health Monitoring**
 
 **Given** the worker is running  
 **When** monitoring health  
 **Then** expose metrics:
-  - Drafts generated per minute
-  - Average generation time
-  - Success/failure rate
-  - Queue depth
-  - Active jobs count  
-**And** send to Prometheus for alerting
+
+- Drafts generated per minute
+- Average generation time
+- Success/failure rate
+- Queue depth
+- Active jobs count  
+  **And** send to Prometheus for alerting
 
 **Technical Considerations:**
+
 - Use worker pool pattern for concurrency
 - Implement job deduplication (check if draft already exists)
 - Use database connection pooling
@@ -2380,6 +2605,7 @@ So that **draft generation runs asynchronously without blocking other operations
 - Graceful shutdown: finish current jobs before exiting
 
 **Definition of Done:**
+
 - [ ] Draft worker service implemented
 - [ ] Job processing workflow working
 - [ ] Draft storage working
@@ -2408,66 +2634,73 @@ So that **users know which drafts are high-quality and which need more review**.
 **Given** a draft is generated  
 **When** calculating confidence score  
 **Then** evaluate factors (weighted):
-  - **Research Quality** (30%): Number and quality of hooks used
-  - **Personalization Depth** (25%): Specificity of references to prospect
-  - **Tone Consistency** (20%): Matches desired consultative tone
-  - **Structure Completeness** (15%): All sections present (subject, opening, value, CTA)
-  - **Length Appropriateness** (10%): Within 75-150 word range  
-**And** calculate overall score: 0-100
+
+- **Research Quality** (30%): Number and quality of hooks used
+- **Personalization Depth** (25%): Specificity of references to prospect
+- **Tone Consistency** (20%): Matches desired consultative tone
+- **Structure Completeness** (15%): All sections present (subject, opening, value, CTA)
+- **Length Appropriateness** (10%): Within 75-150 word range  
+  **And** calculate overall score: 0-100
 
 **AC2: Research Quality Assessment**
 
 **Given** research profile quality is evaluated  
 **When** calculating this component  
 **Then** consider:
-  - Number of hooks available (0 = Low, 1 = Medium, 2+ = High)
-  - Hook confidence levels (High hooks score higher)
-  - Recency of hooks (< 7 days scores higher)  
-**And** score: 0-30 points
+
+- Number of hooks available (0 = Low, 1 = Medium, 2+ = High)
+- Hook confidence levels (High hooks score higher)
+- Recency of hooks (< 7 days scores higher)  
+  **And** score: 0-30 points
 
 **AC3: Personalization Depth Assessment**
 
 **Given** draft personalization is evaluated  
 **When** calculating this component  
 **Then** check:
-  - Hook referenced in email (yes/no)
-  - Specific details mentioned (company name, specific content)
-  - Generic statements detected (reduce score)  
-**And** score: 0-25 points
+
+- Hook referenced in email (yes/no)
+- Specific details mentioned (company name, specific content)
+- Generic statements detected (reduce score)  
+  **And** score: 0-25 points
 
 **AC4: Tone and Structure Assessment**
 
 **Given** draft text is analyzed  
 **When** evaluating tone and structure  
 **Then** check for:
-  - Salesy words (discount, limited time) = reduce score
-  - Question marks in subject (clickbait) = reduce score
-  - Professional vocabulary maintained
-  - Clear CTA present
-  - Subject line length (30-60 chars)  
-**And** score tone (0-20), structure (0-15)
+
+- Salesy words (discount, limited time) = reduce score
+- Question marks in subject (clickbait) = reduce score
+- Professional vocabulary maintained
+- Clear CTA present
+- Subject line length (30-60 chars)  
+  **And** score tone (0-20), structure (0-15)
 
 **AC5: Confidence Level Classification**
 
 **Given** overall confidence score is calculated  
 **When** classifying confidence level  
 **Then** assign:
-  - **High**: 80-100 points (green badge)
-  - **Medium**: 60-79 points (yellow badge)
-  - **Low**: 0-59 points (red badge)  
-**And** store both numeric score and level
+
+- **High**: 80-100 points (green badge)
+- **Medium**: 60-79 points (yellow badge)
+- **Low**: 0-59 points (red badge)  
+  **And** store both numeric score and level
 
 **AC6: Confidence Explanation**
 
 **Given** confidence score is calculated  
 **When** storing the score  
 **Then** generate explanation text:
-  - "High confidence: Strong personalization with recent insights"
-  - "Medium confidence: Good structure but generic hook reference"
-  - "Low confidence: Limited research data available"  
-**And** help users understand the score
+
+- "High confidence: Strong personalization with recent insights"
+- "Medium confidence: Good structure but generic hook reference"
+- "Low confidence: Limited research data available"  
+  **And** help users understand the score
 
 **Technical Considerations:**
+
 - Use NLP library for text analysis (sentiment, keywords)
 - Consider using AI to evaluate tone (meta-analysis)
 - A/B test scoring weights to optimize for response rates
@@ -2475,6 +2708,7 @@ So that **users know which drafts are high-quality and which need more review**.
 - Adjust algorithm based on user feedback (edit frequency)
 
 **Definition of Done:**
+
 - [ ] Confidence scoring algorithm implemented
 - [ ] All components calculated correctly
 - [ ] Score and level stored in database
@@ -2502,55 +2736,61 @@ So that **I understand the personalization and can trust the AI's reasoning**.
 **Given** a draft is generated  
 **When** AI completes the generation  
 **Then** capture reasoning that explains:
-  - Which hook(s) were used and why
-  - How the hook connects to video opportunity
-  - Why this value prop fits this prospect
-  - What makes this email personalized  
-**And** store reasoning text with draft
+
+- Which hook(s) were used and why
+- How the hook connects to video opportunity
+- Why this value prop fits this prospect
+- What makes this email personalized  
+  **And** store reasoning text with draft
 
 **AC2: Source Attribution**
 
 **Given** a draft references research findings  
 **When** storing the draft  
 **Then** link to source URLs:
-  - Hook source URLs (website page, social post)
-  - Research profile ID
-  - Specific sections referenced  
-**And** store as structured data (JSON array)
+
+- Hook source URLs (website page, social post)
+- Research profile ID
+- Specific sections referenced  
+  **And** store as structured data (JSON array)
 
 **AC3: Reasoning Display in UI**
 
 **Given** user reviews a draft  
 **When** viewing draft details  
 **Then** show expandable "AI Reasoning" section with:
-  - Why this approach was chosen
-  - Sources consulted (clickable links)
-  - Confidence score breakdown  
-**And** make reasoning easily accessible but not cluttering
+
+- Why this approach was chosen
+- Sources consulted (clickable links)
+- Confidence score breakdown  
+  **And** make reasoning easily accessible but not cluttering
 
 **AC4: Highlighted Personalization**
 
 **Given** draft includes personalized content  
 **When** displaying the email  
 **Then** highlight personalized sections:
-  - Different background color (light blue)
-  - Tooltip on hover showing source
-  - Clear visual distinction from template content  
-**And** help user identify what makes email unique
+
+- Different background color (light blue)
+- Tooltip on hover showing source
+- Clear visual distinction from template content  
+  **And** help user identify what makes email unique
 
 **AC5: Edit Tracking for Learning**
 
 **Given** user edits a draft  
 **When** changes are saved  
 **Then** log edit type:
-  - Subject change
-  - Personalization change
-  - Tone/style change
-  - Structure change
-  - Complete rewrite  
-**And** store for future prompt improvement
+
+- Subject change
+- Personalization change
+- Tone/style change
+- Structure change
+- Complete rewrite  
+  **And** store for future prompt improvement
 
 **Technical Considerations:**
+
 - Consider asking AI to include reasoning in output (structured format)
 - Store reasoning separately from email text
 - Use NLP to auto-detect edited sections
@@ -2558,6 +2798,7 @@ So that **I understand the personalization and can trust the AI's reasoning**.
 - Consider showing AI reasoning during generation (transparency)
 
 **Definition of Done:**
+
 - [ ] Reasoning generation implemented
 - [ ] Source attribution stored
 - [ ] Reasoning display in UI working
@@ -2585,56 +2826,62 @@ So that **I can get alternative approaches without starting from scratch**.
 **Given** I am reviewing a draft  
 **When** I click "Regenerate Draft"  
 **Then** a confirmation modal should display:
-  - "Generate a new version of this draft?"
-  - "This will replace the current draft"
-  - "Previous version will be saved in history"
-  - "Regenerate" and "Cancel" buttons
+
+- "Generate a new version of this draft?"
+- "This will replace the current draft"
+- "Previous version will be saved in history"
+- "Regenerate" and "Cancel" buttons
 
 **AC2: Regeneration Execution**
 
 **Given** I confirm regeneration  
 **When** the regeneration job is queued  
 **Then** it should:
-  - Archive current draft (move to draft_history table)
-  - Create new draft generation job with same prospect/campaign
-  - Optionally vary prompt (temperature, phrasing) for different output
-  - Process via draft worker
-  - Update UI with new draft when complete  
-**And** show loading state during regeneration
+
+- Archive current draft (move to draft_history table)
+- Create new draft generation job with same prospect/campaign
+- Optionally vary prompt (temperature, phrasing) for different output
+- Process via draft worker
+- Update UI with new draft when complete  
+  **And** show loading state during regeneration
 
 **AC3: Draft Version History**
 
 **Given** multiple drafts have been generated for a prospect  
 **When** viewing draft history  
 **Then** I should see:
-  - List of previous versions with timestamps
-  - Ability to preview each version
-  - Option to restore a previous version
-  - Indication of which version is currently active  
-**And** history should be accessible from draft detail view
+
+- List of previous versions with timestamps
+- Ability to preview each version
+- Option to restore a previous version
+- Indication of which version is currently active  
+  **And** history should be accessible from draft detail view
 
 **AC4: Prompt Variation for Regeneration**
 
 **Given** regeneration is requested  
 **When** assembling the prompt  
 **Then** introduce variation:
-  - Slightly increase temperature (0.7 → 0.85)
-  - Rephrase instructions slightly
-  - Emphasize different hook if multiple available
-  - Try different subject line style  
-**And** increase likelihood of different output
+
+- Slightly increase temperature (0.7 → 0.85)
+- Rephrase instructions slightly
+- Emphasize different hook if multiple available
+- Try different subject line style  
+  **And** increase likelihood of different output
 
 **AC5: Regeneration Limits**
 
 **Given** regeneration can be costly  
 **When** user attempts to regenerate  
 **Then** enforce limits:
-  - Max 3 regenerations per prospect per day
-  - Show regeneration count: "2 of 3 regenerations used"
-  - Require confirmation if limit is reached  
-**And** track regeneration frequency for optimization
+
+- Max 3 regenerations per prospect per day
+- Show regeneration count: "2 of 3 regenerations used"
+- Require confirmation if limit is reached  
+  **And** track regeneration frequency for optimization
 
 **Technical Considerations:**
+
 - Store all draft versions for analysis (learn what works)
 - Consider showing side-by-side comparison of versions
 - Track which versions get approved (feedback signal)
@@ -2642,6 +2889,7 @@ So that **I can get alternative approaches without starting from scratch**.
 - Implement soft limits to prevent API cost overruns
 
 **Definition of Done:**
+
 - [ ] Regenerate button working
 - [ ] Confirmation modal implemented
 - [ ] Draft versioning working
@@ -2678,20 +2926,22 @@ So that **users can start reviewing emails quickly after importing prospects**.
 **Given** multiple drafts are being generated  
 **When** user views campaign dashboard  
 **Then** show batch progress:
-  - "Generating drafts: 15 of 100 complete"
-  - Progress bar
-  - Estimated time remaining  
-**And** update in real-time (polling or websockets)
+
+- "Generating drafts: 15 of 100 complete"
+- Progress bar
+- Estimated time remaining  
+  **And** update in real-time (polling or websockets)
 
 **AC3: Priority Queue Management**
 
 **Given** multiple campaigns are generating drafts  
 **When** jobs are in the queue  
 **Then** prioritize by:
-  - Campaign urgency (user-set priority)
-  - Research recency (process fresh research first)
-  - User tier (premium users get priority)  
-**And** implement priority queue in RabbitMQ
+
+- Campaign urgency (user-set priority)
+- Research recency (process fresh research first)
+- User tier (premium users get priority)  
+  **And** implement priority queue in RabbitMQ
 
 **AC4: Failure Impact Minimization**
 
@@ -2706,12 +2956,14 @@ So that **users can start reviewing emails quickly after importing prospects**.
 **Given** all drafts in a campaign are generated  
 **When** the last draft completes  
 **Then** notify user:
-  - In-app notification: "100 drafts ready for review"
-  - Optional email notification
-  - Link to review queue  
-**And** celebrate milestone if large batch
+
+- In-app notification: "100 drafts ready for review"
+- Optional email notification
+- Link to review queue  
+  **And** celebrate milestone if large batch
 
 **Technical Considerations:**
+
 - Use RabbitMQ message properties for priority
 - Implement batch status tracking in Redis for performance
 - Consider WebSocket for real-time progress updates
@@ -2719,6 +2971,7 @@ So that **users can start reviewing emails quickly after importing prospects**.
 - Implement backpressure if queue gets too large
 
 **Definition of Done:**
+
 - [ ] Automatic enqueue on research completion
 - [ ] Batch progress tracking working
 - [ ] Priority queue implemented
@@ -2742,6 +2995,7 @@ So that **users can start reviewing emails quickly after importing prospects**.
 **Epic Goal:** Provide an efficient, keyboard-driven interface for users to review, edit, and approve AI-generated drafts at scale.
 
 **Success Criteria:**
+
 - Review interface displays drafts with all context (research, confidence, preview)
 - Keyboard shortcuts enable rapid review (< 30 seconds per draft)
 - Inline editing works smoothly
@@ -2765,54 +3019,60 @@ So that **I can efficiently process my outreach emails**.
 **Given** I navigate to the review interface  
 **When** the page loads  
 **Then** I should see:
-  - Queue counter: "15 of 100 drafts reviewed"
-  - Progress bar showing completion percentage
-  - Current draft in focus (large, center)
-  - Thumbnail navigation (previous/next drafts visible)  
-**And** load current draft in < 1 second
+
+- Queue counter: "15 of 100 drafts reviewed"
+- Progress bar showing completion percentage
+- Current draft in focus (large, center)
+- Thumbnail navigation (previous/next drafts visible)  
+  **And** load current draft in < 1 second
 
 **AC2: Draft Card Layout**
 
 **Given** I am viewing a draft  
 **When** the card displays  
 **Then** I should see sections:
-  - **Left Panel**: Prospect info (company, name, website link), research highlights, sources, confidence score
-  - **Center Panel**: Draft (subject + body), editable
-  - **Right Panel**: Email preview (how it will look sent), action buttons  
-**And** layout should be responsive and spacious
+
+- **Left Panel**: Prospect info (company, name, website link), research highlights, sources, confidence score
+- **Center Panel**: Draft (subject + body), editable
+- **Right Panel**: Email preview (how it will look sent), action buttons  
+  **And** layout should be responsive and spacious
 
 **AC3: Queue Filtering**
 
 **Given** I want to focus on specific drafts  
 **When** I apply filters  
 **Then** I should be able to filter by:
-  - Confidence level (High, Medium, Low)
-  - Campaign
-  - Review status (Unreviewed, Edited, Approved)  
-**And** filter should update queue count  
-**And** persist filter selection in session
+
+- Confidence level (High, Medium, Low)
+- Campaign
+- Review status (Unreviewed, Edited, Approved)  
+  **And** filter should update queue count  
+  **And** persist filter selection in session
 
 **AC4: Queue Sorting**
 
 **Given** I want to organize my review process  
 **When** I select sorting options  
 **Then** I should be able to sort by:
-  - Confidence score (high to low, or low to high)
-  - Date added (newest first, oldest first)
-  - Company name (alphabetical)  
-**And** default sort: Newest first
+
+- Confidence score (high to low, or low to high)
+- Date added (newest first, oldest first)
+- Company name (alphabetical)  
+  **And** default sort: Newest first
 
 **AC5: Empty Queue State**
 
 **Given** all drafts have been reviewed  
 **When** I view the review queue  
 **Then** show empty state:
-  - Celebration message: "All drafts reviewed! 🎉"
-  - Summary: "100 approved, 10 regenerated, 5 skipped"
-  - "View Approved Drafts" button  
-**And** encourage next action
+
+- Celebration message: "All drafts reviewed! 🎉"
+- Summary: "100 approved, 10 regenerated, 5 skipped"
+- "View Approved Drafts" button  
+  **And** encourage next action
 
 **Technical Considerations:**
+
 - Fetch drafts with status "Pending Review"
 - Prefetch next 3 drafts for instant navigation
 - Use cursor-based pagination for large queues
@@ -2820,6 +3080,7 @@ So that **I can efficiently process my outreach emails**.
 - Lazy load research data to improve initial load time
 
 **Definition of Done:**
+
 - [ ] Review queue interface implemented
 - [ ] Draft card layout working
 - [ ] Filtering functional
@@ -2848,15 +3109,16 @@ So that **I can rapidly approve emails without constantly clicking buttons**.
 **Given** I am in the review interface  
 **When** I press keyboard shortcuts  
 **Then** actions should trigger:
-  - **A**: Approve draft and move to next
-  - **E**: Enter edit mode (focus on subject line)
-  - **S**: Skip draft and move to next
-  - **R**: Regenerate draft
-  - **→ (Right Arrow)**: Next draft (without approving)
-  - **← (Left Arrow)**: Previous draft
-  - **Ctrl+Enter**: Save edits and approve
-  - **Esc**: Cancel edit mode / close modals  
-**And** shortcuts should work consistently throughout interface
+
+- **A**: Approve draft and move to next
+- **E**: Enter edit mode (focus on subject line)
+- **S**: Skip draft and move to next
+- **R**: Regenerate draft
+- **→ (Right Arrow)**: Next draft (without approving)
+- **← (Left Arrow)**: Previous draft
+- **Ctrl+Enter**: Save edits and approve
+- **Esc**: Cancel edit mode / close modals  
+  **And** shortcuts should work consistently throughout interface
 
 **AC2: Keyboard Shortcut Visual Hints**
 
@@ -2879,22 +3141,25 @@ So that **I can rapidly approve emails without constantly clicking buttons**.
 **Given** I want to reference shortcuts  
 **When** I press '?' key or click Help icon  
 **Then** a modal should display with all shortcuts:
-  - Action name, keyboard shortcut, description
-  - Grouped by category (navigation, actions, editing)
-  - Searchable list  
-**And** printable/exportable reference card
+
+- Action name, keyboard shortcut, description
+- Grouped by category (navigation, actions, editing)
+- Searchable list  
+  **And** printable/exportable reference card
 
 **AC5: Accessibility for Non-keyboard Users**
 
 **Given** a user cannot use keyboard shortcuts  
 **When** they use the interface  
 **Then** all actions should also be accessible via:
-  - Mouse clicks on buttons
-  - Touch gestures on mobile
-  - Screen reader announcements  
-**And** ensure no functionality is keyboard-only
+
+- Mouse clicks on buttons
+- Touch gestures on mobile
+- Screen reader announcements  
+  **And** ensure no functionality is keyboard-only
 
 **Technical Considerations:**
+
 - Use event listener for keydown events
 - Implement mousetrap or hotkeys-js library
 - Prevent default browser shortcuts (e.g., Ctrl+S)
@@ -2903,6 +3168,7 @@ So that **I can rapidly approve emails without constantly clicking buttons**.
 - Consider customizable shortcuts (future enhancement)
 
 **Definition of Done:**
+
 - [ ] All keyboard shortcuts working
 - [ ] Visual hints implemented
 - [ ] Shortcut cheat sheet accessible
@@ -2930,11 +3196,12 @@ So that **I can fine-tune emails without leaving the workflow**.
 **Given** I am reviewing a draft  
 **When** I press 'E' or click "Edit" button  
 **Then** draft should enter edit mode:
-  - Subject line becomes editable input
-  - Body text becomes editable textarea
-  - Action buttons change to "Save" and "Cancel"
-  - Personalization highlights remain visible  
-**And** cursor should focus on subject line
+
+- Subject line becomes editable input
+- Body text becomes editable textarea
+- Action buttons change to "Save" and "Cancel"
+- Personalization highlights remain visible  
+  **And** cursor should focus on subject line
 
 **AC2: Real-time Character Count**
 
@@ -2957,12 +3224,13 @@ So that **I can fine-tune emails without leaving the workflow**.
 **Given** I have made changes to a draft  
 **When** I press Ctrl+Enter or click "Save"  
 **Then** changes should be saved to database:
-  - Update subject_line and body_text
-  - Log edit timestamp and user_id
-  - Update edited_at field
-  - Mark draft as "Edited"  
-**And** show success feedback: "Edits saved"  
-**And** remain in edit mode for further changes
+
+- Update subject_line and body_text
+- Log edit timestamp and user_id
+- Update edited_at field
+- Mark draft as "Edited"  
+  **And** show success feedback: "Edits saved"  
+  **And** remain in edit mode for further changes
 
 **AC5: Auto-save Draft**
 
@@ -2981,6 +3249,7 @@ So that **I can fine-tune emails without leaving the workflow**.
 **And** clicking "Keep Editing" returns to edit mode
 
 **Technical Considerations:**
+
 - Use controlled components for form inputs
 - Implement debounced auto-save (30s delay)
 - Store edits locally (localStorage) as backup
@@ -2989,6 +3258,7 @@ So that **I can fine-tune emails without leaving the workflow**.
 - Track specific edits for AI learning (diff algorithm)
 
 **Definition of Done:**
+
 - [ ] Edit mode working
 - [ ] Real-time character count implemented
 - [ ] Personalization preservation working
@@ -3017,22 +3287,24 @@ So that **I can manage my review workflow efficiently**.
 **Given** I am satisfied with a draft  
 **When** I press 'A' or click "Approve"  
 **Then** the draft should:
-  - Update status to "Approved"
-  - Move to "Ready to Send" queue
-  - Advance to next draft in review queue
-  - Show brief success message: "Draft approved"  
-**And** action should complete in < 500ms
+
+- Update status to "Approved"
+- Move to "Ready to Send" queue
+- Advance to next draft in review queue
+- Show brief success message: "Draft approved"  
+  **And** action should complete in < 500ms
 
 **AC2: Skip Action**
 
 **Given** I want to review a draft later  
 **When** I press 'S' or click "Skip"  
 **Then** the draft should:
-  - Remain status "Pending Review"
-  - Move to end of review queue
-  - Advance to next draft
-  - Increment skip_count for draft  
-**And** I can return to skipped drafts later
+
+- Remain status "Pending Review"
+- Move to end of review queue
+- Advance to next draft
+- Increment skip_count for draft  
+  **And** I can return to skipped drafts later
 
 **AC3: Regenerate Action**
 
@@ -3040,21 +3312,23 @@ So that **I can manage my review workflow efficiently**.
 **When** I press 'R' or click "Regenerate"  
 **Then** a confirmation modal should display  
 **And** confirming should:
-  - Archive current draft version
-  - Enqueue new draft generation job
-  - Show loading state: "Regenerating draft..."
-  - Replace with new draft when ready (polling or notification)  
-**And** I can continue reviewing other drafts while regenerating
+
+- Archive current draft version
+- Enqueue new draft generation job
+- Show loading state: "Regenerating draft..."
+- Replace with new draft when ready (polling or notification)  
+  **And** I can continue reviewing other drafts while regenerating
 
 **AC4: Action Confirmation for Edge Cases**
 
 **Given** I am about to take an action with consequences  
 **When** the action requires confirmation  
 **Then** show confirmation for:
-  - Approving a "Low confidence" draft: "This draft has low confidence. Approve anyway?"
-  - Skipping a draft multiple times: "You've skipped this 3 times. Regenerate instead?"
-  - Regenerating after already regenerating 2 times: "This is your last regeneration. Continue?"  
-**And** allow user to proceed or cancel
+
+- Approving a "Low confidence" draft: "This draft has low confidence. Approve anyway?"
+- Skipping a draft multiple times: "You've skipped this 3 times. Regenerate instead?"
+- Regenerating after already regenerating 2 times: "This is your last regeneration. Continue?"  
+  **And** allow user to proceed or cancel
 
 **AC5: Undo Action**
 
@@ -3065,6 +3339,7 @@ So that **I can manage my review workflow efficiently**.
 **And** allow undo for Approve and Skip (not Regenerate)
 
 **Technical Considerations:**
+
 - Use optimistic UI updates for instant feedback
 - Queue actions locally and sync to server
 - Handle offline scenarios (queue actions, sync later)
@@ -3073,6 +3348,7 @@ So that **I can manage my review workflow efficiently**.
 - Monitor action distribution (high skip rate = prompt issue)
 
 **Definition of Done:**
+
 - [ ] Approve action working
 - [ ] Skip action working
 - [ ] Regenerate action working
@@ -3102,55 +3378,61 @@ So that **I can quickly process drafts I trust without individual review**.
 **When** I enable batch selection mode  
 **Then** checkboxes should appear on each draft card  
 **And** I should be able to:
-  - Click individual drafts to select
-  - Use "Select All" option
-  - Use "Select All High Confidence" option  
-**And** show count of selected drafts
+
+- Click individual drafts to select
+- Use "Select All" option
+- Use "Select All High Confidence" option  
+  **And** show count of selected drafts
 
 **AC2: Batch Approve Action**
 
 **Given** I have selected multiple drafts  
 **When** I click "Approve Selected" button  
 **Then** a confirmation should display:
-  - "Approve X drafts?"
-  - List of selected drafts (company names)
-  - Warning if any are Medium/Low confidence  
-**And** confirming should approve all selected drafts  
-**And** show progress: "Approving X of Y..."
+
+- "Approve X drafts?"
+- List of selected drafts (company names)
+- Warning if any are Medium/Low confidence  
+  **And** confirming should approve all selected drafts  
+  **And** show progress: "Approving X of Y..."
 
 **AC3: Confidence-based Filtering for Batch**
 
 **Given** I want to batch approve only high-confidence drafts  
 **When** I click "Approve All High Confidence"  
 **Then** the system should:
-  - Filter drafts with confidence ≥ 80%
-  - Select all matching drafts
-  - Show confirmation with count
-  - Approve all on confirmation  
-**And** low/medium confidence drafts remain for individual review
+
+- Filter drafts with confidence ≥ 80%
+- Select all matching drafts
+- Show confirmation with count
+- Approve all on confirmation  
+  **And** low/medium confidence drafts remain for individual review
 
 **AC4: Batch Approval Safety**
 
 **Given** batch approval is powerful  
 **When** executing batch actions  
 **Then** implement safety measures:
-  - Max 50 drafts per batch
-  - Require explicit confirmation
-  - Show preview of impacted drafts
-  - Allow deselecting individual drafts before confirming  
-**And** log batch approval actions for audit
+
+- Max 50 drafts per batch
+- Require explicit confirmation
+- Show preview of impacted drafts
+- Allow deselecting individual drafts before confirming  
+  **And** log batch approval actions for audit
 
 **AC5: Batch Approval Results**
 
 **Given** batch approval completes  
 **When** processing is done  
 **Then** show results summary:
-  - "Successfully approved: X drafts"
-  - "Failed: Y drafts" (if any, with reasons)
-  - "View Approved Drafts" button  
-**And** failed drafts should remain in queue for review
+
+- "Successfully approved: X drafts"
+- "Failed: Y drafts" (if any, with reasons)
+- "View Approved Drafts" button  
+  **And** failed drafts should remain in queue for review
 
 **Technical Considerations:**
+
 - Use database transaction for batch updates
 - Implement batch API endpoint (avoid N individual requests)
 - Handle partial failures gracefully
@@ -3159,6 +3441,7 @@ So that **I can quickly process drafts I trust without individual review**.
 - Consider adding batch edit capability (future enhancement)
 
 **Definition of Done:**
+
 - [ ] Batch selection working
 - [ ] Batch approve functional
 - [ ] Confidence-based filtering working
@@ -3183,6 +3466,7 @@ So that **I can quickly process drafts I trust without individual review**.
 **Epic Goal:** Enable users to connect their Gmail account and send approved emails via Gmail API with proper pacing, tracking, and security.
 
 **Success Criteria:**
+
 - OAuth 2.0 Gmail connection working
 - Emails sent via Gmail API appear in user's Sent folder
 - Rate limiting prevents spam-like behavior (1 email per 60-90 seconds)
@@ -3207,10 +3491,11 @@ So that **ProspectFlow can send emails on my behalf**.
 **Given** I need to connect Gmail for sending  
 **When** I navigate to Settings > Email Integration  
 **Then** I should see:
-  - "Connect Gmail Account" button
-  - Explanation: "ProspectFlow will send emails from your Gmail address"
-  - Permission details: "We'll request permission to send and read emails"
-  - Security notice: "Your credentials are never stored. We use secure OAuth 2.0"
+
+- "Connect Gmail Account" button
+- Explanation: "ProspectFlow will send emails from your Gmail address"
+- Permission details: "We'll request permission to send and read emails"
+- Security notice: "Your credentials are never stored. We use secure OAuth 2.0"
 
 **AC2: OAuth 2.0 Authorization Flow**
 
@@ -3218,56 +3503,62 @@ So that **ProspectFlow can send emails on my behalf**.
 **When** the OAuth flow initiates  
 **Then** I should be redirected to Google's authorization page  
 **And** see permission scopes requested:
-  - `https://www.googleapis.com/auth/gmail.send`
-  - `https://www.googleapis.com/auth/gmail.readonly`  
-**And** be able to choose which Google account to use  
-**And** be able to cancel and return to ProspectFlow
+
+- `https://www.googleapis.com/auth/gmail.send`
+- `https://www.googleapis.com/auth/gmail.readonly`  
+  **And** be able to choose which Google account to use  
+  **And** be able to cancel and return to ProspectFlow
 
 **AC3: Authorization Success**
 
 **Given** I approve the Gmail connection  
 **When** Google redirects back to ProspectFlow  
 **Then** the system should:
-  - Receive authorization code
-  - Exchange for access token and refresh token
-  - Store tokens securely (encrypted at rest)
-  - Link tokens to user's organisation_id and user_id
-  - Verify connection by fetching user's email address  
-**And** show success message: "Gmail connected: your-email@gmail.com"
+
+- Receive authorization code
+- Exchange for access token and refresh token
+- Store tokens securely (encrypted at rest)
+- Link tokens to user's organisation_id and user_id
+- Verify connection by fetching user's email address  
+  **And** show success message: "Gmail connected: your-email@gmail.com"
 
 **AC4: Token Storage Security**
 
 **Given** Gmail tokens are highly sensitive  
 **When** storing tokens  
 **Then** they should be:
-  - Encrypted using AES-256
-  - Stored in database with encryption key from environment variable
-  - Never logged or exposed in API responses
-  - Associated with user_id for access control  
-**And** access tokens should have metadata: created_at, expires_at
+
+- Encrypted using AES-256
+- Stored in database with encryption key from environment variable
+- Never logged or exposed in API responses
+- Associated with user_id for access control  
+  **And** access tokens should have metadata: created_at, expires_at
 
 **AC5: Token Refresh Mechanism**
 
 **Given** Gmail access tokens expire after 1 hour  
 **When** an access token is expired  
 **Then** the system should:
-  - Detect expiration before sending request
-  - Use refresh token to obtain new access token
-  - Update stored access token
-  - Retry the original operation  
-**And** handle refresh token expiration (prompt user to re-authenticate)
+
+- Detect expiration before sending request
+- Use refresh token to obtain new access token
+- Update stored access token
+- Retry the original operation  
+  **And** handle refresh token expiration (prompt user to re-authenticate)
 
 **AC6: Connection Status Display**
 
 **Given** I have connected Gmail  
 **When** I view Settings > Email Integration  
 **Then** I should see:
-  - "Connected: your-email@gmail.com" (green badge)
-  - "Disconnect Gmail" button
-  - Connection status: "Last verified: 2 hours ago"
-  - Daily send limit: "32 of 40 emails sent today"
+
+- "Connected: your-email@gmail.com" (green badge)
+- "Disconnect Gmail" button
+- Connection status: "Last verified: 2 hours ago"
+- Daily send limit: "32 of 40 emails sent today"
 
 **Technical Considerations:**
+
 - Use Google OAuth 2.0 Node.js client library
 - Store encrypted tokens in `iam.user_credentials` table
 - Implement token rotation for security
@@ -3276,6 +3567,7 @@ So that **ProspectFlow can send emails on my behalf**.
 - Test OAuth flow in development (localhost redirect)
 
 **Definition of Done:**
+
 - [ ] OAuth flow implemented end-to-end
 - [ ] Tokens stored securely
 - [ ] Token refresh working
@@ -3304,13 +3596,14 @@ So that **emails appear from the user's Gmail address and land in their Sent fol
 **Given** an approved draft needs to be sent  
 **When** preparing the email  
 **Then** construct RFC 5322 compliant email with:
-  - From: User's Gmail address
-  - To: Prospect's contact_email
-  - Subject: Draft subject_line
-  - Body: Plain text (no HTML for MVP)
-  - Headers: Message-ID, Date, Reply-To
-  - Unsubscribe: List-Unsubscribe header with unsubscribe link  
-**And** encode email as base64url format for Gmail API
+
+- From: User's Gmail address
+- To: Prospect's contact_email
+- Subject: Draft subject_line
+- Body: Plain text (no HTML for MVP)
+- Headers: Message-ID, Date, Reply-To
+- Unsubscribe: List-Unsubscribe header with unsubscribe link  
+  **And** encode email as base64url format for Gmail API
 
 **AC2: Gmail API Send Request**
 
@@ -3334,35 +3627,39 @@ So that **emails appear from the user's Gmail address and land in their Sent fol
 **Given** email is sent via Gmail API  
 **When** response is received  
 **Then** store in database:
-  - gmail_message_id
-  - gmail_thread_id
-  - sent_at (timestamp)
-  - delivery_status: "Sent"  
-**And** update prospect status to "Email Sent"
+
+- gmail_message_id
+- gmail_thread_id
+- sent_at (timestamp)
+- delivery_status: "Sent"  
+  **And** update prospect status to "Email Sent"
 
 **AC5: Send Failures**
 
 **Given** email send fails  
 **When** the error occurs  
 **Then** handle errors:
-  - 401 Unauthorized: Refresh token and retry
-  - 403 Forbidden: User revoked access, notify user
-  - 429 Rate Limited: Back off and retry
-  - 500 Server Error: Retry up to 3 times with exponential backoff  
-**And** if all retries fail, mark email as "Send Failed" with reason
+
+- 401 Unauthorized: Refresh token and retry
+- 403 Forbidden: User revoked access, notify user
+- 429 Rate Limited: Back off and retry
+- 500 Server Error: Retry up to 3 times with exponential backoff  
+  **And** if all retries fail, mark email as "Send Failed" with reason
 
 **AC6: Plain Text Email Formatting**
 
 **Given** email body is plain text  
 **When** composing the email  
 **Then** format for readability:
-  - Preserve line breaks
-  - Wrap lines at 72 characters (standard email width)
-  - Include signature with contact info
-  - Add unsubscribe footer  
-**And** ensure professional appearance in all email clients
+
+- Preserve line breaks
+- Wrap lines at 72 characters (standard email width)
+- Include signature with contact info
+- Add unsubscribe footer  
+  **And** ensure professional appearance in all email clients
 
 **Technical Considerations:**
+
 - Use googleapis npm package
 - Implement retry logic with exponential backoff
 - Log all send attempts with outcomes
@@ -3371,6 +3668,7 @@ So that **emails appear from the user's Gmail address and land in their Sent fol
 - Monitor send success rate (should be > 95%)
 
 **Definition of Done:**
+
 - [ ] Email sending working via Gmail API
 - [ ] Emails appear in Sent folder
 - [ ] Delivery confirmation stored
@@ -3399,52 +3697,57 @@ So that **user's Gmail reputation is protected and emails have better deliverabi
 **Given** multiple emails are queued for sending  
 **When** sending emails  
 **Then** enforce pacing:
-  - Minimum delay: 60 seconds between emails
-  - Maximum delay: 90 seconds between emails
-  - Randomize delay within range (60-90 seconds)  
-**And** prevent burst sending
+
+- Minimum delay: 60 seconds between emails
+- Maximum delay: 90 seconds between emails
+- Randomize delay within range (60-90 seconds)  
+  **And** prevent burst sending
 
 **AC2: Daily Send Limit**
 
 **Given** users should not exceed safe sending volumes  
 **When** tracking daily sends  
 **Then** enforce limits:
-  - Default limit: 40 emails per day per user
-  - Configurable by user (range: 10-50)
-  - Reset at midnight user's timezone  
-**And** prevent additional sends when limit reached
+
+- Default limit: 40 emails per day per user
+- Configurable by user (range: 10-50)
+- Reset at midnight user's timezone  
+  **And** prevent additional sends when limit reached
 
 **AC3: Send Queue Management**
 
 **Given** emails are queued for sending  
 **When** the send worker processes queue  
 **Then** it should:
-  - Calculate next available send time
-  - Wait until that time before sending
-  - Update queue position for visibility
-  - Process one email at a time (no parallelization)  
-**And** maintain steady, predictable pacing
+
+- Calculate next available send time
+- Wait until that time before sending
+- Update queue position for visibility
+- Process one email at a time (no parallelization)  
+  **And** maintain steady, predictable pacing
 
 **AC4: Limit Reached Notification**
 
 **Given** daily send limit is reached  
 **When** the limit is hit  
 **Then** notify user:
-  - In-app notification: "Daily send limit reached (40/40)"
-  - Email notification (optional)
-  - Remaining emails moved to next day's queue  
-**And** show when sending will resume: "Sending resumes tomorrow at 12:00 AM"
+
+- In-app notification: "Daily send limit reached (40/40)"
+- Email notification (optional)
+- Remaining emails moved to next day's queue  
+  **And** show when sending will resume: "Sending resumes tomorrow at 12:00 AM"
 
 **AC5: Progress Visibility**
 
 **Given** batch sending is in progress  
 **When** user views campaign dashboard  
 **Then** show sending status:
-  - "Sending: 15 of 40 emails sent"
-  - "Next email in: 32 seconds"
-  - Progress bar
-  - Estimated completion time  
-**And** update in real-time
+
+- "Sending: 15 of 40 emails sent"
+- "Next email in: 32 seconds"
+- Progress bar
+- Estimated completion time  
+  **And** update in real-time
 
 **AC6: Pause/Resume Sending**
 
@@ -3456,6 +3759,7 @@ So that **user's Gmail reputation is protected and emails have better deliverabi
 **And** show status: "Sending paused by user"
 
 **Technical Considerations:**
+
 - Use RabbitMQ delayed message plugin or Redis for scheduling
 - Store daily send count in Redis with expiry
 - Use distributed lock to prevent race conditions
@@ -3464,6 +3768,7 @@ So that **user's Gmail reputation is protected and emails have better deliverabi
 - Implement jitter to avoid patterns detectable as automated
 
 **Definition of Done:**
+
 - [ ] Email pacing implemented (60-90s delay)
 - [ ] Daily send limit enforced
 - [ ] Send queue management working
@@ -3492,66 +3797,73 @@ So that **I can execute my campaign efficiently while respecting rate limits**.
 **Given** I have approved emails ready to send  
 **When** I navigate to "Ready to Send" queue  
 **Then** I should see:
-  - List of approved emails (company names, subjects)
-  - "Send All" button
-  - "Send Selected" option with checkboxes
-  - Total count: "32 emails ready to send"  
-**And** be able to preview each email before sending
+
+- List of approved emails (company names, subjects)
+- "Send All" button
+- "Send Selected" option with checkboxes
+- Total count: "32 emails ready to send"  
+  **And** be able to preview each email before sending
 
 **AC2: Send Confirmation**
 
 **Given** I click "Send All" or "Send Selected"  
 **When** the confirmation modal displays  
 **Then** it should show:
-  - Number of emails to send: "Send 32 emails?"
-  - Estimated duration: "This will take approximately 35 minutes"
-  - Daily limit impact: "32 of 40 daily sends will be used"
-  - "Confirm Send" and "Cancel" buttons  
-**And** require explicit confirmation
+
+- Number of emails to send: "Send 32 emails?"
+- Estimated duration: "This will take approximately 35 minutes"
+- Daily limit impact: "32 of 40 daily sends will be used"
+- "Confirm Send" and "Cancel" buttons  
+  **And** require explicit confirmation
 
 **AC3: Batch Sending Execution**
 
 **Given** I confirm batch send  
 **When** the sending process starts  
 **Then** the system should:
-  1. Enqueue all emails to send_queue in RabbitMQ
-  2. Send worker processes queue with pacing
-  3. Update each email status as sent
-  4. Track delivery and store Gmail message IDs  
-**And** I can navigate away while sending continues
+
+1. Enqueue all emails to send_queue in RabbitMQ
+2. Send worker processes queue with pacing
+3. Update each email status as sent
+4. Track delivery and store Gmail message IDs  
+   **And** I can navigate away while sending continues
 
 **AC4: Real-time Progress Tracking**
 
 **Given** batch sending is in progress  
 **When** I view the campaign dashboard  
 **Then** I should see:
-  - Progress: "Sending: 15 of 32 emails sent"
-  - Progress bar (visual)
-  - Estimated time remaining: "17 minutes remaining"
-  - List of sent emails (live updates)  
-**And** updates should appear without page refresh (WebSocket or polling)
+
+- Progress: "Sending: 15 of 32 emails sent"
+- Progress bar (visual)
+- Estimated time remaining: "17 minutes remaining"
+- List of sent emails (live updates)  
+  **And** updates should appear without page refresh (WebSocket or polling)
 
 **AC5: Partial Failures**
 
 **Given** some emails in the batch fail to send  
 **When** the batch completes  
 **Then** show results summary:
-  - Successfully sent: X emails
-  - Failed: Y emails (with reasons)
-  - Option to retry failed emails  
-**And** failed emails should remain in "Ready to Send" queue
+
+- Successfully sent: X emails
+- Failed: Y emails (with reasons)
+- Option to retry failed emails  
+  **And** failed emails should remain in "Ready to Send" queue
 
 **AC6: Completion Notification**
 
 **Given** all emails in batch are sent  
 **When** the last email is sent  
 **Then** notify user:
-  - In-app notification: "Campaign sent! 32 emails delivered"
-  - Optional email notification with summary
-  - Link to view sent emails and campaign analytics  
-**And** celebrate milestone
+
+- In-app notification: "Campaign sent! 32 emails delivered"
+- Optional email notification with summary
+- Link to view sent emails and campaign analytics  
+  **And** celebrate milestone
 
 **Technical Considerations:**
+
 - Use RabbitMQ for reliable job queueing
 - Implement idempotency (don't send same email twice)
 - Store send state in database for recovery
@@ -3560,6 +3872,7 @@ So that **I can execute my campaign efficiently while respecting rate limits**.
 - Monitor send queue depth and worker health
 
 **Definition of Done:**
+
 - [ ] Send batch action working
 - [ ] Send confirmation modal implemented
 - [ ] Batch sending execution working
@@ -3588,10 +3901,12 @@ So that **I'm not contacted again if I'm not interested**.
 **Given** an email is sent  
 **When** composing the email  
 **Then** include footer:
+
 ```
 ---
 If you'd prefer not to receive future emails from me, you can unsubscribe here: [Unsubscribe Link]
 ```
+
 **And** link should be unique per prospect: `https://prospectflow.app/unsubscribe?token={encrypted_token}`  
 **And** token should encode: prospect_id, campaign_id, organisation_id
 
@@ -3600,9 +3915,11 @@ If you'd prefer not to receive future emails from me, you can unsubscribe here: 
 **Given** an email is sent  
 **When** setting email headers  
 **Then** include `List-Unsubscribe` header:
+
 ```
 List-Unsubscribe: <https://prospectflow.app/unsubscribe?token={token}>
 ```
+
 **And** enable one-click unsubscribe for compatible email clients (Gmail, Outlook)
 
 **AC3: Unsubscribe Landing Page**
@@ -3610,44 +3927,49 @@ List-Unsubscribe: <https://prospectflow.app/unsubscribe?token={token}>
 **Given** a recipient clicks unsubscribe link  
 **When** the page loads  
 **Then** show:
-  - Company/person name: "Unsubscribe from emails sent by [User's Name]"
-  - Confirmation: "You will no longer receive emails from this sender"
-  - "Unsubscribe" button (primary action)
-  - "Cancel" link  
-**And** page should be simple and fast (no login required)
+
+- Company/person name: "Unsubscribe from emails sent by [User's Name]"
+- Confirmation: "You will no longer receive emails from this sender"
+- "Unsubscribe" button (primary action)
+- "Cancel" link  
+  **And** page should be simple and fast (no login required)
 
 **AC4: Unsubscribe Processing**
 
 **Given** a recipient confirms unsubscribe  
 **When** they click "Unsubscribe"  
 **Then** the system should:
-  - Decrypt token to get prospect_id and organisation_id
-  - Update `crm.people` table: unsubscribed = true, unsubscribed_at = NOW()
-  - Add to organisation's global unsubscribe list
-  - Prevent future emails to this prospect across all campaigns  
-**And** show confirmation: "You've been unsubscribed. You won't receive any more emails from us."
+
+- Decrypt token to get prospect_id and organisation_id
+- Update `crm.people` table: unsubscribed = true, unsubscribed_at = NOW()
+- Add to organisation's global unsubscribe list
+- Prevent future emails to this prospect across all campaigns  
+  **And** show confirmation: "You've been unsubscribed. You won't receive any more emails from us."
 
 **AC5: Unsubscribe Enforcement**
 
 **Given** a prospect has unsubscribed  
 **When** attempting to send them an email  
 **Then** the system should:
-  - Check unsubscribe status before queueing send
-  - Skip sending to unsubscribed prospects
-  - Log attempted send to unsubscribed prospect (for auditing)
-  - Notify user if they try to add unsubscribed prospect to new campaign
+
+- Check unsubscribe status before queueing send
+- Skip sending to unsubscribed prospects
+- Log attempted send to unsubscribed prospect (for auditing)
+- Notify user if they try to add unsubscribed prospect to new campaign
 
 **AC6: Unsubscribe Analytics**
 
 **Given** prospects unsubscribe  
 **When** viewing campaign analytics  
 **Then** show:
-  - Total unsubscribes count
-  - Unsubscribe rate (per campaign, overall)
-  - Timeline of unsubscribes  
-**And** alert if unsubscribe rate is unusually high (> 5%)
+
+- Total unsubscribes count
+- Unsubscribe rate (per campaign, overall)
+- Timeline of unsubscribes  
+  **And** alert if unsubscribe rate is unusually high (> 5%)
 
 **Technical Considerations:**
+
 - Encrypt unsubscribe tokens (include HMAC for integrity)
 - Set token expiry (1 year) for security
 - Create index on unsubscribed field for fast lookup
@@ -3656,6 +3978,7 @@ List-Unsubscribe: <https://prospectflow.app/unsubscribe?token={token}>
 - Log all unsubscribe events for compliance
 
 **Definition of Done:**
+
 - [ ] Unsubscribe link in emails
 - [ ] List-Unsubscribe header included
 - [ ] Unsubscribe landing page working
@@ -3680,6 +4003,7 @@ List-Unsubscribe: <https://prospectflow.app/unsubscribe?token={token}>
 **Epic Goal:** Monitor Gmail for prospect replies, classify responses, and notify users of important interactions.
 
 **Success Criteria:**
+
 - Replies detected automatically within 15 minutes
 - Response classification (Positive, Objection, Negative, Unclear) works accurately
 - Users notified of new responses in real-time
@@ -3692,6 +4016,7 @@ List-Unsubscribe: <https://prospectflow.app/unsubscribe?token={token}>
 As a **system**, I want **to monitor user's Gmail for replies to sent emails**, So that **responses are captured and linked to prospects**.
 
 **Acceptance Criteria:**
+
 - Worker polls Gmail API every 15 minutes for new messages
 - Matches replies to sent emails using thread_id and gmail_message_id
 - Updates prospect status to "Replied"
@@ -3709,6 +4034,7 @@ As a **system**, I want **to monitor user's Gmail for replies to sent emails**, 
 As a **system**, I want **to classify responses into categories**, So that **users can prioritize positive responses**.
 
 **Acceptance Criteria:**
+
 - Use AI (GPT) to classify responses: Positive (interested), Objection (not now/too expensive), Negative (not interested/unsubscribe), Unclear (needs review)
 - Store classification with confidence score
 - Allow manual reclassification by user
@@ -3725,6 +4051,7 @@ As a **system**, I want **to classify responses into categories**, So that **use
 As a **freelance video producer**, I want **to be notified when prospects reply**, So that **I can follow up quickly on interested leads**.
 
 **Acceptance Criteria:**
+
 - In-app notification: "New reply from [Company Name]"
 - Badge on navigation showing unread reply count
 - Optional email notification (configurable)
@@ -3742,6 +4069,7 @@ As a **freelance video producer**, I want **to be notified when prospects reply*
 As a **freelance video producer**, I want **to see all responses in one place**, So that **I can manage follow-ups efficiently**.
 
 **Acceptance Criteria:**
+
 - Response dashboard with filters (Positive, Objection, Negative, Unclear)
 - Sort by date, company name, campaign
 - View full email thread
@@ -3764,6 +4092,7 @@ As a **freelance video producer**, I want **to see all responses in one place**,
 **Epic Goal:** Provide comprehensive analytics and insights on campaign performance to help users optimize their outreach.
 
 **Success Criteria:**
+
 - Dashboard displays key metrics (sent, opened, replied, meetings booked)
 - Visualizations show trends over time
 - Per-campaign and overall metrics available
@@ -3776,6 +4105,7 @@ As a **freelance video producer**, I want **to see all responses in one place**,
 As a **system**, I want **to calculate and store campaign metrics**, So that **analytics can be displayed efficiently**.
 
 **Acceptance Criteria:**
+
 - Calculate daily: emails sent, responses received, positive responses, meetings booked
 - Calculate rates: response rate, positive rate, conversion rate
 - Store in `tracking.campaign_stats` table with daily granularity
@@ -3793,6 +4123,7 @@ As a **system**, I want **to calculate and store campaign metrics**, So that **a
 As a **freelance video producer**, I want **to see visual analytics of my campaigns**, So that **I can understand what's working**.
 
 **Acceptance Criteria:**
+
 - Overview panel: Total meetings this month, progress to 10-15 goal, average response rate, time saved
 - Per-campaign metrics: sent, open rate (if tracking pixels enabled), response rate, positive rate, meetings
 - Visualizations: response rate trend (line chart), campaign comparison (bar chart), funnel view (sent → opened → replied → meeting)
@@ -3810,6 +4141,7 @@ As a **freelance video producer**, I want **to see visual analytics of my campai
 As a **freelance video producer**, I want **to track which responses led to meetings**, So that **I can measure true success**.
 
 **Acceptance Criteria:**
+
 - "Mark as Meeting Booked" action on responses
 - Meeting details form: date, time, notes
 - Meetings count in analytics
@@ -3827,6 +4159,7 @@ As a **freelance video producer**, I want **to track which responses led to meet
 As a **freelance video producer**, I want **to see how much time ProspectFlow saves me**, So that **I can justify the investment**.
 
 **Acceptance Criteria:**
+
 - Estimate time saved: (prospects researched × 10 min) + (emails drafted × 5 min)
 - Display in dashboard: "You've saved 15 hours this month"
 - Compare to baseline: "50% reduction from your 10h/week target"
@@ -3847,6 +4180,7 @@ As a **freelance video producer**, I want **to see how much time ProspectFlow sa
 **Epic Goal:** Automatically draft and schedule follow-up emails for non-responders, with approval workflow.
 
 **Success Criteria:**
+
 - Follow-up sequences configurable per campaign (e.g., "5 days after send if no reply")
 - AI drafts follow-ups that reference original email and add new hook
 - Follow-ups require approval before sending
@@ -3860,6 +4194,7 @@ As a **freelance video producer**, I want **to see how much time ProspectFlow sa
 As a **freelance video producer**, I want **to configure follow-up timing**, So that **non-responders receive a gentle reminder**.
 
 **Acceptance Criteria:**
+
 - Campaign setting: Enable/disable follow-ups
 - Timing configuration: "Send follow-up after X days (3, 5, 7, 10)"
 - Second follow-up: "Send 2nd follow-up after Y days (default: +5 days from first follow-up)"
@@ -3876,6 +4211,7 @@ As a **freelance video producer**, I want **to configure follow-up timing**, So 
 As a **AI system**, I want **to generate contextual follow-up emails**, So that **follow-ups feel natural and respectful**.
 
 **Acceptance Criteria:**
+
 - AI prompt includes: original email sent, research hooks, days since original send
 - Follow-up structure: Reference original email ("Following up on my email about..."), add new hook if available, keep it brief (50-75 words), respectful tone ("No pressure if this isn't the right time")
 - Store draft for approval (same workflow as initial drafts)
@@ -3892,6 +4228,7 @@ As a **AI system**, I want **to generate contextual follow-up emails**, So that 
 As a **system**, I want **to automatically schedule follow-ups**, So that **they send at the right time**.
 
 **Acceptance Criteria:**
+
 - Daily cron job checks for prospects eligible for follow-up (sent X days ago, no reply, follow-up enabled)
 - Enqueue follow-up draft generation jobs
 - Once approved, schedule send based on configured delay
@@ -3909,6 +4246,7 @@ As a **system**, I want **to automatically schedule follow-ups**, So that **they
 As a **freelance video producer**, I want **to see how follow-ups perform**, So that **I can optimize timing and messaging**.
 
 **Acceptance Criteria:**
+
 - Analytics: Follow-up response rate vs. initial email response rate
 - Optimal timing analysis: Which delay (3, 5, 7 days) performs best
 - Display in campaign analytics dashboard
@@ -3929,6 +4267,7 @@ As a **freelance video producer**, I want **to see how follow-ups perform**, So 
 **Epic Goal:** Provide pre-built email templates and allow users to create custom templates for different outreach scenarios.
 
 **Success Criteria:**
+
 - 5-7 pre-built templates available (social media content, product demo video, testimonial collection, event coverage, team introduction)
 - Users can clone and customize templates
 - Templates include personalization strategy guidance
@@ -3941,6 +4280,7 @@ As a **freelance video producer**, I want **to see how follow-ups perform**, So 
 As a **freelance video producer**, I want **access to proven email templates**, So that **I can quickly start campaigns for different services**.
 
 **Acceptance Criteria:**
+
 - Templates available: Social Media Content Upgrade, Product Demo Video, Customer Testimonial Collection, Event Coverage, About Us/Team Introduction Video, Seasonal/Holiday Campaigns
 - Each template includes: Sample structure, value proposition examples, personalization hooks to look for, when to use this template
 - Template preview before selection
@@ -3957,6 +4297,7 @@ As a **freelance video producer**, I want **access to proven email templates**, 
 As a **freelance video producer**, I want **to create my own templates**, So that **I can reuse successful approaches**.
 
 **Acceptance Criteria:**
+
 - "Create Custom Template" feature in settings
 - Template fields: Name, description, value proposition structure, personalization guidance, prompt hints for AI
 - Save to personal library
@@ -3974,6 +4315,7 @@ As a **freelance video producer**, I want **to create my own templates**, So tha
 As a **freelance video producer**, I want **to see which templates perform best**, So that **I can focus on what works**.
 
 **Acceptance Criteria:**
+
 - Track response rate per template
 - Display in analytics: Template performance comparison
 - Suggest best-performing template for new campaigns
@@ -3994,6 +4336,7 @@ As a **freelance video producer**, I want **to see which templates perform best*
 **Epic Goal:** Replace web scraping with direct API integrations for Instagram, LinkedIn, and Facebook for more reliable and richer data.
 
 **Success Criteria:**
+
 - Instagram Business API integrated (posts, stories, metrics)
 - LinkedIn Company API integrated (posts, updates, employee count)
 - Facebook Pages API integrated
@@ -4007,6 +4350,7 @@ As a **freelance video producer**, I want **to see which templates perform best*
 As a **research engine**, I want **to use Instagram Business API**, So that **I get reliable access to Instagram data**.
 
 **Acceptance Criteria:**
+
 - OAuth connection for Instagram Business accounts
 - Fetch recent posts (last 30 days) with captions, images, likes, comments
 - Fetch Stories if accessible
@@ -4025,6 +4369,7 @@ As a **research engine**, I want **to use Instagram Business API**, So that **I 
 As a **research engine**, I want **to use LinkedIn Company API**, So that **I get official company data**.
 
 **Acceptance Criteria:**
+
 - OAuth connection for LinkedIn API access (requires API approval)
 - Fetch recent company posts and updates
 - Fetch employee count and changes
@@ -4043,6 +4388,7 @@ As a **research engine**, I want **to use LinkedIn Company API**, So that **I ge
 As a **research engine**, I want **to use Facebook Pages API**, So that **I get official page data**.
 
 **Acceptance Criteria:**
+
 - OAuth connection for Facebook Pages API
 - Fetch recent posts from public pages
 - Fetch page info and metrics
@@ -4064,6 +4410,7 @@ As a **research engine**, I want **to use Facebook Pages API**, So that **I get 
 **Epic Goal:** Enable bidirectional sync with popular CRMs (HubSpot, Pipedrive) for unified pipeline management.
 
 **Success Criteria:**
+
 - Prospects sync to CRM as contacts/leads
 - Meeting outcomes sync to CRM
 - CRM data can be imported to ProspectFlow
@@ -4076,6 +4423,7 @@ As a **research engine**, I want **to use Facebook Pages API**, So that **I get 
 As a **freelance video producer**, I want **to sync ProspectFlow with HubSpot**, So that **all my leads are in one place**.
 
 **Acceptance Criteria:**
+
 - OAuth connection to HubSpot
 - Sync prospects → HubSpot contacts
 - Sync sent emails → HubSpot email activities
@@ -4094,6 +4442,7 @@ As a **freelance video producer**, I want **to sync ProspectFlow with HubSpot**,
 As a **freelance video producer**, I want **to sync ProspectFlow with Pipedrive**, So that **my pipeline is up to date**.
 
 **Acceptance Criteria:**
+
 - OAuth connection to Pipedrive
 - Sync prospects → Pipedrive leads/persons
 - Sync meetings → Pipedrive activities and deals
@@ -4115,6 +4464,7 @@ As a **freelance video producer**, I want **to sync ProspectFlow with Pipedrive*
 **Epic Goal:** Enable built-in A/B testing for email elements (subject lines, CTAs, structures) with statistical significance tracking.
 
 **Success Criteria:**
+
 - A/B test configuration per campaign (test subject lines, email structure, CTAs)
 - Traffic split (50/50 or custom)
 - Statistical significance calculation
@@ -4128,6 +4478,7 @@ As a **freelance video producer**, I want **to sync ProspectFlow with Pipedrive*
 As a **freelance video producer**, I want **to A/B test email elements**, So that **I can optimize for better response rates**.
 
 **Acceptance Criteria:**
+
 - Enable A/B testing on campaign
 - Configure test variants: Variant A (control), Variant B (test)
 - Test dimensions: Subject line, email structure, CTA wording, personalization approach
@@ -4145,6 +4496,7 @@ As a **freelance video producer**, I want **to A/B test email elements**, So tha
 As a **system**, I want **to generate drafts for each variant**, So that **prospects receive different versions**.
 
 **Acceptance Criteria:**
+
 - AI generates both variants based on different prompts
 - Variant assignment stored per prospect
 - Review interface shows variant indicator
@@ -4161,6 +4513,7 @@ As a **system**, I want **to generate drafts for each variant**, So that **prosp
 As a **system**, I want **to calculate statistical significance**, So that **we know when a variant is truly better**.
 
 **Acceptance Criteria:**
+
 - Track response rate per variant
 - Calculate p-value using chi-squared test or similar
 - Declare winner when p < 0.05 (95% confidence)
@@ -4178,6 +4531,7 @@ As a **system**, I want **to calculate statistical significance**, So that **we 
 As a **system**, I want **to automatically use the winning variant**, So that **future emails benefit from learnings**.
 
 **Acceptance Criteria:**
+
 - When winner declared, automatically use winning variant for remaining prospects
 - Update campaign template with winning approach
 - Summarize test results for user
@@ -4213,6 +4567,7 @@ E0 (Foundation)
 For each user story to be considered "Done":
 
 **Development:**
+
 - [ ] Code implemented and peer-reviewed
 - [ ] Unit tests written and passing (>70% coverage for business logic)
 - [ ] Integration tests for API endpoints
@@ -4220,6 +4575,7 @@ For each user story to be considered "Done":
 - [ ] No critical security vulnerabilities (Snyk scan passing)
 
 **Testing:**
+
 - [ ] Manual testing completed
 - [ ] Edge cases tested
 - [ ] Error scenarios tested
@@ -4228,12 +4584,14 @@ For each user story to be considered "Done":
 - [ ] Mobile responsiveness checked
 
 **Documentation:**
+
 - [ ] API endpoints documented (OpenAPI/Swagger)
 - [ ] User-facing features documented in help center
 - [ ] Code comments for complex logic
 - [ ] README updated if needed
 
 **Deployment:**
+
 - [ ] Deployed to staging environment
 - [ ] Smoke tests passing in staging
 - [ ] Product owner approval
@@ -4242,6 +4600,7 @@ For each user story to be considered "Done":
 - [ ] Rollback plan documented
 
 **User Experience:**
+
 - [ ] UX review completed
 - [ ] Accessibility requirements met (WCAG 2.1 Level AA)
 - [ ] Keyboard navigation working
@@ -4253,15 +4612,17 @@ For each user story to be considered "Done":
 
 **Total Epics:** 14  
 **Total User Stories:** 78 (detailed breakdown by epic)  
-**Estimated Total Story Points:** 284  
+**Estimated Total Story Points:** 284
 
 **Priority Breakdown:**
+
 - **P0 (MVP):** 7 epics, 144 story points (E0-E6)
 - **P1 (Post-MVP):** 2 epics, 42 story points (E7-E8)
 - **P2 (Enhancement):** 3 epics, 55 story points (E9-E11)
 - **P3 (Future):** 2 epics, 42 story points (E12-E13)
 
 **Estimated Timeline** (assuming 20 SP per 2-week sprint):
+
 - MVP (P0): ~7-8 sprints (14-16 weeks, ~3.5-4 months)
 - Post-MVP (P1): ~2 sprints (4 weeks, ~1 month)
 - Enhancements (P2): ~3 sprints (6 weeks, ~1.5 months)
@@ -4286,4 +4647,3 @@ For each user story to be considered "Done":
 **Generated by:** [CS] Create Story Workflow  
 **Last Updated:** 2025-01-XX  
 **Version:** 1.0
-

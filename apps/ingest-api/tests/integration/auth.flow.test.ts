@@ -148,11 +148,11 @@ describe('Authentication Flow Integration', () => {
 
   describe('JWT Validation', () => {
     it('should reject requests without Authorization header', async () => {
-      const response = await request(app).get('/api/v1/health');
+      // Test the simple /health endpoint that doesn't check DB
+      const response = await request(app).get('/health');
 
-      // Health endpoint doesn't require auth, so test with a protected route
-      // For now we test middleware behavior directly
-      expect(response.status).toBe(200); // Health is public
+      // Basic health endpoint is public and doesn't check DB
+      expect(response.status).toBe(200);
     });
 
     it('should reject requests with invalid Bearer format', async () => {

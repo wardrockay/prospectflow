@@ -44,7 +44,7 @@ metadata:
   projectName: 'ProspectFlow'
   version: '1.0'
   totalEpics: 20
-  totalStories: 100
+  totalStories: 101
   currentSprint: 'Sprint 0 - Foundation'
   sprintDuration: '2 weeks'
   velocityTarget: '20 story points per sprint'
@@ -57,12 +57,13 @@ development_status:
   0-1-multi-tenant-postgresql-database-setup: done
   0-2-express-js-api-foundation-with-layered-architecture: done
   0-3-rabbitmq-message-queue-configuration: done
-  0-4-aws-cognito-authentication-integration: review
-  0-5-structured-logging-with-pino: backlog
-  0-6-error-tracking-with-sentry: backlog
-  0-7-prometheus-metrics-grafana-dashboards: backlog
-  0-8-docker-compose-orchestration: backlog
-  0-9-ci-cd-pipeline-with-github-actions: backlog
+  0-4-aws-cognito-authentication-integration: done
+  0-5-extract-auth-to-shared-package: ready-for-dev
+  0-6-structured-logging-with-pino: backlog
+  0-7-error-tracking-with-sentry: backlog
+  0-8-prometheus-metrics-grafana-dashboards: backlog
+  0-9-docker-compose-orchestration: backlog
+  0-10-ci-cd-pipeline-with-github-actions: backlog
   epic-0-retrospective: optional
 
   # Epic UI-0: Frontend Foundation & Authentication

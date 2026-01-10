@@ -63,6 +63,7 @@ describe('QueueConsumer', () => {
       ack: mockAck,
       nack: mockNack,
       prefetch: mockPrefetch,
+      sendToQueue: vi.fn().mockResolvedValue(true), // Required for retry mechanism
       addSetup: vi.fn().mockImplementation(async (setupFn) => {
         // Execute setup function with mock channel that has prefetch
         await setupFn({ prefetch: mockPrefetch });
@@ -172,8 +173,11 @@ describe('QueueConsumer', () => {
 
       await messageHandler(mockMessage);
 
-      expect(mockNack).toHaveBeenCalledWith(mockMessage, false, true); // requeue = true
-      expect(mockAck).not.toHaveBeenCalled();
+      // Implementation ACKs original and republishes with incremented retry_count
+      expect(mockAck).toHaveBeenCalledWith(mockMessage);
+      expect(mockChannel.sendToQueue).toHaveBeenCalledWith('test_queue', expect.any(Buffer), {
+        persistent: true,
+      });
     });
 
     it('should route to DLQ after max retries', async () => {

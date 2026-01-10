@@ -5,23 +5,24 @@
 
 ---
 
-## 🎯 MVP (P0) - 144 Story Points
+## 🎯 MVP (P0) - 147 Story Points
 
 ### Backend Infrastructure & APIs
 
-### E0: Foundation Infrastructure (34 SP, 9 stories)
+### E0: Foundation Infrastructure (37 SP, 10 stories)
 
-Database, Auth, RabbitMQ, Docker, CI/CD, Monitoring
+Database, Auth, Auth Package, RabbitMQ, Docker, CI/CD, Monitoring
 
 - E0.1: Multi-tenant PostgreSQL (8 SP)
 - E0.2: Express.js API Foundation (5 SP)
 - E0.3: RabbitMQ Configuration (5 SP)
 - E0.4: Authentication & Authorization (8 SP)
-- E0.5: Structured Logging with Pino (3 SP)
-- E0.6: Error Tracking with Sentry (2 SP)
-- E0.7: Prometheus & Grafana (5 SP)
-- E0.8: Docker Compose Orchestration (3 SP)
-- E0.9: CI/CD Pipeline (5 SP)
+- E0.5: Extract Auth to Shared Package (3 SP) ✨ NEW
+- E0.6: Structured Logging with Pino (3 SP)
+- E0.7: Error Tracking with Sentry (2 SP)
+- E0.8: Prometheus & Grafana (5 SP)
+- E0.9: Docker Compose Orchestration (3 SP)
+- E0.10: CI/CD Pipeline (5 SP)
 
 ### Frontend UI & User Experience
 

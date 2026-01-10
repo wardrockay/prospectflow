@@ -220,7 +220,7 @@ export abstract class QueueConsumer {
 
     // Check retry count
     if (job.retry_count < this.MAX_RETRIES) {
-      // Increment retry count and requeue
+      // Increment retry count
       job.retry_count++;
 
       logger.warn(
@@ -233,8 +233,11 @@ export abstract class QueueConsumer {
         'Requeuing message for retry',
       );
 
-      // NACK with requeue
-      this.channel!.nack(msg, false, true);
+      // ACK original message and republish with updated retry count
+      this.channel!.ack(msg);
+      await this.channel!.sendToQueue(this.queueName, Buffer.from(JSON.stringify(job)), {
+        persistent: true,
+      });
     } else {
       // Max retries exceeded - send to DLQ
       logger.error(

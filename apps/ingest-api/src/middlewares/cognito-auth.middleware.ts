@@ -97,7 +97,8 @@ export const cognitoAuthMiddleware = async (
     next();
   } catch (error) {
     // Unexpected error during authentication
-    console.error('Authentication middleware error:', error);
+    const { logger } = await import('../utils/logger.js');
+    logger.error({ error }, 'Authentication middleware error');
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'An error occurred during authentication',

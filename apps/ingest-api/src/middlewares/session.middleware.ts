@@ -1,11 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { sessionService } from '../services/session.service';
+import { userSyncService } from '../services/user-sync.service';
 import { logger } from '../utils/logger';
 import { CognitoJwtPayload } from '../types/cognito';
 
 /**
  * Session middleware - manages Redis sessions for authenticated users
  * MUST run after cognito-auth.middleware (requires req.user)
+ *
+ * Flow:
+ * 1. Validate JWT was verified by previous middleware
+ * 2. Check if session exists in Redis
+ * 3. If no session: sync user to DB, then create session
+ * 4. If session exists: update activity timestamp
+ * 5. Attach session to request for downstream handlers
  */
 export async function sessionMiddleware(
   req: Request,
@@ -46,6 +54,17 @@ export async function sessionMiddleware(
           code: 'MISSING_ORGANISATION',
         });
         return;
+      }
+
+      // Sync user to database on first login (Task 2.4.2)
+      // This ensures user exists in iam.users before creating session
+      try {
+        await userSyncService.syncUser(cognitoPayload);
+        logger.debug(`User ${cognitoSub} synced to database`);
+      } catch (syncError) {
+        logger.error(`Failed to sync user ${cognitoSub} to database`, syncError);
+        // Continue with session creation - user sync is non-blocking
+        // The user will be synced on next login attempt
       }
 
       // Extract role from custom attributes

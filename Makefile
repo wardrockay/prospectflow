@@ -1,4 +1,4 @@
-.PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready clean dashboard
+.PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard
 
 # Default target
 help:
@@ -6,16 +6,18 @@ help:
 	@echo "===================================="
 	@echo ""
 	@echo "Available targets:"
-	@echo "  make dev-up        - Start all infrastructure services"
-	@echo "  make dev-wait      - Wait for all services to be healthy"
-	@echo "  make dev-ready     - Start services and wait for health checks"
-	@echo "  make dev-down      - Stop all services"
-	@echo "  make dev-restart   - Restart all services"
-	@echo "  make dev-logs      - Show logs from all services"
-	@echo "  make dev-status    - Show status of all services"
-	@echo "  make test-ready    - Ensure environment is ready for integration tests"
-	@echo "  make dashboard     - Launch Sprint Dashboard UI"
-	@echo "  make clean         - Remove all containers, volumes, and networks"
+	@echo "  make dev-up            - Start all infrastructure services"
+	@echo "  make dev-wait          - Wait for all services to be healthy"
+	@echo "  make dev-ready         - Start services and wait for health checks"
+	@echo "  make dev-down          - Stop all services"
+	@echo "  make dev-restart       - Restart all services"
+	@echo "  make dev-logs          - Show logs from all services"
+	@echo "  make dev-status        - Show status of all services"
+	@echo "  make test-ready        - Ensure environment is ready for integration tests"
+	@echo "  make test-unit         - Run unit tests (no infrastructure needed)"
+	@echo "  make test-integration  - Run integration tests (requires dev environment)"
+	@echo "  make dashboard         - Launch Sprint Dashboard UI"
+	@echo "  make clean             - Remove all containers, volumes, and networks"
 	@echo ""
 
 # Start all infrastructure services
@@ -80,6 +82,20 @@ dev-status:
 # Ensure environment is ready for integration tests
 test-ready: dev-ready
 	@echo "✅ Environment ready for integration tests"
+
+# Run unit tests (no infrastructure required)
+test-unit:
+	@echo "🧪 Running unit tests..."
+	@cd apps/ingest-api && pnpm test --run tests/unit
+
+# Run integration tests (requires dev environment)
+test-integration: dev-ready
+	@echo "🧪 Running integration tests with real infrastructure..."
+	@echo "📊 Redis: localhost:6379"
+	@echo "📊 PostgreSQL: localhost:5432"
+	@echo "📊 RabbitMQ: localhost:5672"
+	@echo ""
+	@cd apps/ingest-api && pnpm test --run tests/integration tests/security
 
 # Launch Sprint Dashboard UI
 dashboard:

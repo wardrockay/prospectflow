@@ -147,40 +147,71 @@ checkOrganisationAccess(resource.organisation_id, req.organisationId, 'resource-
 
 ## Testing
 
-### Unit Tests (No DB Required)
+### Quick Start
 
 ```bash
+# From project root - recommended approach
+make test-unit           # Unit tests only (fast, no infrastructure)
+make test-integration    # Full integration tests (starts Redis, PostgreSQL, RabbitMQ)
+
+# Or from apps/ingest-api
+pnpm test:unit          # Unit tests
+pnpm test               # All tests (requires infrastructure)
+```
+
+### Unit Tests (No Infrastructure Required)
+
+Unit tests use mocks and don't require external services:
+
+```bash
+# From project root
+make test-unit
+
+# Or from apps/ingest-api
 pnpm test:unit
 ```
 
-### Integration Tests (DB Required)
+Tests covered:
 
-Integration tests require a PostgreSQL test database. Two options:
+- Middleware logic (JWT validation, session management, organisation scope)
+- Service layer (session service, user sync service)
+- Controllers
+- Queue publishers/consumers
 
-**Option 1: Automatic (with sudo/docker group)**
+### Integration Tests (Requires Infrastructure)
 
-```bash
-pnpm test:integration  # Starts DB, runs tests, stops DB
-```
-
-**Option 2: Manual Control**
-
-```bash
-pnpm test:db:up        # Start test DB
-pnpm test              # Run all tests
-pnpm test:db:down      # Stop test DB
-```
-
-**Option 3: Full Docker (CI/CD)**
+Integration tests require real infrastructure (PostgreSQL, Redis, RabbitMQ):
 
 ```bash
-pnpm test:docker       # Complete isolated test environment
+# From project root - starts infrastructure automatically
+make test-integration    # Runs: make dev-ready → pnpm test integration
+
+# Or manually
+make dev-up              # Start PostgreSQL, RabbitMQ, Redis, ClickHouse
+make dev-wait            # Wait for health checks
+cd apps/ingest-api && pnpm test --run tests/integration tests/security
+make dev-down            # Stop all services
 ```
+
+Tests covered:
+
+- Complete authentication flow (JWT → Session → User Sync)
+- Multi-tenant isolation
+- Security (session hijacking, token validation)
 
 ### Test Requirements
 
 - **Unit tests**: Pass in any environment (mocked dependencies)
-- **Integration tests**: Require PostgreSQL on `localhost:5433` or gracefully report DB unavailable
+- **Integration tests**: Require:
+  - PostgreSQL on `localhost:5432`
+  - Redis on `localhost:6379`
+  - RabbitMQ on `localhost:5672` (optional for most tests)
+
+### CI/CD Docker Tests
+
+```bash
+pnpm test:docker       # Complete isolated test environment
+```
 
 See [docs/TESTING.md](docs/TESTING.md) for detailed testing guide.
 
