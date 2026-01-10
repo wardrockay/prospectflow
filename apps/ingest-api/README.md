@@ -63,12 +63,87 @@ RABBITMQ_USER=admin
 RABBITMQ_PASS=changeme
 RABBITMQ_MANAGEMENT_PORT=15672
 
-# Redis (optional)
+# Redis (Session Store)
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+REDIS_SESSION_TTL=86400
+
+# AWS Cognito Authentication
+AWS_REGION=eu-west-1
+COGNITO_USER_POOL_ID=eu-west-1_XXXXXXXX
+COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
+COGNITO_ISSUER=https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_XXXXXXXX
 ```
 
 See `env/.env.example` for all available configuration options.
+
+## Authentication
+
+ProspectFlow uses AWS Cognito for authentication with Redis session management.
+
+### Quick Start
+
+1. **Setup Cognito** (via Terraform):
+
+   ```bash
+   cd infra/cognito/terraform
+   terraform init && terraform apply
+   ```
+
+2. **Start Redis**:
+
+   ```bash
+   cd infra/redis
+   docker-compose up -d
+   ```
+
+3. **Configure environment** variables from Terraform outputs
+
+4. **Create test user** in Cognito console
+
+### Middleware Chain
+
+Protected routes use three middlewares in order:
+
+```typescript
+import { cognitoAuthMiddleware } from './middlewares/cognito-auth.middleware';
+import { sessionMiddleware } from './middlewares/session.middleware';
+import { organisationScopeMiddleware } from './middlewares/organisation-scope.middleware';
+
+router.get(
+  '/protected',
+  cognitoAuthMiddleware, // 1. Validate JWT
+  sessionMiddleware, // 2. Create/retrieve session
+  organisationScopeMiddleware, // 3. Attach organisation_id
+  handler,
+);
+```
+
+### Multi-Tenant Isolation
+
+All database queries MUST include organisation filter:
+
+```typescript
+import {
+  getOrganisationIdFromRequest,
+  checkOrganisationAccess,
+} from './middlewares/organisation-scope.middleware';
+
+// For list queries
+const orgId = getOrganisationIdFromRequest(req);
+const results = await db.query('SELECT * FROM table WHERE organisation_id = $1', [orgId]);
+
+// For single resource access
+checkOrganisationAccess(resource.organisation_id, req.organisationId, 'resource-type');
+```
+
+### Documentation
+
+- [Authentication Setup Guide](docs/auth-setup.md)
+- [Troubleshooting Guide](docs/auth-troubleshooting.md)
+- [Redis Runbook](docs/redis-runbook.md)
 
 ## Testing
 
