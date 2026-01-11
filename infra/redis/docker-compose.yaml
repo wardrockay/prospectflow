@@ -4,7 +4,9 @@ services:
     container_name: prospectflow-redis
     hostname: redis
     restart: unless-stopped
-    command: redis-server /usr/local/etc/redis/redis.conf
+    command: sh -c "redis-server /usr/local/etc/redis/redis.conf --requirepass \"$${REDIS_PASSWORD}\""
+    env_file:
+      - .env.production
     ports:
       - '6379:6379'
     volumes:
@@ -21,4 +23,5 @@ services:
 
 networks:
   prospectflow-network:
-    driver: bridge
+    external: true
+    name: prospectflow-network
