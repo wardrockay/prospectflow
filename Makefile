@@ -1,6 +1,6 @@
 .PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard
 .PHONY: prod-up prod-down prod-restart prod-logs service-restart service-stop service-logs health
-.PHONY: sync-env vps-connect
+.PHONY: sync-env vps-connect deploy-ui deploy-api
 
 # Default target
 help:
@@ -31,6 +31,8 @@ help:
 	@echo "🔐 VPS DEPLOYMENT:"
 	@echo "  make sync-env          - Sync all .env files to VPS"
 	@echo "  make vps-connect       - SSH connect to VPS"
+	@echo "  make deploy-ui         - Deploy UI Web to production"
+	@echo "  make deploy-api        - Deploy Ingest API to production"
 	@echo ""
 	@echo "💚 HEALTH CHECK:"
 	@echo "  make health            - Show health status of all services"
@@ -300,6 +302,28 @@ health:
 	@echo ""
 	@echo "============================"
 	@echo ""
+
+# ============================================
+# DEPLOY INDIVIDUAL SERVICES
+# ============================================
+
+# Deploy UI Web to production
+deploy-ui: network-create
+	@echo "🚀 Deploying UI Web to production..."
+	@./scripts/sync-env-to-vps.sh || true
+	@cd apps/ui-web && pnpm run deploy
+	@echo ""
+	@echo "✅ UI Web deployed successfully!"
+	@echo "🌐 Access at: http://localhost:4000"
+
+# Deploy Ingest API to production
+deploy-api: network-create
+	@echo "🚀 Deploying Ingest API to production..."
+	@./scripts/sync-env-to-vps.sh || true
+	@cd apps/ingest-api && pnpm run deploy
+	@echo ""
+	@echo "✅ Ingest API deployed successfully!"
+	@echo "🌐 Access at: http://localhost:3001"
 
 # ============================================
 # VPS DEPLOYMENT

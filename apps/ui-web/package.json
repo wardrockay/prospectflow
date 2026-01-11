@@ -9,7 +9,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "deploy": "git pull && sudo docker compose -p prospectflow-ui-web up --build -d"
   },
   "dependencies": {
     "@nuxt/ui": "^2.14.2",
