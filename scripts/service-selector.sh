@@ -37,7 +37,15 @@ do_restart() {
     local service=$1
     local path=${SERVICE_PATHS[$service]}
     echo -e "${YELLOW}🔄 Restarting ${service}...${NC}"
-    cd "$path" && docker compose down && docker compose up -d --build
+    
+    # For applications, use pnpm run deploy (includes tests and proper build)
+    if [ "$service" = "ingest-api" ] || [ "$service" = "ui-web" ]; then
+        cd "$path" && pnpm run deploy
+    else
+        # For infrastructure services, use docker compose directly
+        cd "$path" && docker compose down && docker compose up -d --build
+    fi
+    
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ ${service} restarted successfully${NC}"
     else

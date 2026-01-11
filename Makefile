@@ -211,7 +211,13 @@ ifdef SERVICE
 	@./scripts/sync-env-to-vps.sh || true
 	@echo ""
 	@echo "🔄 Restarting service: $(SERVICE)..."
+ifeq ($(SERVICE),ingest-api)
+	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
+else ifeq ($(SERVICE),ui-web)
+	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
+else
 	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose down && docker compose up -d --build
+endif
 	@echo "✅ Service $(SERVICE) restarted"
 else
 	@echo "🔄 Syncing .env files first..."
