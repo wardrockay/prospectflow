@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import { Request, Response, NextFunction } from 'express';
 import { sessionService } from '../services/session.service.js';
 import { userSyncService } from '../services/user-sync.service.js';

@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger.js';
 import { ForbiddenError } from '../errors/http-errors.js';

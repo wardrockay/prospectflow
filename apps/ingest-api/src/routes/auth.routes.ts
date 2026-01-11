@@ -1,3 +1,4 @@
+/// <reference path="../types/express.d.ts" />
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { sessionService } from '../services/session.service.js';

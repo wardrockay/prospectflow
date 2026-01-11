@@ -70,7 +70,7 @@ export async function checkRedisHealth(): Promise<boolean> {
     const pong = await redisClient.ping();
     return pong === 'PONG';
   } catch (error) {
-    logger.error('Redis health check failed', error);
+    logger.error({ err: error }, 'Redis health check failed');
     return false;
   }
 }
