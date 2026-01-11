@@ -1,10 +1,8 @@
 /// <reference path="../types/express.ts" />
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
-import { sessionService } from '../services/session.service.js';
-import { userSyncService } from '../services/user-sync.service.js';
-import { cognitoAuthMiddleware } from '../middlewares/cognito-auth.middleware.js';
-import { sessionMiddleware } from '../middlewares/session.middleware.js';
+import { getSessionService, getUserSyncService } from '../config/auth.js';
+import { cognitoAuthMiddleware, sessionMiddleware } from '../config/auth-middlewares.js';
 import { logger } from '../utils/logger.js';
 
 const router = Router();
@@ -174,7 +172,7 @@ router.post('/logout', cognitoAuthMiddleware, async (req: Request, res: Response
     logger.info(`Processing logout for user ${cognitoSub}`);
 
     // Delete session from Redis
-    const deleted = await sessionService.deleteSession(cognitoSub);
+    const deleted = await getSessionService().deleteSession(cognitoSub);
 
     if (deleted) {
       logger.info(`Session deleted for user ${cognitoSub}`);
@@ -204,14 +202,14 @@ router.post('/logout', cognitoAuthMiddleware, async (req: Request, res: Response
  * GET /auth/me
  * Requires: Authentication + Session
  */
-router.get('/me', cognitoAuthMiddleware, sessionMiddleware, async (req: Request, res: Response) => {
+router.get('/me', cognitoAuthMiddleware, sessionMiddleware(), async (req: Request, res: Response) => {
   try {
     if (!req.session) {
       return res.status(401).json({ error: 'Session not found' });
     }
 
     // Sync user to database if not already synced
-    await userSyncService.syncUser(req.user!);
+    await getUserSyncService().syncUser(req.user!);
 
     res.json({
       user: {
@@ -255,7 +253,7 @@ router.get('/login', (req: Request, res: Response) => {
 router.get(
   '/health',
   cognitoAuthMiddleware,
-  sessionMiddleware,
+  sessionMiddleware(),
   async (req: Request, res: Response) => {
     try {
       if (!req.session) {
@@ -266,7 +264,7 @@ router.get(
       }
 
       // Check session TTL
-      const ttl = await sessionService.getSessionTTL(req.session.cognitoSub);
+      const ttl = await getSessionService().getSessionTTL(req.session.cognitoSub);
 
       res.json({
         healthy: true,

@@ -4,9 +4,9 @@ import {
   organisationScopeMiddleware,
   checkOrganisationAccess,
   getOrganisationIdFromRequest,
-} from '../../../src/middlewares/organisation-scope.middleware';
-import { ForbiddenError } from '../../../src/errors/http-errors';
-import { UserSession } from '../../../src/types/session';
+  ForbiddenError,
+} from '../../../src/config/auth-middlewares';
+import type { UserSession } from '@prospectflow/auth-core';
 
 // Mock logger
 vi.mock('../../../src/utils/logger', () => ({

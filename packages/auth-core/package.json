@@ -1,0 +1,47 @@
+{
+  "name": "@prospectflow/auth-core",
+  "version": "0.1.0",
+  "description": "Shared authentication package for ProspectFlow services",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./frontend": {
+      "types": "./dist/frontend/types.d.ts",
+      "import": "./dist/frontend/types.mjs",
+      "require": "./dist/frontend/types.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
+  "peerDependencies": {
+    "express": "^4.18.0",
+    "redis": "^4.6.0"
+  },
+  "dependencies": {
+    "aws-jwt-verify": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.8.2",
+    "vitest": "^1.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "UNLICENSED"
+}

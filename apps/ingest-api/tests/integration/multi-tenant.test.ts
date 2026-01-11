@@ -13,8 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   checkOrganisationAccess,
   getOrganisationIdFromRequest,
-} from '../../src/middlewares/organisation-scope.middleware';
-import { ForbiddenError } from '../../src/errors/http-errors';
+  ForbiddenError,
+} from '../../src/config/auth-middlewares';
 import { Request } from 'express';
 
 // Mock logger to prevent console noise

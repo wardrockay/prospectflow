@@ -4,7 +4,7 @@ import { env } from './config/env.js';
 import { rabbitMQClient } from './queue/rabbitmq.client.js';
 import { initializeQueues } from './queue/queue.init.js';
 import { pool } from './config/database.js';
-import { redisClient } from './config/redis.js';
+import { connectRedis, disconnectRedis, getRedisClient } from './config/auth.js';
 import type { Server } from 'node:http';
 
 let server: Server;
@@ -18,7 +18,7 @@ async function initialize() {
 
     // Connect to Redis (session store)
     logger.info('Connecting to Redis...');
-    await redisClient.connect();
+    await connectRedis();
     logger.info('✅ Redis connected');
 
     // Connect to RabbitMQ
@@ -73,8 +73,9 @@ async function shutdown(signal: string) {
     }
 
     // 2. Close Redis connection
+    const redisClient = getRedisClient();
     if (redisClient.isReady) {
-      await redisClient.quit();
+      await disconnectRedis();
       logger.info('✅ Redis connection closed');
     }
 

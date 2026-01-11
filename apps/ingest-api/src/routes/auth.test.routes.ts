@@ -1,6 +1,6 @@
 /// <reference path="../types/express.ts" />
 import { Router, Request, Response } from 'express';
-import { cognitoAuthMiddleware } from '../middlewares/cognito-auth.middleware.js';
+import { cognitoAuthMiddleware } from '../config/auth-middlewares.js';
 
 const router = Router();
 

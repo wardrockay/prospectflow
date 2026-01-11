@@ -1,7 +1,8 @@
 // Type augmentation for Express Request
-// Re-exports types from @prospectflow/auth-core
+// This file extends the Express Request interface with custom properties
 
-import type { CognitoJwtPayload, UserSession } from '@prospectflow/auth-core';
+import type { CognitoJwtPayload } from './cognito.js';
+import type { UserSession } from './session.js';
 
 declare global {
   namespace Express {

@@ -20,6 +20,7 @@
     "clean_install": "rm -r node_modules/ pnpm-lock.yaml dist/ && pnpm i && tsc "
   },
   "dependencies": {
+    "@prospectflow/auth-core": "workspace:*",
     "@types/cookie-parser": "^1.4.8",
     "amqp-connection-manager": "^5.0.0",
     "amqplib": "^0.10.9",

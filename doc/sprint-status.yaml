@@ -58,7 +58,7 @@ development_status:
   0-2-express-js-api-foundation-with-layered-architecture: done
   0-3-rabbitmq-message-queue-configuration: done
   0-4-aws-cognito-authentication-integration: done
-  0-5-extract-auth-to-shared-package: ready-for-dev
+  0-5-extract-auth-to-shared-package: in-progress
   0-6-structured-logging-with-pino: backlog
   0-7-error-tracking-with-sentry: backlog
   0-8-prometheus-metrics-grafana-dashboards: backlog
