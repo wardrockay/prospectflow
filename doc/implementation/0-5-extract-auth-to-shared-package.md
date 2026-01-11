@@ -3,10 +3,11 @@
 **Epic**: 0 - Sprint 0: Foundation Infrastructure  
 **Story ID**: 0.5  
 **Story Points**: 3  
-**Status**: Ready for Development  
+**Status**: ✅ Completed  
 **Dependencies**: Story 0.4 (AWS Cognito Authentication - completed)  
 **Created**: 2026-01-10  
-**Assignee**: TBD
+**Completed**: 2026-01-11  
+**Assignee**: Dev Team
 
 ---
 
@@ -828,4 +829,37 @@ pnpm test
 
 ---
 
-**Story 0.5 Ready for Development** ✅
+## Completion Summary
+
+**Completed**: 2026-01-11
+
+### Deliverables
+
+✅ **Package `@prospectflow/auth-core` v0.1.0**
+- Fully functional shared authentication package
+- 11 unit tests passing
+- Complete TypeScript types
+- Frontend-safe exports
+- Comprehensive README documentation
+
+✅ **Migration Complete**
+- All auth code extracted from ingest-api
+- 143 tests passing in ingest-api (no regressions)
+- Docker deployment configuration updated for monorepo
+
+✅ **Production Ready**
+- Dockerfile updated to support pnpm workspaces
+- docker-compose.yaml configured for monorepo context
+- Package builds successfully with tsup
+- Ready for deployment on VPS
+
+### Next Steps
+
+The following stories can now proceed:
+- **Story UI-0.2**: Authentication UI (can import types from auth-core)
+- **Future workers**: Can use auth middlewares from auth-core
+- **Future APIs**: Can reuse auth-core package
+
+---
+
+**Story 0.5 Completed** ✅

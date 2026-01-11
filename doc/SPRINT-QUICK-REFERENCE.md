@@ -8,15 +8,15 @@
 
 ## 📈 Sprint 0 Progress
 
-| Story | Title                          | Points | Status           | Completion |
-| ----- | ------------------------------ | ------ | ---------------- | ---------- |
-| 0.1   | PostgreSQL Multi-tenant Setup  | 5      | ✅ Done          | 100%       |
-| 0.2   | Express.js API Foundation      | 5      | ✅ Done          | 100%       |
-| 0.3   | RabbitMQ Message Queue         | 5      | ✅ Done          | 100%       |
-| 0.4   | AWS Cognito Authentication     | 6      | ✅ Done          | 100%       |
-| 0.5   | Extract Auth to Shared Package | 4      | 🔵 Ready-for-Dev | 0%         |
+| Story | Title                          | Points | Status  | Completion |
+| ----- | ------------------------------ | ------ | ------- | ---------- |
+| 0.1   | PostgreSQL Multi-tenant Setup  | 5      | ✅ Done | 100%       |
+| 0.2   | Express.js API Foundation      | 5      | ✅ Done | 100%       |
+| 0.3   | RabbitMQ Message Queue         | 5      | ✅ Done | 100%       |
+| 0.4   | AWS Cognito Authentication     | 6      | ✅ Done | 100%       |
+| 0.5   | Extract Auth to Shared Package | 3      | ✅ Done | 100%       |
 
-**Sprint 0 Velocity:** 21 / 37 points = **57% Complete**
+**Sprint 0 Velocity:** 24 / 37 points = **65% Complete**
 
 ---
 
