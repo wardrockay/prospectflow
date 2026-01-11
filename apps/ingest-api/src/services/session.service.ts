@@ -1,6 +1,6 @@
-import { redisClient, redisConfig } from '../config/redis';
-import { UserSession, CreateSessionPayload } from '../types/session';
-import { logger } from '../utils/logger';
+import { redisClient, redisConfig } from '../config/redis.js';
+import { UserSession, CreateSessionPayload } from '../types/session.js';
+import { logger } from '../utils/logger.js';
 
 export class SessionService {
   private readonly SESSION_PREFIX = 'session:';
@@ -39,14 +39,14 @@ export class SessionService {
       // Store with TTL
       await redisClient.setEx(key, this.TTL, serialized);
 
-      logger.info(`Session created for user ${payload.cognitoSub}`, {
-        organisationId: payload.organisationId,
-        email: payload.email,
-      });
+      logger.info(
+        { organisationId: payload.organisationId, email: payload.email },
+        `Session created for user ${payload.cognitoSub}`,
+      );
 
       return session;
     } catch (error) {
-      logger.error('Failed to create session', error);
+      logger.error({ err: error }, 'Failed to create session');
       throw new Error('Session creation failed');
     }
   }
@@ -69,7 +69,7 @@ export class SessionService {
       const session: UserSession = JSON.parse(data);
       return session;
     } catch (error) {
-      logger.error('Failed to retrieve session', error);
+      logger.error({ err: error }, 'Failed to retrieve session');
       return null;
     }
   }
@@ -100,7 +100,7 @@ export class SessionService {
       logger.debug(`Activity updated for user ${cognitoSub}`);
       return true;
     } catch (error) {
-      logger.error('Failed to update session activity', error);
+      logger.error({ err: error }, 'Failed to update session activity');
       return false;
     }
   }
@@ -123,7 +123,7 @@ export class SessionService {
       logger.debug(`Session not found for deletion: ${cognitoSub}`);
       return false;
     } catch (error) {
-      logger.error('Failed to delete session', error);
+      logger.error({ err: error }, 'Failed to delete session');
       throw new Error('Session deletion failed');
     }
   }
@@ -165,7 +165,7 @@ export class SessionService {
       logger.info(`Deleted ${deletedCount} sessions for organisation ${organisationId}`);
       return deletedCount;
     } catch (error) {
-      logger.error('Failed to delete organisation sessions', error);
+      logger.error({ err: error }, 'Failed to delete organisation sessions');
       throw new Error('Organisation session deletion failed');
     }
   }
@@ -181,7 +181,7 @@ export class SessionService {
       const ttl = await redisClient.ttl(key);
       return ttl;
     } catch (error) {
-      logger.error('Failed to get session TTL', error);
+      logger.error({ err: error }, 'Failed to get session TTL');
       return -2;
     }
   }
@@ -208,7 +208,7 @@ export class SessionService {
 
       return count;
     } catch (error) {
-      logger.error('Failed to count active sessions', error);
+      logger.error({ err: error }, 'Failed to count active sessions');
       return 0;
     }
   }

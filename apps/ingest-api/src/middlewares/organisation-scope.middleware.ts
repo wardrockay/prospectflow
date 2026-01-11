@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
-import { ForbiddenError } from '../errors/http-errors';
+import { logger } from '../utils/logger.js';
+import { ForbiddenError } from '../errors/http-errors.js';
 
 /**
  * Organisation scope middleware - enforces multi-tenant isolation
@@ -29,9 +29,7 @@ export async function organisationScopeMiddleware(
     const organisationId = req.session.organisationId;
 
     if (!organisationId) {
-      logger.error('Session missing organisation_id', {
-        cognitoSub: req.session.cognitoSub,
-      });
+      logger.error({ cognitoSub: req.session.cognitoSub }, 'Session missing organisation_id');
       res.status(403).json({
         error: 'User not assigned to an organisation',
         code: 'MISSING_ORGANISATION',
@@ -43,16 +41,19 @@ export async function organisationScopeMiddleware(
     req.organisationId = organisationId;
 
     // Log for audit trail
-    logger.debug('Organisation scope attached', {
-      organisationId,
-      cognitoSub: req.session.cognitoSub,
-      path: req.path,
-      method: req.method,
-    });
+    logger.debug(
+      {
+        organisationId,
+        cognitoSub: req.session.cognitoSub,
+        path: req.path,
+        method: req.method,
+      },
+      'Organisation scope attached',
+    );
 
     next();
   } catch (error) {
-    logger.error('Organisation scope middleware error', error);
+    logger.error({ err: error }, 'Organisation scope middleware error');
     res.status(500).json({
       error: 'Internal server error',
       code: 'ORG_SCOPE_ERROR',
@@ -75,11 +76,7 @@ export function checkOrganisationAccess(
   resourceType = 'resource',
 ): void {
   if (resourceOrgId !== userOrgId) {
-    logger.warn('Cross-tenant access attempt blocked', {
-      resourceOrgId,
-      userOrgId,
-      resourceType,
-    });
+    logger.warn({ resourceOrgId, userOrgId, resourceType }, 'Cross-tenant access attempt blocked');
 
     throw new ForbiddenError(
       `Access denied: ${resourceType} belongs to a different organisation`,

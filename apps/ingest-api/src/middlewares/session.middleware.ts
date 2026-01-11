@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { sessionService } from '../services/session.service';
-import { userSyncService } from '../services/user-sync.service';
-import { logger } from '../utils/logger';
-import { CognitoJwtPayload } from '../types/cognito';
+import { sessionService } from '../services/session.service.js';
+import { userSyncService } from '../services/user-sync.service.js';
+import { logger } from '../utils/logger.js';
+import { CognitoJwtPayload } from '../types/cognito.js';
 
 /**
  * Session middleware - manages Redis sessions for authenticated users
@@ -62,7 +62,7 @@ export async function sessionMiddleware(
         await userSyncService.syncUser(cognitoPayload);
         logger.debug(`User ${cognitoSub} synced to database`);
       } catch (syncError) {
-        logger.error(`Failed to sync user ${cognitoSub} to database`, syncError);
+        logger.error({ err: syncError }, `Failed to sync user ${cognitoSub} to database`);
         // Continue with session creation - user sync is non-blocking
         // The user will be synced on next login attempt
       }
@@ -91,16 +91,19 @@ export async function sessionMiddleware(
     }
 
     // Log session access for security audit
-    logger.debug('Session validated', {
-      cognitoSub: session.cognitoSub,
-      organisationId: session.organisationId,
-      role: session.role,
-      lastActivity: new Date(session.lastActivity).toISOString(),
-    });
+    logger.debug(
+      {
+        cognitoSub: session.cognitoSub,
+        organisationId: session.organisationId,
+        role: session.role,
+        lastActivity: new Date(session.lastActivity).toISOString(),
+      },
+      'Session validated',
+    );
 
     next();
   } catch (error) {
-    logger.error('Session middleware error', error);
+    logger.error({ err: error }, 'Session middleware error');
 
     // Check if Redis connection failed
     if (error instanceof Error && error.message.includes('Redis')) {

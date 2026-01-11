@@ -1,6 +1,6 @@
-import { CognitoJwtPayload } from '../types/cognito';
-import { logger } from '../utils/logger';
-import { pool } from '../config/database';
+import { CognitoJwtPayload } from '../types/cognito.js';
+import { logger } from '../utils/logger.js';
+import { pool } from '../config/database.js';
 
 export interface User {
   id: string;
@@ -61,7 +61,7 @@ export class UserSyncService {
         }
       }
 
-      logger.error('Failed to sync user', error);
+      logger.error({ err: error }, 'Failed to sync user');
       throw new Error('User synchronization failed');
     }
   }
@@ -86,7 +86,7 @@ export class UserSyncService {
         WHERE cognito_sub = $1
       `;
 
-      const result = await pool.query(query, [cognitoSub]);
+      const result = await pool!.query(query, [cognitoSub]);
 
       if (result.rows.length === 0) {
         return null;
@@ -94,7 +94,7 @@ export class UserSyncService {
 
       return result.rows[0] as User;
     } catch (error) {
-      logger.error('Failed to find user by cognito_sub', error);
+      logger.error({ err: error }, 'Failed to find user by cognito_sub');
       throw error;
     }
   }
@@ -133,16 +133,16 @@ export class UserSyncService {
 
       const values = [userData.cognitoSub, userData.email, userData.organisationId, userData.role];
 
-      const result = await pool.query(query, values);
+      const result = await pool!.query(query, values);
 
-      logger.info(`User created successfully: ${userData.cognitoSub}`, {
-        organisationId: userData.organisationId,
-        email: userData.email,
-      });
+      logger.info(
+        { organisationId: userData.organisationId, email: userData.email },
+        `User created successfully: ${userData.cognitoSub}`,
+      );
 
       return result.rows[0] as User;
     } catch (error) {
-      logger.error('Failed to create user', error);
+      logger.error({ err: error }, 'Failed to create user');
       throw error;
     }
   }
@@ -189,17 +189,17 @@ export class UserSyncService {
           updated_at
       `;
 
-      const result = await pool.query(query, values);
+      const result = await pool!.query(query, values);
 
       if (result.rows.length === 0) {
         throw new Error(`User not found: ${cognitoSub}`);
       }
 
-      logger.info(`User updated: ${cognitoSub}`, updates);
+      logger.info({ updates }, `User updated: ${cognitoSub}`);
 
       return result.rows[0] as User;
     } catch (error) {
-      logger.error('Failed to update user', error);
+      logger.error({ err: error }, 'Failed to update user');
       throw error;
     }
   }
@@ -219,7 +219,7 @@ export class UserSyncService {
         WHERE cognito_sub = $1
       `;
 
-      const result = await pool.query(query, [cognitoSub]);
+      const result = await pool!.query(query, [cognitoSub]);
 
       if (result.rowCount === 0) {
         logger.warn(`User not found for deletion: ${cognitoSub}`);
@@ -229,7 +229,7 @@ export class UserSyncService {
       logger.info(`User deleted (soft): ${cognitoSub}`);
       return true;
     } catch (error) {
-      logger.error('Failed to delete user', error);
+      logger.error({ err: error }, 'Failed to delete user');
       throw error;
     }
   }

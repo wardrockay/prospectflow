@@ -3,7 +3,7 @@
 # Sync .env files to VPS
 # Usage: ./scripts/sync-env-to-vps.sh
 
-set -e
+# Don't use set -e because we want to continue even if some syncs fail
 
 # VPS Configuration
 VPS_ALIAS="vps"
@@ -93,12 +93,12 @@ for file in "${ENV_FILES_ARRAY[@]}"; do
         ssh "${VPS_ALIAS}" "mkdir -p ${VPS_PATH}/${remote_dir}" 2>/dev/null
         
         # Copy the file
-        if rsync -avz --progress "$file" "${VPS_ALIAS}:${VPS_PATH}/${clean_path}"; then
+        if rsync -avz --progress "$file" "${VPS_ALIAS}:${VPS_PATH}/${clean_path}" 2>&1; then
             echo -e "${GREEN}✅ ${clean_path} synced${NC}"
-            ((success_count++))
+            ((success_count++)) || true
         else
             echo -e "${RED}❌ Failed to sync ${clean_path}${NC}"
-            ((fail_count++))
+            ((fail_count++)) || true
         fi
         echo ""
     fi
@@ -112,6 +112,7 @@ echo -e "📊 Summary:"
 echo -e "  ${GREEN}✓${NC} Synced files: ${success_count}"
 if [ $fail_count -gt 0 ]; then
     echo -e "  ${RED}✗${NC} Failed files: ${fail_count}"
+    exit 1
 fi
 echo ""
 echo -e "${YELLOW}💡 Next steps on VPS:${NC}"
@@ -119,3 +120,5 @@ echo -e "  ssh ${VPS_ALIAS}"
 echo -e "  cd ${VPS_PATH}"
 echo -e "  make prod-up"
 echo ""
+
+exit 0

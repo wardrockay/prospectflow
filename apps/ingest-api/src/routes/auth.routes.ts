@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
-import { sessionService } from '../services/session.service';
-import { userSyncService } from '../services/user-sync.service';
-import { cognitoAuthMiddleware } from '../middlewares/cognito-auth.middleware';
-import { sessionMiddleware } from '../middlewares/session.middleware';
-import { logger } from '../utils/logger';
+import { sessionService } from '../services/session.service.js';
+import { userSyncService } from '../services/user-sync.service.js';
+import { cognitoAuthMiddleware } from '../middlewares/cognito-auth.middleware.js';
+import { sessionMiddleware } from '../middlewares/session.middleware.js';
+import { logger } from '../utils/logger.js';
 
 const router = Router();
 
@@ -71,10 +71,10 @@ router.get('/callback', async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      logger.error('OAuth token exchange failed', {
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      logger.error(
+        { status: error.response?.status, data: error.response?.data },
+        'OAuth token exchange failed',
+      );
 
       return res.status(error.response?.status || 500).json({
         error: 'Token exchange failed',
@@ -82,7 +82,7 @@ router.get('/callback', async (req: Request, res: Response) => {
       });
     }
 
-    logger.error('Unexpected error in OAuth callback', error);
+    logger.error({ err: error }, 'Unexpected error in OAuth callback');
     res.status(500).json({
       error: 'Internal server error',
       message: 'Failed to process authentication callback',
@@ -138,10 +138,10 @@ router.post('/refresh', async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      logger.error('Token refresh failed', {
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      logger.error(
+        { status: error.response?.status, data: error.response?.data },
+        'Token refresh failed',
+      );
 
       return res.status(error.response?.status || 500).json({
         error: 'Token refresh failed',
@@ -149,7 +149,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
       });
     }
 
-    logger.error('Unexpected error in token refresh', error);
+    logger.error({ err: error }, 'Unexpected error in token refresh');
     res.status(500).json({
       error: 'Internal server error',
       message: 'Failed to refresh token',
@@ -190,7 +190,7 @@ router.post('/logout', cognitoAuthMiddleware, async (req: Request, res: Response
       success: true,
     });
   } catch (error) {
-    logger.error('Logout failed', error);
+    logger.error({ err: error }, 'Logout failed');
     res.status(500).json({
       error: 'Logout failed',
       message: 'Failed to complete logout',
@@ -223,7 +223,7 @@ router.get('/me', cognitoAuthMiddleware, sessionMiddleware, async (req: Request,
       },
     });
   } catch (error) {
-    logger.error('Failed to get current user', error);
+    logger.error({ err: error }, 'Failed to get current user');
     res.status(500).json({
       error: 'Internal server error',
       message: 'Failed to retrieve user information',
@@ -276,7 +276,7 @@ router.get(
         },
       });
     } catch (error) {
-      logger.error('Health check failed', error);
+      logger.error({ err: error }, 'Health check failed');
       res.status(503).json({
         healthy: false,
         message: 'Health check failed',
