@@ -23,7 +23,14 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_logs:/var/log/rabbitmq
+    networks:
+      - prospectflow-network
 
 volumes:
   rabbitmq_data:
   rabbitmq_logs:
+
+networks:
+  prospectflow-network:
+    external: true
+    name: prospectflow-network
