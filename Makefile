@@ -242,7 +242,25 @@ ifdef SERVICE
 	@echo "📜 Logs for $(SERVICE) (Ctrl+C to exit)..."
 	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose logs -f --tail=100
 else
-	@./scripts/service-selector.sh logs
+	@echo ""
+	@echo "📋 Available services:"
+	@echo "  [1] postgres      [2] rabbitmq"
+	@echo "  [3] redis         [4] clickhouse"
+	@echo "  [5] ingest-api    [6] ui-web"
+	@echo ""
+	@read -p "Select service (1-6): " choice; \
+	case $$choice in \
+		1) SERVICE=postgres ;; \
+		2) SERVICE=rabbitmq ;; \
+		3) SERVICE=redis ;; \
+		4) SERVICE=clickhouse ;; \
+		5) SERVICE=ingest-api ;; \
+		6) SERVICE=ui-web ;; \
+		*) echo "Invalid choice"; exit 1 ;; \
+	esac; \
+	echo ""; \
+	echo "📜 Logs for $$SERVICE (Ctrl+C to exit)..."; \
+	cd $(SERVICE_PATH_$$SERVICE) && docker compose logs -f --tail=100
 endif
 
 # ============================================
