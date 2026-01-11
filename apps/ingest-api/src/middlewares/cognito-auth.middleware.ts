@@ -1,4 +1,4 @@
-/// <reference path="../types/express.d.ts" />
+/// <reference path="../types/express.ts" />
 import { Request, Response, NextFunction } from 'express';
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { cognitoConfig } from '../config/cognito.js';

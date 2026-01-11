@@ -1,5 +1,5 @@
 // src/app.ts
-/// <reference path="./types/express.d.ts" />
+/// <reference path="./types/express.ts" />
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';

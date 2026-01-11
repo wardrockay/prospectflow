@@ -1,4 +1,4 @@
-/// <reference path="../types/express.d.ts" />
+/// <reference path="../types/express.ts" />
 import { Router, Request, Response } from 'express';
 import { cognitoAuthMiddleware } from '../middlewares/cognito-auth.middleware.js';
 
