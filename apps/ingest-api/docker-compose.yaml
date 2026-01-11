@@ -15,6 +15,11 @@ services:
       - POSTGRES_USER=prospectflow
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=prospectflow
+      # AWS Cognito
+      - AWS_REGION=${AWS_REGION}
+      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+      - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+      - COGNITO_ISSUER=${COGNITO_ISSUER}
     restart: unless-stopped
     networks:
       - prospectflow-network
