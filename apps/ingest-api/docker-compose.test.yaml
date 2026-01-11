@@ -61,6 +61,11 @@ services:
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=prospectflow
       - RABBITMQ_PASS=testpassword123
+      # Cognito test values (mocked in tests)
+      - COGNITO_USER_POOL_ID=eu-west-1_testpool
+      - COGNITO_CLIENT_ID=test-client-id
+      - COGNITO_ISSUER=https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_testpool
+      - AWS_REGION=eu-west-1
       - LOG_LEVEL=error
       - PORT=3000
       - CORS_ORIGIN=http://localhost:3000

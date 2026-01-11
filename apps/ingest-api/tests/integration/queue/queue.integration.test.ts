@@ -47,7 +47,7 @@ describe('Queue Integration Tests', () => {
   beforeAll(async () => {
     // Check if RabbitMQ is available
     rabbitmqAvailable = await isRabbitMQAvailable();
-    
+
     if (!rabbitmqAvailable) {
       console.log('⏭️  RabbitMQ not available, skipping queue integration tests');
       return;
@@ -63,7 +63,7 @@ describe('Queue Integration Tests', () => {
 
   afterAll(async () => {
     if (!rabbitmqAvailable) return;
-    
+
     // Close channel and disconnect
     if (channel) {
       await channel.close();
