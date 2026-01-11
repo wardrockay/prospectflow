@@ -836,6 +836,7 @@ pnpm test
 ### Deliverables
 
 ✅ **Package `@prospectflow/auth-core` v0.1.0**
+
 - Fully functional shared authentication package
 - 11 unit tests passing
 - Complete TypeScript types
@@ -843,11 +844,13 @@ pnpm test
 - Comprehensive README documentation
 
 ✅ **Migration Complete**
+
 - All auth code extracted from ingest-api
 - 143 tests passing in ingest-api (no regressions)
 - Docker deployment configuration updated for monorepo
 
 ✅ **Production Ready**
+
 - Dockerfile updated to support pnpm workspaces
 - docker-compose.yaml configured for monorepo context
 - Package builds successfully with tsup
@@ -856,6 +859,7 @@ pnpm test
 ### Next Steps
 
 The following stories can now proceed:
+
 - **Story UI-0.2**: Authentication UI (can import types from auth-core)
 - **Future workers**: Can use auth middlewares from auth-core
 - **Future APIs**: Can reuse auth-core package

@@ -18,6 +18,7 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 #### New Package Created
 
 **`packages/auth-core/`** - Shared authentication package
+
 - Complete TypeScript package with CJS/ESM support
 - Backend exports: middlewares, services, config, types
 - Frontend exports: types only (no Node.js dependencies)
@@ -25,6 +26,7 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 - 400+ lines of documentation (README.md)
 
 **Key files:**
+
 - `src/index.ts` - Main exports
 - `src/config/` - Cognito and Redis configuration
 - `src/middlewares/` - Auth, session, org-scope middlewares
@@ -36,6 +38,7 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 #### Deleted from ingest-api
 
 **Migrated to auth-core package:**
+
 - `src/types/cognito.ts` ❌
 - `src/types/session.ts` ❌
 - `src/middlewares/cognito-auth.middleware.ts` ❌
@@ -45,6 +48,7 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 - `src/services/user-sync.service.ts` ❌
 
 **Test files removed** (coverage moved to package):
+
 - `tests/unit/middlewares/cognito-auth.middleware.test.ts` ❌
 - `tests/unit/middlewares/session.middleware.test.ts` ❌
 - `tests/unit/services/session.service.test.ts` ❌
@@ -53,31 +57,37 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 #### Updated in ingest-api
 
 **`apps/ingest-api/src/config/auth-middlewares.ts`**
+
 - Imports from `@prospectflow/auth-core`
 - Creates instances with app-specific logger adapters
 
 **`apps/ingest-api/src/config/auth.ts`**
+
 - Imports SessionService and UserSyncService from package
 - Instantiates with app-specific Redis and DB connections
 
 **`apps/ingest-api/tests/security/security.test.ts`**
+
 - Updated imports to use auth-core package exports
 
 #### Docker Configuration
 
 **`apps/ingest-api/Dockerfile`**
+
 - Complete rewrite for pnpm monorepo support
 - Multi-stage build: builder + production
 - Copies workspace files and builds auth-core dependency
 - Uses pnpm with `--frozen-lockfile` and `--filter`
 
 **`apps/ingest-api/docker-compose.yaml`**
+
 - Changed build context to monorepo root: `context: ../..`
 - Specified Dockerfile path: `dockerfile: apps/ingest-api/Dockerfile`
 
 #### Documentation
 
 **`packages/auth-core/README.md`** (400+ lines)
+
 - Installation instructions
 - Backend usage examples (Express)
 - Frontend usage examples (Nuxt/Vue)
@@ -87,10 +97,12 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 - Migration guide
 
 **`doc/implementation/0-5-extract-auth-to-shared-package.md`**
+
 - Updated status to "Completed"
 - Added completion summary with deliverables
 
 **`doc/implementation/0-5-SUMMARY.md`** (NEW)
+
 - Comprehensive implementation summary
 - Architecture decisions documentation
 - Metrics and validation
@@ -99,11 +111,13 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 ### Testing Results
 
 **Package Tests:**
+
 - ✅ 3 test files
 - ✅ 11 tests passing
 - ✅ Types test, middleware test, frontend types test
 
 **Application Tests (No Regressions):**
+
 - ✅ 15 test files passing
 - ✅ 143 tests passing
 - ✅ Integration tests verify auth flow unchanged
@@ -113,6 +127,7 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 **Decision:** Shared Package (not Microservice)
 
 **Rationale:**
+
 1. AWS Cognito already provides the auth service
 2. No additional network latency (in-process validation)
 3. No single point of failure (each service validates independently)
@@ -120,6 +135,7 @@ Extracted authentication code from `ingest-api` into a shared monorepo package `
 5. Appropriate for MVP scale (<20 microservices)
 
 **Factory Pattern Implementation:**
+
 - All middlewares use factory functions for configurability
 - Default exports read from environment variables
 - Custom instances accept configuration objects

@@ -7,17 +7,17 @@
 
 ## 📌 Project Quick Facts
 
-| Item | Value |
-|------|-------|
-| **Project Name** | ProspectFlow |
-| **Type** | B2B Email Outreach Automation Platform |
-| **Stage** | Early Development (Foundation Phase) |
-| **Primary Language** | TypeScript |
-| **Main Framework** | Express.js (Node.js) |
-| **Database** | PostgreSQL 18 (Multi-tenant) |
-| **Package Manager** | pnpm |
-| **Architecture** | Microservices (Monorepo) |
-| **Active Services** | 1 of 8 planned |
+| Item                 | Value                                  |
+| -------------------- | -------------------------------------- |
+| **Project Name**     | ProspectFlow                           |
+| **Type**             | B2B Email Outreach Automation Platform |
+| **Stage**            | Early Development (Foundation Phase)   |
+| **Primary Language** | TypeScript                             |
+| **Main Framework**   | Express.js (Node.js)                   |
+| **Database**         | PostgreSQL 18 (Multi-tenant)           |
+| **Package Manager**  | pnpm                                   |
+| **Architecture**     | Microservices (Monorepo)               |
+| **Active Services**  | 1 of 8 planned                         |
 
 ---
 
@@ -95,21 +95,21 @@ docker exec -it prospectflow-postgres psql -U prospectflow -d prospectflow
 
 ## 🌐 Service Endpoints
 
-| Service | URL | Status | Purpose |
-|---------|-----|--------|---------|
-| **Ingest API** | http://localhost:3000 | ✅ Active | Data ingestion |
-| **pgAdmin** | http://localhost:5050 | ✅ Active | DB management |
-| **ClickHouse** | http://localhost:8123 | ⚙️ Ready | Analytics |
-| **Tabix** | http://localhost:8080 | ⚙️ Ready | ClickHouse UI |
-| **RabbitMQ** | http://localhost:15672 | ⚙️ Ready | Queue management |
+| Service        | URL                    | Status    | Purpose          |
+| -------------- | ---------------------- | --------- | ---------------- |
+| **Ingest API** | http://localhost:3000  | ✅ Active | Data ingestion   |
+| **pgAdmin**    | http://localhost:5050  | ✅ Active | DB management    |
+| **ClickHouse** | http://localhost:8123  | ⚙️ Ready  | Analytics        |
+| **Tabix**      | http://localhost:8080  | ⚙️ Ready  | ClickHouse UI    |
+| **RabbitMQ**   | http://localhost:15672 | ⚙️ Ready  | Queue management |
 
 ### API Routes
 
-| Method | Endpoint | Auth | Purpose |
-|--------|----------|------|---------|
-| POST | `/api/v1/ingest` | ⏳ Soon | Import Pharow data |
-| GET | `/health` | ❌ No | Health check |
-| GET | `/metrics` | ❌ No | Prometheus metrics |
+| Method | Endpoint         | Auth    | Purpose            |
+| ------ | ---------------- | ------- | ------------------ |
+| POST   | `/api/v1/ingest` | ⏳ Soon | Import Pharow data |
+| GET    | `/health`        | ❌ No   | Health check       |
+| GET    | `/metrics`       | ❌ No   | Prometheus metrics |
 
 ---
 
@@ -132,38 +132,38 @@ http://localhost:8123
 
 ```sql
 -- Check all tables
-SELECT schemaname, tablename 
-FROM pg_tables 
+SELECT schemaname, tablename
+FROM pg_tables
 WHERE schemaname IN ('iam', 'crm', 'outreach', 'tracking');
 
 -- Count records by schema
-SELECT 
-  'iam.organisations' as table_name, 
-  COUNT(*) as count 
+SELECT
+  'iam.organisations' as table_name,
+  COUNT(*) as count
 FROM iam.organisations
 UNION ALL
-SELECT 
-  'crm.companies', 
-  COUNT(*) 
+SELECT
+  'crm.companies',
+  COUNT(*)
 FROM crm.companies
 UNION ALL
-SELECT 
-  'crm.people', 
-  COUNT(*) 
+SELECT
+  'crm.people',
+  COUNT(*)
 FROM crm.people
 UNION ALL
-SELECT 
-  'crm.positions', 
-  COUNT(*) 
+SELECT
+  'crm.positions',
+  COUNT(*)
 FROM crm.positions;
 
 -- View recent migrations
-SELECT * FROM flyway_schema_history 
-ORDER BY installed_on DESC 
+SELECT * FROM flyway_schema_history
+ORDER BY installed_on DESC
 LIMIT 10;
 
 -- Check for data by organisation
-SELECT 
+SELECT
   o.name as org_name,
   COUNT(DISTINCT c.id) as companies,
   COUNT(DISTINCT p.id) as people,
@@ -403,7 +403,7 @@ curl http://localhost:3000/metrics
 
 # Database performance
 docker exec -it prospectflow-postgres psql -U prospectflow -d prospectflow -c "
-SELECT 
+SELECT
   query,
   calls,
   mean_exec_time,
@@ -415,10 +415,10 @@ LIMIT 10;
 
 # Connection pool stats
 docker exec -it prospectflow-postgres psql -U prospectflow -d prospectflow -c "
-SELECT 
+SELECT
   state,
-  COUNT(*) 
-FROM pg_stat_activity 
+  COUNT(*)
+FROM pg_stat_activity
 GROUP BY state;
 "
 ```
@@ -449,13 +449,13 @@ GROUP BY state;
 
 ## 📚 Documentation Links
 
-| Document | Purpose |
-|----------|---------|
-| **COMPREHENSIVE_PROJECT_ANALYSIS.md** | Full analysis (60+ pages) |
-| **ANALYSIS_SUMMARY.md** | Executive summary (quick read) |
-| **ACTION_PLAN.md** | Prioritized tasks with code examples |
-| **ARCHITECTURE.md** | System architecture & diagrams |
-| **QUICK_REFERENCE.md** | This file - quick commands |
+| Document                              | Purpose                              |
+| ------------------------------------- | ------------------------------------ |
+| **COMPREHENSIVE_PROJECT_ANALYSIS.md** | Full analysis (60+ pages)            |
+| **ANALYSIS_SUMMARY.md**               | Executive summary (quick read)       |
+| **ACTION_PLAN.md**                    | Prioritized tasks with code examples |
+| **ARCHITECTURE.md**                   | System architecture & diagrams       |
+| **QUICK_REFERENCE.md**                | This file - quick commands           |
 
 ---
 
@@ -597,7 +597,7 @@ curl http://localhost:3000/health
 
 - **Code Repository:** Local Git
 - **Documentation:** `/doc` directory
-- **Analysis Reports:** Root directory (ANALYSIS_*.md)
+- **Analysis Reports:** Root directory (ANALYSIS\_\*.md)
 
 ### External
 
@@ -725,6 +725,7 @@ services:
 ### Code Examples
 
 Check these files for implementation examples:
+
 - `apps/ingest-api/src/repositories/ingest.repository.ts` - Database patterns
 - `apps/ingest-api/src/middlewares/error.middleware.ts` - Error handling
 - `apps/ingest-api/src/schemas/ingest.schema.ts` - Zod validation
@@ -732,5 +733,5 @@ Check these files for implementation examples:
 
 ---
 
-*Quick Reference Guide maintained by Development Team*  
-*Last Updated: January 8, 2025*
+_Quick Reference Guide maintained by Development Team_  
+_Last Updated: January 8, 2025_
