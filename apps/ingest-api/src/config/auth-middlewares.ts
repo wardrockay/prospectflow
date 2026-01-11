@@ -57,14 +57,18 @@ export const cognitoAuthMiddleware: RequestHandler = createCognitoAuthMiddleware
 /**
  * Session middleware factory
  * Creates sessions in Redis, syncs users to database
- * Note: This is a function because services need lazy initialization
+ * Note: Services are retrieved lazily inside the middleware to avoid initialization order issues
  */
 export function sessionMiddleware(): RequestHandler {
-  return createSessionMiddleware({
-    sessionService: getSessionService(),
-    userSyncService: getUserSyncService(),
-    logger: sessionLogger,
-  });
+  // Return a wrapper that lazily initializes services
+  return async (req, res, next) => {
+    const middleware = createSessionMiddleware({
+      sessionService: getSessionService(),
+      userSyncService: getUserSyncService(),
+      logger: sessionLogger,
+    });
+    return middleware(req, res, next);
+  };
 }
 
 /**
