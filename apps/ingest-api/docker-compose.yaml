@@ -20,6 +20,12 @@ services:
       - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
       - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
       - COGNITO_ISSUER=${COGNITO_ISSUER}
+      # Redis
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_SESSION_TTL=${REDIS_SESSION_TTL}
     restart: unless-stopped
     networks:
       - prospectflow-network
