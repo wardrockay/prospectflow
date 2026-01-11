@@ -1,11 +1,12 @@
 .PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard
+.PHONY: prod-up prod-down prod-restart prod-logs service-restart service-stop service-logs health
 
 # Default target
 help:
-	@echo "ProspectFlow Development Environment"
-	@echo "===================================="
+	@echo "ProspectFlow Development & Production Environment"
+	@echo "================================================="
 	@echo ""
-	@echo "Available targets:"
+	@echo "🔧 DEVELOPMENT:"
 	@echo "  make dev-up            - Start all infrastructure services"
 	@echo "  make dev-wait          - Wait for all services to be healthy"
 	@echo "  make dev-ready         - Start services and wait for health checks"
@@ -13,9 +14,28 @@ help:
 	@echo "  make dev-restart       - Restart all services"
 	@echo "  make dev-logs          - Show logs from all services"
 	@echo "  make dev-status        - Show status of all services"
+	@echo ""
+	@echo "🚀 PRODUCTION (VPS):"
+	@echo "  make prod-up           - Start entire production environment"
+	@echo "  make prod-down         - Stop entire production environment"
+	@echo "  make prod-restart      - Restart entire production environment"
+	@echo "  make prod-logs         - Show production logs"
+	@echo ""
+	@echo "🔄 SERVICE MANAGEMENT (Interactive menu):"
+	@echo "  make service-restart   - Interactive: select service(s) to restart"
+	@echo "  make service-stop      - Interactive: select service(s) to stop"
+	@echo "  make service-logs      - Interactive: select service to view logs"
+	@echo "  Or use: make service-restart SERVICE=<name> for direct restart"
+	@echo ""
+	@echo "💚 HEALTH CHECK:"
+	@echo "  make health            - Show health status of all services"
+	@echo ""
+	@echo "🧪 TESTING:"
 	@echo "  make test-ready        - Ensure environment is ready for integration tests"
 	@echo "  make test-unit         - Run unit tests (no infrastructure needed)"
 	@echo "  make test-integration  - Run integration tests (requires dev environment)"
+	@echo ""
+	@echo "🛠️  OTHER:"
 	@echo "  make dashboard         - Launch Sprint Dashboard UI"
 	@echo "  make clean             - Remove all containers, volumes, and networks"
 	@echo ""
@@ -111,3 +131,137 @@ clean:
 	@cd infra/redis && docker compose down -v
 	@cd infra/clickhouse && docker compose down -v
 	@echo "✅ Cleanup complete"
+
+# ============================================
+# PRODUCTION COMMANDS (VPS)
+# ============================================
+
+# Create Docker network if it doesn't exist
+network-create:
+	@docker network inspect prospectflow-network >/dev/null 2>&1 || docker network create prospectflow-network
+	@echo "✅ Network prospectflow-network ready"
+
+# Start entire production environment
+prod-up: network-create
+	@echo "🚀 Starting Production Environment..."
+	@echo ""
+	@echo "📦 Starting Infrastructure..."
+	@cd infra/postgres && docker compose up -d
+	@cd infra/rabbitmq && docker compose up -d
+	@cd infra/redis && docker compose up -d
+	@cd infra/clickhouse && docker compose up -d
+	@echo "⏳ Waiting for infrastructure to be ready..."
+	@sleep 10
+	@echo ""
+	@echo "🌐 Starting Applications..."
+	@cd apps/ingest-api && docker compose up -d
+	@cd apps/ui-web && docker compose up -d
+	@echo ""
+	@echo "✅ Production environment started!"
+	@echo "📊 Run 'make health' to check service status"
+
+# Stop entire production environment
+prod-down:
+	@echo "🛑 Stopping Production Environment..."
+	@echo ""
+	@echo "🌐 Stopping Applications..."
+	@-cd apps/ui-web && docker compose down
+	@-cd apps/ingest-api && docker compose down
+	@echo ""
+	@echo "📦 Stopping Infrastructure..."
+	@-cd infra/clickhouse && docker compose down
+	@-cd infra/redis && docker compose down
+	@-cd infra/rabbitmq && docker compose down
+	@-cd infra/postgres && docker compose down
+	@echo ""
+	@echo "✅ Production environment stopped"
+
+# Restart entire production environment
+prod-restart: prod-down prod-up
+
+# Show production logs
+prod-logs:
+	@echo "📜 Production Logs (Ctrl+C to exit)..."
+	@docker logs -f --tail=100 $$(docker ps -q --filter "name=prospectflow")
+
+# ============================================
+# SERVICE MANAGEMENT
+# ============================================
+
+# Service paths mapping
+SERVICE_PATH_postgres = infra/postgres
+SERVICE_PATH_rabbitmq = infra/rabbitmq
+SERVICE_PATH_redis = infra/redis
+SERVICE_PATH_clickhouse = infra/clickhouse
+SERVICE_PATH_ingest-api = apps/ingest-api
+SERVICE_PATH_ui-web = apps/ui-web
+
+# Interactive service restart (shows selection menu)
+service-restart:
+ifdef SERVICE
+	@echo "🔄 Restarting service: $(SERVICE)..."
+	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose down && docker compose up -d --build
+	@echo "✅ Service $(SERVICE) restarted"
+else
+	@./scripts/service-selector.sh restart
+endif
+
+# Interactive service stop (shows selection menu)
+service-stop:
+ifdef SERVICE
+	@echo "🛑 Stopping service: $(SERVICE)..."
+	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose down
+	@echo "✅ Service $(SERVICE) stopped"
+else
+	@./scripts/service-selector.sh stop
+endif
+
+# Show logs for a specific service (interactive if no SERVICE specified)
+service-logs:
+ifdef SERVICE
+	@echo "📜 Logs for $(SERVICE) (Ctrl+C to exit)..."
+	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose logs -f --tail=100
+else
+	@./scripts/service-selector.sh logs
+endif
+
+# ============================================
+# HEALTH CHECK
+# ============================================
+
+# Show health status of all services
+health:
+	@echo ""
+	@echo "💚 ProspectFlow Health Check"
+	@echo "============================"
+	@echo ""
+	@echo "📦 INFRASTRUCTURE:"
+	@echo ""
+	@echo "PostgreSQL:"
+	@docker ps --filter "name=prospectflow-postgres" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@docker exec prospectflow-postgres pg_isready -U prospectflow 2>/dev/null && echo "  ✅ Database accepting connections" || echo "  ⚠️  Database not ready"
+	@echo ""
+	@echo "RabbitMQ:"
+	@docker ps --filter "name=rabbitmq" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@docker exec prospectflow-rabbitmq rabbitmq-diagnostics check_running 2>/dev/null && echo "  ✅ RabbitMQ healthy" || echo "  ⚠️  RabbitMQ not ready"
+	@echo ""
+	@echo "Redis:"
+	@docker ps --filter "name=prospectflow-redis" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@docker exec prospectflow-redis redis-cli ping 2>/dev/null | grep -q PONG && echo "  ✅ Redis responding" || echo "  ⚠️  Redis not ready"
+	@echo ""
+	@echo "ClickHouse:"
+	@docker ps --filter "name=clickhouse-server" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@docker exec clickhouse-server clickhouse-client --query "SELECT 1" 2>/dev/null && echo "  ✅ ClickHouse healthy" || echo "  ⚠️  ClickHouse not ready"
+	@echo ""
+	@echo "🌐 APPLICATIONS:"
+	@echo ""
+	@echo "Ingest API:"
+	@docker ps --filter "name=prospectflow-ingest-api" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@curl -sf http://localhost:3000/health 2>/dev/null && echo "  ✅ API responding" || echo "  ⚠️  API not responding (or no /health endpoint)"
+	@echo ""
+	@echo "UI Web:"
+	@docker ps --filter "name=prospectflow-ui-web" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@curl -sf http://localhost:4000 2>/dev/null && echo "  ✅ UI responding" || echo "  ⚠️  UI not responding"
+	@echo ""
+	@echo "============================"
+	@echo ""
