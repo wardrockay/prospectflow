@@ -242,25 +242,16 @@ ifdef SERVICE
 	@echo "📜 Logs for $(SERVICE) (Ctrl+C to exit)..."
 	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose logs -f --tail=100
 else
-	@echo ""
-	@echo "📋 Available services:"
-	@echo "  [1] postgres      [2] rabbitmq"
-	@echo "  [3] redis         [4] clickhouse"
-	@echo "  [5] ingest-api    [6] ui-web"
-	@echo ""
-	@read -p "Select service (1-6): " choice; \
+	@read -p "Select service: [1]postgres [2]rabbitmq [3]redis [4]clickhouse [5]ingest-api [6]ui-web: " choice; \
 	case $$choice in \
-		1) SERVICE=postgres; SVC_PATH=infra/postgres ;; \
-		2) SERVICE=rabbitmq; SVC_PATH=infra/rabbitmq ;; \
-		3) SERVICE=redis; SVC_PATH=infra/redis ;; \
-		4) SERVICE=clickhouse; SVC_PATH=infra/clickhouse ;; \
-		5) SERVICE=ingest-api; SVC_PATH=apps/ingest-api ;; \
-		6) SERVICE=ui-web; SVC_PATH=apps/ui-web ;; \
+		1) echo "📜 Logs for postgres..."; cd infra/postgres && docker compose logs -f --tail=100 ;; \
+		2) echo "📜 Logs for rabbitmq..."; cd infra/rabbitmq && docker compose logs -f --tail=100 ;; \
+		3) echo "📜 Logs for redis..."; cd infra/redis && docker compose logs -f --tail=100 ;; \
+		4) echo "📜 Logs for clickhouse..."; cd infra/clickhouse && docker compose logs -f --tail=100 ;; \
+		5) echo "📜 Logs for ingest-api..."; cd apps/ingest-api && docker compose logs -f --tail=100 ;; \
+		6) echo "📜 Logs for ui-web..."; cd apps/ui-web && docker compose logs -f --tail=100 ;; \
 		*) echo "Invalid choice"; exit 1 ;; \
-	esac; \
-	echo ""; \
-	echo "📜 Logs for $$SERVICE (Ctrl+C to exit)..."; \
-	cd $$SVC_PATH && docker compose logs -f --tail=100
+	esac
 endif
 
 # ============================================
