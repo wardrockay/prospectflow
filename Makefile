@@ -244,12 +244,12 @@ ifdef SERVICE
 else
 	@read -p "Select service: [1]postgres [2]rabbitmq [3]redis [4]clickhouse [5]ingest-api [6]ui-web: " choice; \
 	case $$choice in \
-		1) echo "📜 Logs for postgres..."; cd infra/postgres && docker compose logs -f --tail=100 ;; \
-		2) echo "📜 Logs for rabbitmq..."; cd infra/rabbitmq && docker compose logs -f --tail=100 ;; \
-		3) echo "📜 Logs for redis..."; cd infra/redis && docker compose logs -f --tail=100 ;; \
-		4) echo "📜 Logs for clickhouse..."; cd infra/clickhouse && docker compose logs -f --tail=100 ;; \
-		5) echo "📜 Logs for ingest-api..."; cd apps/ingest-api && docker compose logs -f --tail=100 ;; \
-		6) echo "📜 Logs for ui-web..."; cd apps/ui-web && docker compose logs -f --tail=100 ;; \
+		1) echo "📜 Logs for postgres..."; docker logs -f --tail=100 prospectflow-postgres ;; \
+		2) echo "📜 Logs for rabbitmq..."; docker logs -f --tail=100 rabbitmq ;; \
+		3) echo "📜 Logs for redis..."; docker logs -f --tail=100 prospectflow-redis ;; \
+		4) echo "📜 Logs for clickhouse..."; docker logs -f --tail=100 clickhouse-server ;; \
+		5) echo "📜 Logs for ingest-api..."; docker logs -f --tail=100 prospectflow-ingest-api ;; \
+		6) echo "📜 Logs for ui-web..."; docker logs -f --tail=100 prospectflow-ui-web ;; \
 		*) echo "Invalid choice"; exit 1 ;; \
 	esac
 endif
