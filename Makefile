@@ -1,5 +1,6 @@
 .PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard
 .PHONY: prod-up prod-down prod-restart prod-logs service-restart service-stop service-logs health
+.PHONY: sync-env vps-connect
 
 # Default target
 help:
@@ -26,6 +27,10 @@ help:
 	@echo "  make service-stop      - Interactive: select service(s) to stop"
 	@echo "  make service-logs      - Interactive: select service to view logs"
 	@echo "  Or use: make service-restart SERVICE=<name> for direct restart"
+	@echo ""
+	@echo "🔐 VPS DEPLOYMENT:"
+	@echo "  make sync-env          - Sync all .env files to VPS"
+	@echo "  make vps-connect       - SSH connect to VPS"
 	@echo ""
 	@echo "💚 HEALTH CHECK:"
 	@echo "  make health            - Show health status of all services"
@@ -145,7 +150,10 @@ network-create:
 prod-up: network-create
 	@echo "🚀 Starting Production Environment..."
 	@echo ""
-	@echo "📦 Starting Infrastructure..."
+	@echo "� Syncing .env files first..."
+	@./scripts/sync-env-to-vps.sh || true
+	@echo ""
+	@echo "�📦 Starting Infrastructure..."
 	@cd infra/postgres && docker compose up -d
 	@cd infra/rabbitmq && docker compose up -d
 	@cd infra/redis && docker compose up -d
@@ -199,10 +207,16 @@ SERVICE_PATH_ui-web = apps/ui-web
 # Interactive service restart (shows selection menu)
 service-restart:
 ifdef SERVICE
+	@echo "🔄 Syncing .env files first..."
+	@./scripts/sync-env-to-vps.sh || true
+	@echo ""
 	@echo "🔄 Restarting service: $(SERVICE)..."
 	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose down && docker compose up -d --build
 	@echo "✅ Service $(SERVICE) restarted"
 else
+	@echo "🔄 Syncing .env files first..."
+	@./scripts/sync-env-to-vps.sh || true
+	@echo ""
 	@./scripts/service-selector.sh restart
 endif
 
@@ -265,3 +279,27 @@ health:
 	@echo ""
 	@echo "============================"
 	@echo ""
+
+# ============================================
+# VPS DEPLOYMENT
+# ============================================
+
+# VPS Configuration (uses SSH config alias)
+VPS_ALIAS = vps
+VPS_PATH = ~/starlightcoder/prospectflow
+
+# Sync .env files to VPS
+sync-env:
+	@./scripts/sync-env-to-vps.sh
+
+# Connect to VPS via SSH
+vps-connect:
+	@echo "🔐 Connecting to VPS..."
+	@ssh $(VPS_ALIAS)
+
+# Deploy to VPS (sync env + restart services)
+vps-deploy: sync-env
+	@echo ""
+	@echo "🚀 Deploying to VPS..."
+	@ssh $(VPS_ALIAS) "cd $(VPS_PATH) && git pull && make prod-restart"
+	@echo "✅ Deployment complete!"
