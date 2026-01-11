@@ -2,7 +2,9 @@ services:
   prospectflow-ingest-api:
     image: starlightcoder/prospectflow-ingest-api:latest
     container_name: prospectflow-ingest-api
-    build: .
+    build:
+      context: ../..
+      dockerfile: apps/ingest-api/Dockerfile
     ports:
       - '3000:3000'
     env_file:
