@@ -17,7 +17,7 @@
     "test:docker": "sudo docker compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from prospectflow-test-runner && sudo docker compose -f docker-compose.test.yaml down -v",
     "build": "tsc",
     "predeploy": "pnpm run test:docker",
-    "deploy": "git pull && pnpm run predeploy && export NODE_ENV=production && sudo docker compose -p prospectflow-ingest-api --env-file ./env/.env.production up --build -d",
+    "deploy": "git pull && export NODE_ENV=production && sudo docker compose -p prospectflow-ingest-api --env-file ./env/.env.production up --build -d",
     "clean_install": "rm -r node_modules/ pnpm-lock.yaml dist/ && pnpm i && tsc "
   },
   "dependencies": {
