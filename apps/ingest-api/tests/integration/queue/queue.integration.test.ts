@@ -6,6 +6,16 @@ import { initializeQueues } from '../../../src/queue/queue.init';
 import { QUEUES, QueueJob } from '../../../src/queue/queue.config';
 import { ChannelWrapper } from 'amqp-connection-manager';
 
+// Check if RabbitMQ is available
+const isRabbitMQAvailable = async (): Promise<boolean> => {
+  try {
+    await rabbitMQClient.connect();
+    return rabbitMQClient.isConnected();
+  } catch {
+    return false;
+  }
+};
+
 // Test consumer implementation
 class TestIntegrationConsumer extends QueueConsumer {
   public processedJobs: QueueJob[] = [];
@@ -32,10 +42,16 @@ class TestIntegrationConsumer extends QueueConsumer {
 
 describe('Queue Integration Tests', () => {
   let channel: ChannelWrapper;
+  let rabbitmqAvailable = false;
 
   beforeAll(async () => {
-    // Connect to RabbitMQ
-    await rabbitMQClient.connect();
+    // Check if RabbitMQ is available
+    rabbitmqAvailable = await isRabbitMQAvailable();
+    
+    if (!rabbitmqAvailable) {
+      console.log('⏭️  RabbitMQ not available, skipping queue integration tests');
+      return;
+    }
 
     // Initialize all queues (pass the client)
     await initializeQueues(rabbitMQClient);
@@ -46,6 +62,8 @@ describe('Queue Integration Tests', () => {
   }, 30000);
 
   afterAll(async () => {
+    if (!rabbitmqAvailable) return;
+    
     // Close channel and disconnect
     if (channel) {
       await channel.close();
@@ -53,7 +71,11 @@ describe('Queue Integration Tests', () => {
     await rabbitMQClient.disconnect();
   }, 30000);
 
-  beforeEach(async () => {
+  beforeEach(async (context) => {
+    if (!rabbitmqAvailable) {
+      context.skip();
+      return;
+    }
     // Purge test queues before each test
     await channel.purgeQueue(QUEUES.DRAFT);
     await channel.purgeQueue(`${QUEUES.DRAFT}_dlq`);

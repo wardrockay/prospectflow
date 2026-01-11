@@ -53,8 +53,8 @@ describe('HealthRepository', () => {
       // Act
       const result = await healthRepository.checkConnection();
 
-      // Assert
-      expect(result.latency).toBeGreaterThanOrEqual(10);
+      // Assert - allow 1ms variance due to timer precision
+      expect(result.latency).toBeGreaterThanOrEqual(9);
     });
   });
 });

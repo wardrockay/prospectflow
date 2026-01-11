@@ -53,12 +53,16 @@ redisClient.on('end', () => {
 // Graceful shutdown handler
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, closing Redis connection...');
-  await redisClient.quit();
+  if (redisClient.isOpen) {
+    await redisClient.quit();
+  }
 });
 
 process.on('SIGINT', async () => {
   logger.info('SIGINT received, closing Redis connection...');
-  await redisClient.quit();
+  if (redisClient.isOpen) {
+    await redisClient.quit();
+  }
 });
 
 // Export client and config
