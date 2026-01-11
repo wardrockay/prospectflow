@@ -26,6 +26,11 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_DB=${REDIS_DB}
       - REDIS_SESSION_TTL=${REDIS_SESSION_TTL}
+      # RabbitMQ
+      - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq}
+      - RABBITMQ_PORT=${RABBITMQ_PORT:-5672}
+      - RABBITMQ_USER=${RABBITMQ_USER:-admin}
+      - RABBITMQ_PASS=${RABBITMQ_PASS:-changeme}
     restart: unless-stopped
     networks:
       - prospectflow-network
