@@ -356,12 +356,13 @@ describe('Multi-Tenant Isolation', () => {
         // Expected to throw
       }
 
+      // Pino logger signature: logger.warn(object, message)
       expect(logger.warn).toHaveBeenCalledWith(
-        'Cross-tenant access attempt blocked',
         expect.objectContaining({
           resourceOrgId: prospectFromOrgAlpha.organisation_id,
           userOrgId: userFromOrgBeta.organisationId,
         }),
+        'Cross-tenant access attempt blocked',
       );
     });
   });
