@@ -36,14 +36,18 @@ export default defineEventHandler(async (event) => {
     });
 
     if (!fetchResponse.ok) {
-      console.error('Cognito token exchange failed:', fetchResponse.status, fetchResponse.statusText);
+      console.error(
+        'Cognito token exchange failed:',
+        fetchResponse.status,
+        fetchResponse.statusText
+      );
       throw createError({
         statusCode: 401,
         message: 'Erreur de connexion. Veuillez réessayer.',
       });
     }
 
-    const response = await fetchResponse.json() as {
+    const response = (await fetchResponse.json()) as {
       access_token: string;
       id_token: string;
       refresh_token: string;
