@@ -13,8 +13,6 @@
   onMounted(async () => {
     const code = route.query.code as string;
 
-    console.log('Callback received, code:', code ? `${code.substring(0, 10)}...` : 'NONE');
-
     if (!code) {
       console.error('No authorization code received');
       errorMessage.value = 'Erreur de connexion. Veuillez réessayer.';
@@ -23,25 +21,18 @@
     }
 
     try {
-      console.log('Calling /api/auth/callback...');
       // Exchange authorization code for tokens via Nuxt server API
       // Server will set httpOnly cookies automatically
-      const response = await $fetch('/api/auth/callback', {
+      await $fetch('/api/auth/callback', {
         method: 'POST',
         body: { code },
       });
-      console.log('Callback response:', response);
 
       // Cookies are set server-side with httpOnly flag
       // Redirect to dashboard
       await navigateTo('/');
     } catch (error: any) {
       console.error('Authentication error:', error);
-      console.error('Error details:', {
-        status: error?.statusCode || error?.status,
-        message: error?.message,
-        data: error?.data,
-      });
       errorMessage.value = 'Erreur de connexion. Veuillez réessayer.';
       isLoading.value = false;
 
