@@ -60,7 +60,7 @@ development_status:
   0-4-aws-cognito-authentication-integration: done
   0-5-extract-auth-to-shared-package: done
   0-6-structured-logging-with-pino: done
-  0-7-error-tracking-with-sentry: review
+  0-7-error-tracking-with-sentry: done
   0-8-prometheus-metrics-grafana-dashboards: backlog
   0-9-nginx-reverse-proxy-ssl-setup: done
   0-10-docker-compose-orchestration: backlog

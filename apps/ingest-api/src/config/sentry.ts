@@ -20,6 +20,7 @@ const getRelease = (): string => {
     const gitSha = execSync('git rev-parse --short HEAD', {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore'],
+      timeout: 1000, // 1 second max to prevent startup hang
     }).trim();
     return `ingest-api@${gitSha}`;
   } catch {
