@@ -25,11 +25,13 @@ services:
         hard: 262144
     healthcheck:
       test: ['CMD', 'clickhouse-client', '--query', 'SELECT 1']
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    restart: unless-stopped
     networks:
-      - clickhouse-network
+      - prospectflow-network
 
   tabix:
     image: spoonest/clickhouse-tabix-web-client:latest
@@ -43,8 +45,9 @@ services:
       CH_PASSWORD: ${CLICKHOUSE_PASSWORD}
     depends_on:
       - clickhouse
+    restart: unless-stopped
     networks:
-      - clickhouse-network
+      - prospectflow-network
 
 volumes:
   clickhouse_data:
@@ -53,5 +56,6 @@ volumes:
     driver: local
 
 networks:
-  clickhouse-network:
-    driver: bridge
+  prospectflow-network:
+    external: true
+    name: prospectflow-network

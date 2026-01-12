@@ -18,7 +18,7 @@ check_postgres() {
 
 # Function to check RabbitMQ
 check_rabbitmq() {
-    docker exec rabbitmq rabbitmq-diagnostics status > /dev/null 2>&1
+    docker exec rabbitmq rabbitmq-diagnostics ping > /dev/null 2>&1
     return $?
 }
 

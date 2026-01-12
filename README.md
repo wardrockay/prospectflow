@@ -7,17 +7,38 @@
 ### Environnement de Développement
 
 ```bash
-# Démarrer tous les services (PostgreSQL, RabbitMQ, Redis, ClickHouse)
+# Option 1: Démarrer infrastructure + applications (recommandé)
 make dev-ready
 
-# Vérifier le statut des services
-make dev-status
+# Option 2: Démarrage par couches
+make network-create   # Créer le réseau Docker (une seule fois)
+make infra-only       # Infrastructure: PostgreSQL, RabbitMQ, Redis, ClickHouse
+make apps-only        # Applications: Ingest API, UI Web
+
+# Option 3: Stack complet avec monitoring
+make full-stack       # Tout: infra + apps + Prometheus + Grafana
+
+# Vérifier le statut et la santé des services
+make health
 
 # Voir les logs
 make dev-logs
 
 # Arrêter les services
 make dev-down
+```
+
+### 🎯 Gestion des Services par Couches
+
+```bash
+# Redémarrer uniquement les applications (garde l'infra active)
+make apps-restart
+
+# Redémarrer uniquement l'infrastructure
+make infra-restart
+
+# Redémarrer tout
+make dev-restart
 ```
 
 ### 📊 Sprint Dashboard

@@ -29,6 +29,9 @@ RUN pnpm --filter prospectflow-ingest-api build
 # Production stage - minimal image
 FROM node:20-alpine AS production
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Install pnpm for production install
 RUN corepack enable && corepack prepare pnpm@latest --activate
 

@@ -216,17 +216,27 @@ All deployment operations are managed via the root `Makefile`. Use `make help` f
 #### Development Environment
 
 ```bash
-# Start all infrastructure (PostgreSQL, RabbitMQ, Redis, ClickHouse)
-make dev-up
+# Network setup (run once)
+make network-create
 
-# Start and wait for all services to be healthy
-make dev-ready
+# Tiered startup (recommended for selective development)
+make infra-only       # Start infrastructure only (PostgreSQL, RabbitMQ, Redis, ClickHouse)
+make apps-only        # Start applications only (Ingest API, UI Web)
+make full-stack       # Start everything including monitoring
 
-# Stop all services
-make dev-down
+# Legacy combined startup
+make dev-up           # Start all infrastructure
+make dev-ready        # Start infrastructure and wait for health checks
+make dev-down         # Stop all services
 
-# Check service status
-make dev-status
+# Health and status
+make health           # Check health status of all services
+make dev-status       # Show container status
+
+# Service tier management
+make apps-restart     # Restart only applications (keeps infrastructure running)
+make infra-restart    # Restart infrastructure (stops apps first)
+make dev-restart      # Restart everything
 ```
 
 #### Production Environment (VPS)

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   ui-web:
     build:
@@ -18,6 +16,12 @@ services:
       - COGNITO_HOSTED_UI=${COGNITO_HOSTED_UI}
       - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
       - COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI:-https://app.lightandshutter.fr/auth/callback}
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:3000/']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
     networks:
       - prospectflow-network

@@ -1,6 +1,7 @@
 .PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard
+.PHONY: infra-only apps-only full-stack infra-restart apps-restart
 .PHONY: prod-up prod-down prod-restart prod-logs service-restart service-stop service-logs health
-.PHONY: sync-env vps-connect deploy-ui deploy-api
+.PHONY: sync-env vps-connect deploy-ui deploy-api network-create
 .PHONY: nginx-up nginx-down nginx-logs nginx-init-ssl nginx-renew-ssl
 
 # Default target
@@ -16,6 +17,13 @@ help:
 	@echo "  make dev-restart       - Restart all services"
 	@echo "  make dev-logs          - Show logs from all services"
 	@echo "  make dev-status        - Show status of all services"
+	@echo ""
+	@echo "🎯 TIERED ORCHESTRATION:"
+	@echo "  make infra-only        - Start infrastructure tier only (postgres, rabbitmq, redis, clickhouse)"
+	@echo "  make apps-only         - Start application tier only (ingest-api, ui-web)"
+	@echo "  make full-stack        - Start complete stack (infra + apps + monitoring)"
+	@echo "  make infra-restart     - Restart infrastructure tier"
+	@echo "  make apps-restart      - Restart application tier"
 	@echo ""
 	@echo "🚀 PRODUCTION (VPS):"
 	@echo "  make prod-up           - Start entire production environment"
@@ -98,6 +106,95 @@ dev-down:
 
 # Restart all services
 dev-restart: dev-down dev-ready
+
+# ============================================
+# TIERED ORCHESTRATION
+# ============================================
+
+# Start infrastructure tier only
+infra-only: network-create
+	@echo "🚀 Starting Infrastructure Tier..."
+	@echo ""
+	@echo "📦 Starting PostgreSQL..."
+	@cd infra/postgres && docker compose up -d
+	@echo "📦 Starting RabbitMQ..."
+	@cd infra/rabbitmq && docker compose up -d
+	@echo "📦 Starting Redis..."
+	@cd infra/redis && docker compose up -d
+	@echo "📦 Starting ClickHouse..."
+	@cd infra/clickhouse && docker compose up -d
+	@echo ""
+	@echo "⏳ Waiting for infrastructure to be healthy..."
+	@./scripts/wait-for-services.sh
+	@echo ""
+	@echo "✅ Infrastructure tier ready!"
+
+# Start application tier only (assumes infrastructure is running)
+apps-only:
+	@echo "🚀 Starting Application Tier..."
+	@echo ""
+	@echo "🌐 Starting Ingest API..."
+	@cd apps/ingest-api && docker compose up -d
+	@echo "🌐 Starting UI Web..."
+	@cd apps/ui-web && docker compose up -d
+	@echo ""
+	@echo "⏳ Waiting for applications to be healthy..."
+	@sleep 10
+	@echo ""
+	@echo "✅ Application tier ready!"
+
+# Start complete stack (infra + apps + monitoring)
+full-stack: network-create infra-only apps-only monitoring-up
+	@echo ""
+	@echo "🎉 ✅ Full stack ready!"
+	@echo ""
+	@echo "📊 Service URLs:"
+	@echo "  • Ingest API: http://localhost:3000"
+	@echo "  • UI Web: http://localhost:4000"
+	@echo "  • PostgreSQL: localhost:5432"
+	@echo "  • RabbitMQ Management: http://localhost:15672"
+	@echo "  • Redis: localhost:6379"
+	@echo "  • Prometheus: http://localhost:9090"
+	@echo "  • Grafana: http://localhost:3001"
+	@echo ""
+	@echo "💡 Run 'make health' to check service status"
+
+# Restart infrastructure tier
+infra-restart:
+	@echo "🔄 Restarting Infrastructure Tier..."
+	@echo ""
+	@echo "🛑 Stopping applications first..."
+	@-cd apps/ui-web && docker compose down
+	@-cd apps/ingest-api && docker compose down
+	@echo ""
+	@echo "🛑 Stopping infrastructure..."
+	@cd infra/clickhouse && docker compose down
+	@cd infra/redis && docker compose down
+	@cd infra/rabbitmq && docker compose down
+	@cd infra/postgres && docker compose down
+	@echo ""
+	@echo "🚀 Starting infrastructure..."
+	@$(MAKE) infra-only
+	@echo ""
+	@echo "✅ Infrastructure restarted!"
+	@echo "💡 Run 'make apps-only' to restart applications"
+
+# Restart application tier (keeps infrastructure running)
+apps-restart:
+	@echo "🔄 Restarting Application Tier..."
+	@echo ""
+	@echo "🛑 Stopping applications..."
+	@-cd apps/ui-web && docker compose down
+	@-cd apps/ingest-api && docker compose down
+	@echo ""
+	@echo "🚀 Starting applications..."
+	@$(MAKE) apps-only
+	@echo ""
+	@echo "✅ Applications restarted!"
+
+# ============================================
+# TESTING & STATUS
+# ============================================
 
 # Show logs from all services
 dev-logs:
@@ -316,11 +413,11 @@ health:
 	@echo ""
 	@echo "RabbitMQ:"
 	@docker ps --filter "name=rabbitmq" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
-	@docker exec prospectflow-rabbitmq rabbitmq-diagnostics check_running 2>/dev/null && echo "  ✅ RabbitMQ healthy" || echo "  ⚠️  RabbitMQ not ready"
+	@docker exec rabbitmq rabbitmq-diagnostics ping 2>/dev/null && echo "  ✅ RabbitMQ healthy" || echo "  ⚠️  RabbitMQ not ready"
 	@echo ""
 	@echo "Redis:"
 	@docker ps --filter "name=prospectflow-redis" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
-	@docker exec prospectflow-redis redis-cli ping 2>/dev/null | grep -q PONG && echo "  ✅ Redis responding" || echo "  ⚠️  Redis not ready"
+	@docker exec prospectflow-redis redis-cli ping 2>/dev/null && echo "  ✅ Redis responding" || echo "  ⚠️  Redis not ready"
 	@echo ""
 	@echo "ClickHouse:"
 	@docker ps --filter "name=clickhouse-server" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
