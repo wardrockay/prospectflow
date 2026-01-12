@@ -1,12 +1,17 @@
 import { Pool } from 'pg';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
 import { DatabaseError } from '../errors/DatabaseError.js';
+import type { Logger } from 'pino';
 
 /**
  * Base Repository class with common database operations
  */
 export class BaseRepository {
-  constructor(protected pool: Pool) {}
+  protected logger: Logger;
+
+  constructor(protected pool: Pool, moduleName: string = 'BaseRepository') {
+    this.logger = createChildLogger(moduleName);
+  }
 
   /**
    * Execute a query safely with error handling
@@ -16,7 +21,7 @@ export class BaseRepository {
       const result = await this.pool.query(text, params);
       return result;
     } catch (error) {
-      logger.error(
+      this.logger.error(
         {
           error: error instanceof Error ? error.message : 'Unknown error',
           query: text,
@@ -37,7 +42,7 @@ export class BaseRepository {
       const latency = Date.now() - start;
       return { connected: true, latency };
     } catch (error) {
-      logger.error({ error }, 'Database connection check failed');
+      this.logger.error({ error }, 'Database connection check failed');
       throw new DatabaseError('Unable to connect to database');
     }
   }

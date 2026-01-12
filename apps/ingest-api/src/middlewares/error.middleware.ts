@@ -1,14 +1,19 @@
 // src/middlewares/error.middleware.ts
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
 import { AppError } from '../errors/AppError.js';
 import { ZodError } from 'zod';
 
-export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
+const logger = createChildLogger('ErrorHandler');
+
+export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
   res.locals.error = err;
 
+  // Use request-scoped logger if available, fallback to module logger
+  const log = req.log || logger;
+
   // Log error with context
-  logger.error(
+  log.error(
     {
       error: err instanceof Error ? err.message : 'Unknown error',
       stack: err instanceof Error ? err.stack : undefined,
@@ -20,7 +25,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
 
   // 🔍 Validation error (Zod)
   if (err instanceof ZodError) {
-    logger.warn({ issues: err.issues }, '❌ Validation Error');
+    log.warn({ issues: err.issues }, '❌ Validation Error');
     return res.status(400).json({
       status: 'error',
       message: 'Validation failed',
@@ -30,7 +35,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
 
   // 🔍 JSON Syntax error (ex: mauvais body JSON)
   if (err instanceof SyntaxError && 'body' in err) {
-    logger.warn({ message: err.message }, '❌ Syntax Error');
+    log.warn({ message: err.message }, '❌ Syntax Error');
     return res.status(400).json({
       status: 'error',
       message: 'Invalid JSON syntax',
@@ -40,7 +45,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
 
   // 🔍 Custom AppError (includes ValidationError, DatabaseError, etc.)
   if (err instanceof AppError) {
-    logger.info(`⚠️ AppError ${err.statusCode} - ${err.message}`);
+    log.info(`⚠️ AppError ${err.statusCode} - ${err.message}`);
     return res.status(err.statusCode).json({
       status: 'error',
       message: err.message,
@@ -50,7 +55,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
 
   // 🔍 Erreur JS standard
   if (err instanceof Error) {
-    logger.error(`❌ Unexpected Error: ${err.message}`);
+    log.error(`❌ Unexpected Error: ${err.message}`);
     return res.status(500).json({
       status: 'error',
       message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
@@ -58,7 +63,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
   }
 
   // 🔍 Cas inconnu
-  logger.error({ err }, '❌ Unhandled error type');
+  log.error({ err }, '❌ Unhandled error type');
   res.status(500).json({
     status: 'error',
     message: 'Unhandled server error',

@@ -2,8 +2,10 @@ import * as amqp from 'amqp-connection-manager';
 import { ChannelWrapper } from 'amqp-connection-manager';
 import { ConfirmChannel } from 'amqplib';
 import { EventEmitter } from 'node:events';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
 import { getRabbitMQUrl } from '../config/rabbitmq.js';
+
+const logger = createChildLogger('RabbitMQ');
 
 /**
  * RabbitMQ Client - Connection Manager

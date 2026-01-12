@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { ingestService } from '../services/ingest.service.js';
 import { ingestSchema } from '../schemas/ingest.schema.js';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('IngestController');
 
 /**
  * Controller pour gérer les endpoints d'ingestion

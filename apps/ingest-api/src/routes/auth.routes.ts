@@ -3,7 +3,9 @@ import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { getSessionService, getUserSyncService } from '../config/auth.js';
 import { cognitoAuthMiddleware, sessionMiddleware } from '../config/auth-middlewares.js';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('AuthRoutes');
 
 const router = Router();
 
@@ -202,33 +204,38 @@ router.post('/logout', cognitoAuthMiddleware, async (req: Request, res: Response
  * GET /auth/me
  * Requires: Authentication + Session
  */
-router.get('/me', cognitoAuthMiddleware, sessionMiddleware(), async (req: Request, res: Response) => {
-  try {
-    if (!req.session) {
-      return res.status(401).json({ error: 'Session not found' });
+router.get(
+  '/me',
+  cognitoAuthMiddleware,
+  sessionMiddleware(),
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.session) {
+        return res.status(401).json({ error: 'Session not found' });
+      }
+
+      // Sync user to database if not already synced
+      await getUserSyncService().syncUser(req.user!);
+
+      res.json({
+        user: {
+          email: req.session.email,
+          organisationId: req.session.organisationId,
+          role: req.session.role,
+          groups: req.session.cognitoGroups,
+          lastActivity: new Date(req.session.lastActivity).toISOString(),
+          createdAt: new Date(req.session.createdAt).toISOString(),
+        },
+      });
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to get current user');
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to retrieve user information',
+      });
     }
-
-    // Sync user to database if not already synced
-    await getUserSyncService().syncUser(req.user!);
-
-    res.json({
-      user: {
-        email: req.session.email,
-        organisationId: req.session.organisationId,
-        role: req.session.role,
-        groups: req.session.cognitoGroups,
-        lastActivity: new Date(req.session.lastActivity).toISOString(),
-        createdAt: new Date(req.session.createdAt).toISOString(),
-      },
-    });
-  } catch (error) {
-    logger.error({ err: error }, 'Failed to get current user');
-    res.status(500).json({
-      error: 'Internal server error',
-      message: 'Failed to retrieve user information',
-    });
-  }
-});
+  },
+);
 
 /**
  * Initiate Login - Redirect to Cognito Hosted UI

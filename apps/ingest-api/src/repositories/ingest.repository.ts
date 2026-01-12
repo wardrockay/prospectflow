@@ -1,8 +1,10 @@
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
 import { IngestEntity } from '../entities/ingest.entity.js';
 import { PharowItem } from '../schemas/ingest.schema.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getPool } from '../config/database.js';
+
+const logger = createChildLogger('IngestRepository');
 
 /**
  * Repository pour gérer la persistance des données d'ingestion dans PostgreSQL

@@ -145,6 +145,66 @@ checkOrganisationAccess(resource.organisation_id, req.organisationId, 'resource-
 - [Troubleshooting Guide](docs/auth-troubleshooting.md)
 - [Redis Runbook](docs/redis-runbook.md)
 
+## Logging
+
+The API uses Pino for structured JSON logging with request correlation IDs.
+
+### Configuration
+
+- `LOG_LEVEL`: Set via environment variable (debug, info, warn, error)
+- Development: Uses `pino-pretty` for readable colored output
+- Production: JSON format for log aggregation (ELK, CloudWatch, Datadog)
+
+### Request Correlation
+
+All requests include a unique `requestId` for distributed tracing:
+
+- Extracted from headers: `x-request-id`, `x-correlation-id`, `x-trace-id`
+- Generated automatically if not provided
+- Returned in response header: `x-request-id`
+
+### Child Loggers
+
+Use module-scoped child loggers for contextual logging:
+
+```typescript
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('MyService');
+logger.info({ data }, 'Operation completed');
+// Output: { module: 'MyService', data: {...}, msg: 'Operation completed' }
+```
+
+### Performance Logging
+
+Time operations automatically:
+
+```typescript
+import { timeOperation } from '../utils/logger.js';
+
+const result = await timeOperation(logger, 'database.query', async () => {
+  return await db.query(sql);
+});
+// Logs: { operation: 'database.query', durationMs: 42, success: true }
+```
+
+### Sensitive Data Redaction
+
+The following fields are automatically redacted from logs:
+
+- `password`, `token`, `accessToken`, `refreshToken`, `idToken`
+- `authorization`, `cookie`, `apiKey`, `secret`
+- `creditCard`, `ssn`
+
+### Log Levels Guide
+
+| Level   | Usage                                                  |
+| ------- | ------------------------------------------------------ |
+| `error` | Application errors requiring immediate attention       |
+| `warn`  | Unexpected but recoverable situations, slow operations |
+| `info`  | Normal operation events, request completion            |
+| `debug` | Detailed debugging information                         |
+
 ## Testing
 
 ### Quick Start

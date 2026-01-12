@@ -1,5 +1,7 @@
 import { createClient, RedisClientType } from 'redis';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('Redis');
 
 // Redis configuration from environment
 const redisConfig = {

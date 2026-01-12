@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { correlationIdMiddleware } from './middlewares/correlation-id.middleware.js';
 import { loggerMiddleware } from './middlewares/logger.middleware.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middlewares/error.middleware.js';
@@ -20,6 +21,9 @@ app.use(helmet());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+
+// Correlation ID must come before logger middleware
+app.use(correlationIdMiddleware);
 app.use(loggerMiddleware);
 
 app.use(

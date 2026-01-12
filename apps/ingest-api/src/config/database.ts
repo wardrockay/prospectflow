@@ -1,6 +1,8 @@
 import { Pool, PoolClient } from 'pg';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
 import { env } from './env.js';
+
+const logger = createChildLogger('Database');
 
 let pool: Pool | null = null;
 

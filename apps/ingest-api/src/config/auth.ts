@@ -4,7 +4,9 @@
 import { SessionService, UserSyncService, createRedisClient } from '@prospectflow/auth-core';
 import type { RedisClientType } from 'redis';
 import { pool, getPool } from './database.js';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('Auth');
 
 // Adapter for pino logger to auth-core logger format
 const sessionLogger = {

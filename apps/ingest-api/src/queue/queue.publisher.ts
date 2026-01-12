@@ -1,7 +1,9 @@
 import { ChannelWrapper } from 'amqp-connection-manager';
 import { rabbitMQClient } from './rabbitmq.client.js';
 import { QueueJob } from './queue.config.js';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('QueuePublisher');
 
 export interface PublishOptions {
   persistent?: boolean; // default: true

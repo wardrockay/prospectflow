@@ -1,11 +1,13 @@
 import app from './app.js';
-import { logger } from './utils/logger.js';
+import { createChildLogger } from './utils/logger.js';
 import { env } from './config/env.js';
 import { rabbitMQClient } from './queue/rabbitmq.client.js';
 import { initializeQueues } from './queue/queue.init.js';
 import { pool } from './config/database.js';
 import { connectRedis, disconnectRedis, getRedisClient } from './config/auth.js';
 import type { Server } from 'node:http';
+
+const logger = createChildLogger('Server');
 
 let server: Server;
 

@@ -1,6 +1,8 @@
 import { QueueConsumer } from '../queue/queue.consumer.js';
 import { QueueJob } from '../queue/queue.config.js';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('ExampleWorker');
 
 /**
  * Example worker implementation for testing queue functionality

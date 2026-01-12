@@ -1,6 +1,8 @@
 import { ChannelWrapper } from 'amqp-connection-manager';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
 import { RabbitMQClient } from './rabbitmq.client.js';
+
+const logger = createChildLogger('QueueInit');
 import {
   QUEUES,
   DLQ_NAMES,

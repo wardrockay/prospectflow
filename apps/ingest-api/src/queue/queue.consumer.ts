@@ -2,7 +2,9 @@ import { ChannelWrapper } from 'amqp-connection-manager';
 import { ConsumeMessage, ConfirmChannel } from 'amqplib';
 import { rabbitMQClient } from './rabbitmq.client.js';
 import { QueueJob } from './queue.config.js';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('QueueConsumer');
 
 /**
  * Abstract base class for queue consumers

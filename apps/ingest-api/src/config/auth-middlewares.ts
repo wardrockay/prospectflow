@@ -16,7 +16,9 @@ import {
 import type { Request, RequestHandler } from 'express';
 import { cognitoConfig } from './cognito.js';
 import { getSessionService, getUserSyncService } from './auth.js';
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('AuthMiddlewares');
 
 // Logger adapters for middlewares
 const authLogger = {

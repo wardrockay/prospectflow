@@ -1,7 +1,9 @@
-import { logger } from '../utils/logger.js';
+import { createChildLogger } from '../utils/logger.js';
 import { ingestRepository } from '../repositories/ingest.repository.js';
 import { IngestEntity } from '../entities/ingest.entity.js';
 import { IngestDto } from '../schemas/ingest.schema.js';
+
+const logger = createChildLogger('IngestService');
 
 /**
  * Service pour la logique métier de l'ingestion
