@@ -8,11 +8,14 @@ resource "aws_cognito_user_pool_client" "api_client" {
   allowed_oauth_scopes                 = ["openid", "email", "profile"]
 
   # Callback URLs
+  # Note: Cognito requires HTTPS for non-localhost URLs
+  # For VPS deployment, configure nginx with SSL and use https://vps-ea22871d.vps.ovh.net/auth/callback
   callback_urls = var.environment == "production" ? [
     "https://app.prospectflow.com/auth/callback"
     ] : [
     "http://localhost:4000/auth/callback",
-    "http://localhost:5173/auth/callback"
+    "http://localhost:5173/auth/callback",
+    "https://vps-ea22871d.vps.ovh.net/auth/callback"
   ]
 
   # Logout URLs
@@ -20,7 +23,8 @@ resource "aws_cognito_user_pool_client" "api_client" {
     "https://app.prospectflow.com/"
     ] : [
     "http://localhost:4000/",
-    "http://localhost:5173/"
+    "http://localhost:5173/",
+    "https://vps-ea22871d.vps.ovh.net/"
   ]
 
   # Supported identity providers

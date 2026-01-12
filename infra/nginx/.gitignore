@@ -1,0 +1,17 @@
+# 🔐 Certificats Let's Encrypt (générés par Certbot)
+# ⚠️ SENSIBLE - Ne jamais commiter les clés privées !
+certbot/conf/
+certbot/www/
+certbot/logs/
+
+# 📁 Répertoires de données générés
+www/
+logs/
+
+# 🔄 Fichiers de configuration générés dynamiquement
+# (si vous utilisez des templates avec envsubst)
+conf.d/*.generated.conf
+
+# 📝 Fichiers temporaires
+*.tmp
+*.bak
