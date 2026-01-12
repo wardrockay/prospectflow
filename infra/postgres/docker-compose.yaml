@@ -65,21 +65,37 @@ services:
       - prospectflow-network
 
   pgbouncer:
-    image: edoburu/pgbouncer:latest
+    image: bitnami/pgbouncer:latest
     container_name: prospectflow-pgbouncer
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-prospectflow}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-prospectflow}
-      POOL_MODE: transaction
-      MAX_CLIENT_CONN: 100
-      DEFAULT_POOL_SIZE: 25
+      POSTGRESQL_HOST: postgres
+      POSTGRESQL_PORT: 5432
+      POSTGRESQL_DATABASE: ${POSTGRES_DB:-prospectflow}
+      POSTGRESQL_USERNAME: ${POSTGRES_USER:-prospectflow}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGBOUNCER_AUTH_TYPE: md5
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: 100
+      PGBOUNCER_DEFAULT_POOL_SIZE: 25
+      PGBOUNCER_PORT: 6432
     ports:
-      - '127.0.0.1:6432:5432'
+      - '127.0.0.1:6432:6432'
     healthcheck:
-      test: ['CMD', 'pg_isready', '-h', 'localhost', '-p', '5432']
+      test:
+        [
+          'CMD',
+          'pg_isready',
+          '-h',
+          'localhost',
+          '-p',
+          '6432',
+          '-U',
+          '${POSTGRES_USER:-prospectflow}',
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
