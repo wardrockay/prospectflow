@@ -59,7 +59,30 @@ Ouvre automatiquement le dashboard sur http://localhost:8080/tools/sprint-dashbo
 - 🗓️ Timeline des sprints
 - 🔍 Filtres par status
 
-## 📁 Structure du projet
+## � CI/CD Pipeline
+
+### Continuous Integration
+
+Le pipeline CI s'exécute automatiquement sur chaque push ou pull request:
+
+- ✅ Linting (ESLint)
+- ✅ Tests unitaires et d'intégration
+- ✅ Build Docker images
+
+### Continuous Deployment
+
+Déploiement en production avec approval gate:
+
+1. Go to **Actions** → **Deploy to Production**
+2. Entrer le commit SHA ou tag version
+3. Approuver le déploiement
+4. Le workflow déploie automatiquement
+
+**Configuration requise:** Voir [CI/CD Setup Guide](doc/CI-CD-SETUP.md)
+
+**Rollback:** Re-déployer avec un ancien commit SHA
+
+## �📁 Structure du projet
 
 ```
 ├── .editorconfig

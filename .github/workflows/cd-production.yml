@@ -1,0 +1,143 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag or commit SHA to deploy'
+        required: true
+        type: string
+
+jobs:
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://app.lightandshutter.fr
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push ingest-api image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/ingest-api
+          file: ./apps/ingest-api/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/ingest-api:${{ github.event.inputs.version }}
+            ghcr.io/${{ github.repository }}/ingest-api:production
+            ghcr.io/${{ github.repository }}/ingest-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push ui-web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/ui-web
+          file: ./apps/ui-web/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/ui-web:${{ github.event.inputs.version }}
+            ghcr.io/${{ github.repository }}/ui-web:production
+            ghcr.io/${{ github.repository }}/ui-web:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/prospectflow
+
+            # Pull latest images
+            docker pull ghcr.io/${{ github.repository }}/ingest-api:production
+            docker pull ghcr.io/${{ github.repository }}/ui-web:production
+
+            # Restart services
+            docker-compose -p prospectflow-ingest-api pull
+            docker-compose -p prospectflow-ingest-api up -d
+
+            docker-compose -p prospectflow-ui-web pull
+            docker-compose -p prospectflow-ui-web up -d
+
+            # Wait for services to be healthy
+            sleep 10
+
+      - name: Run smoke tests
+        run: |
+          max_retries=5
+          retry_count=0
+
+          while [ $retry_count -lt $max_retries ]; do
+            if curl --fail --silent --max-time 10 https://app.lightandshutter.fr/api/health; then
+              echo "✅ API health check passed"
+              break
+            fi
+            retry_count=$((retry_count + 1))
+            echo "⏳ Waiting for API (attempt $retry_count/$max_retries)..."
+            sleep 5
+          done
+
+          if [ $retry_count -eq $max_retries ]; then
+            echo "❌ API health check failed after $max_retries attempts"
+            exit 1
+          fi
+
+          # Check UI
+          if curl --fail --silent --max-time 10 https://app.lightandshutter.fr; then
+            echo "✅ UI health check passed"
+          else
+            echo "❌ UI health check failed"
+            exit 1
+          fi
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          release_name: Release ${{ github.event.inputs.version }}
+          body: |
+            ## Deployment to Production
+
+            **Version:** ${{ github.event.inputs.version }}
+            **Deployed at:** ${{ github.run_id }}
+            **Commit:** ${{ github.sha }}
+
+            ### Services Deployed
+            - Ingest API: ghcr.io/${{ github.repository }}/ingest-api:${{ github.event.inputs.version }}
+            - UI Web: ghcr.io/${{ github.repository }}/ui-web:${{ github.event.inputs.version }}
+
+            ### Smoke Tests
+            ✅ All health checks passed
+          draft: false
+          prerelease: false
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "🚀 Production deployment successful: v${{ github.event.inputs.version }}"
+          else
+            echo "❌ Production deployment failed: v${{ github.event.inputs.version }}"
+            exit 1
+          fi

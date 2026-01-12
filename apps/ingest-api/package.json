@@ -13,6 +13,7 @@
     "lint:fix": "eslint src/ --fix",
     "test": "export NODE_ENV=test && vitest --config ./vitest.config.ts",
     "test:unit": "export NODE_ENV=test && vitest run tests/unit",
+    "test:coverage": "export NODE_ENV=test && vitest run --coverage",
     "test:db:up": "sudo docker compose -f docker-compose.test-db-only.yaml up -d",
     "test:db:down": "sudo docker compose -f docker-compose.test-db-only.yaml down -v",
     "test:integration": "pnpm test:db:up && sleep 3 && export NODE_ENV=test && vitest run tests/integration && pnpm test:db:down",

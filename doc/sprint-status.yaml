@@ -64,7 +64,7 @@ development_status:
   0-8-prometheus-metrics-grafana-dashboards: done
   0-9-nginx-reverse-proxy-ssl-setup: done
   0-10-docker-compose-orchestration: done
-  0-11-ci-cd-pipeline-with-github-actions: backlog
+  0-11-ci-cd-pipeline-with-github-actions: review
   epic-0-retrospective: optional
 
   # Epic UI-0: Frontend Foundation & Authentication
