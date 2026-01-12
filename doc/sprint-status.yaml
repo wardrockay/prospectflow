@@ -53,7 +53,7 @@ metadata:
 # Format: story-key: status
 development_status:
   # Epic E0: Foundation Infrastructure & Architecture
-  epic-0: in-progress
+  epic-0: done
   0-1-multi-tenant-postgresql-database-setup: done
   0-2-express-js-api-foundation-with-layered-architecture: done
   0-3-rabbitmq-message-queue-configuration: done
@@ -65,7 +65,7 @@ development_status:
   0-9-nginx-reverse-proxy-ssl-setup: done
   0-10-docker-compose-orchestration: done
   0-11-ci-cd-pipeline-with-github-actions: done
-  epic-0-retrospective: optional
+  epic-0-retrospective: done
 
   # Epic UI-0: Frontend Foundation & Authentication
   epic-ui-0: in-progress
