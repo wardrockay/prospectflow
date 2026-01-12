@@ -8,13 +8,18 @@ import cookieParser from 'cookie-parser';
 import { correlationIdMiddleware } from './middlewares/correlation-id.middleware.js';
 import { loggerMiddleware } from './middlewares/logger.middleware.js';
 import { sentryContextMiddleware } from './middlewares/sentry.middleware.js';
+import { metricsMiddleware } from './middlewares/metrics.middleware.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { initSentry } from './config/sentry.js';
+import { register, initMetrics } from './config/metrics.js';
 import router from './routes/index.js';
 
 // Initialize Sentry BEFORE registering middlewares
 initSentry();
+
+// Initialize Prometheus metrics
+initMetrics();
 
 const app = express();
 // Sentry request/tracing handlers (SDK v7/v8 compatibility)
@@ -44,6 +49,7 @@ app.use(cookieParser());
 // Correlation ID must come before logger middleware
 app.use(correlationIdMiddleware);
 app.use(loggerMiddleware);
+app.use(metricsMiddleware); // Metrics collection after logger, before routes
 app.use(sentryContextMiddleware);
 
 app.use(
@@ -58,6 +64,17 @@ app.use('/api/v1', router);
 // Health check (no auth required)
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
+});
+
+// Prometheus metrics endpoint (no auth required)
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', register.contentType);
+    const metrics = await register.metrics();
+    res.end(metrics);
+  } catch (error) {
+    res.status(500).end(error);
+  }
 });
 
 // 404 handler

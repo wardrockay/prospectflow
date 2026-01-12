@@ -1,0 +1,30 @@
+# Grafana Visualization Service
+# Connects to Prometheus for metrics visualization
+# Usage: docker-compose up -d
+# Default login: admin/admin (change password on first login)
+
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: prospectflow-grafana
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning
+      - ./dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    ports:
+      - '3001:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Change in production
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+    restart: unless-stopped
+    networks:
+      - prospectflow-network
+
+networks:
+  prospectflow-network:
+    external: true
+    name: prospectflow-network
+
+volumes:
+  grafana-data:

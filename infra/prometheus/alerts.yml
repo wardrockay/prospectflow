@@ -1,0 +1,91 @@
+groups:
+  - name: api_alerts
+    interval: 30s
+    rules:
+      # High error rate alert
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status_code=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: 'High API error rate detected'
+          description: 'Error rate is {{ $value | humanizePercentage }} (threshold: 5%)'
+
+      # High latency alert
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: 'High API latency detected'
+          description: 'P95 latency for {{ $labels.route }} is {{ $value }}s (threshold: 0.5s)'
+
+      # Queue depth alert
+      - alert: HighQueueDepth
+        expr: queue_depth > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: queue
+        annotations:
+          summary: 'High queue depth detected'
+          description: 'Queue {{ $labels.queue }} has {{ $value }} messages (threshold: 1000)'
+
+      # Memory usage alert
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            process_resident_memory_bytes / 
+            (1024 * 1024 * 1024) # Convert to GB
+          ) > 1.6
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: 'High memory usage detected'
+          description: 'Memory usage is {{ $value }}GB (threshold: 1.6GB for 2GB container)'
+
+      # Database connection pool exhausted
+      # Note: Adjust the divisor (100) based on your actual pool size configuration
+      # TODO: Create a separate gauge metric for pool_max_size to make this dynamic
+      - alert: DatabasePoolExhausted
+        expr: db_connection_pool_size{state="active"} / 100 > 0.9
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: 'Database connection pool nearly exhausted'
+          description: 'Active connections: {{ $value }} (threshold: 90% of pool size)'
+
+  - name: business_alerts
+    interval: 60s
+    rules:
+      # Draft generation failure rate
+      - alert: HighDraftFailureRate
+        expr: |
+          (
+            sum(rate(drafts_generated_total{success="false"}[10m]))
+            /
+            sum(rate(drafts_generated_total[10m]))
+          ) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: 'High draft generation failure rate'
+          description: 'Draft failure rate is {{ $value | humanizePercentage }} (threshold: 10%)'

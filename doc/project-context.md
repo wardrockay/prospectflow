@@ -328,6 +328,67 @@ Each app has its own `.env` file:
 
 ---
 
+### Metrics & Monitoring Standards (MANDATORY)
+
+All services **MUST** expose Prometheus metrics at `/metrics` endpoint.
+
+#### ✅ HTTP Metrics (Automatic)
+
+```typescript
+// Already configured in app.ts with metricsMiddleware
+// Tracks: request count, duration, status codes by route
+```
+
+#### ✅ Database Metrics
+
+```typescript
+import { trackDatabaseQuery } from '../utils/metrics.utils.js';
+
+// Wrap ALL database queries with tracking
+const users = await trackDatabaseQuery('SELECT', 'iam', async () => {
+  return await db.query('SELECT * FROM iam.users WHERE organisation_id = $1', [orgId]);
+});
+```
+
+#### ✅ Business Metrics
+
+```typescript
+import { emailsSentTotal, draftsGeneratedTotal } from '../config/metrics.js';
+
+// Increment business counters with labels
+emailsSentTotal.inc({
+  organisation_id: req.organisationId,
+  campaign_id: campaignId,
+  success: 'true',
+});
+
+draftsGeneratedTotal.inc({
+  organisation_id: req.organisationId,
+  success: 'false',
+});
+```
+
+#### 🚨 Important Rules
+
+- **DO NOT** add high-cardinality labels (user_id, request_id) to HTTP metrics
+- **DO** use `organisation_id` for business metrics (multi-tenant tracking)
+- **DO** track query duration for all DB operations
+- **DO** use histogram buckets for latency (0.005 to 10 seconds)
+
+#### Monitoring Stack
+
+```bash
+# Start Prometheus + Grafana + Alertmanager
+make monitoring-up
+
+# Access dashboards
+# Prometheus: http://localhost:9090
+# Grafana: http://localhost:3001 (admin/admin)
+# Alertmanager: http://localhost:9093
+```
+
+---
+
 ### Testing Workflow
 
 ```bash

@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 15s # Scrape targets every 15 seconds
+  evaluation_interval: 15s # Evaluate alert rules every 15 seconds
+  external_labels:
+    cluster: 'prospectflow'
+    environment: 'development' # Change per environment
+
+# Alert rule files
+rule_files:
+  - 'alerts.yml'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+# Scrape configuration
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'ingest-api'
+    static_configs:
+      - targets: ['prospectflow-ingest-api:3000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Add more services as they are instrumented
+  # - job_name: 'draft-worker'
+  #   static_configs:
+  #     - targets: ['prospectflow-draft-worker:3001']
+  #   metrics_path: '/metrics'
+  # - job_name: 'email-open-tracker'
+  #   static_configs:
+  #     - targets: ['prospectflow-email-open-tracker:3002']
+  #   metrics_path: '/metrics'

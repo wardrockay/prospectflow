@@ -44,6 +44,15 @@ help:
 	@echo "  make nginx-reload      - Reload NGINX config"
 	@echo "  make nginx-test        - Test NGINX configuration"
 	@echo ""
+	@echo "📈 MONITORING:"
+	@echo "  make monitoring-up     - Start Prometheus + Grafana + Alertmanager"
+	@echo "  make monitoring-down   - Stop all monitoring services"
+	@echo "  make prometheus-up     - Start Prometheus + Alertmanager only"
+	@echo "  make prometheus-down   - Stop Prometheus + Alertmanager"
+	@echo "  make grafana-up        - Start Grafana only"
+	@echo "  make grafana-down      - Stop Grafana"
+	@echo "  make monitoring-logs   - Show monitoring logs"
+	@echo ""
 	@echo "�💚 HEALTH CHECK:"
 	@echo "  make health            - Show health status of all services"
 	@echo ""
@@ -183,6 +192,8 @@ prod-up: network-create
 	@echo "✅ Production environment started!"
 	@echo "📊 Run 'make health' to check service status"
 	@echo "🔗 Access at: https://app.lightandshutter.fr"
+	@echo ""
+	@echo "📈 Optional: Start monitoring with 'make monitoring-up'"
 
 # Stop entire production environment
 prod-down:
@@ -221,6 +232,8 @@ SERVICE_PATH_rabbitmq = infra/rabbitmq
 SERVICE_PATH_redis = infra/redis
 SERVICE_PATH_clickhouse = infra/clickhouse
 SERVICE_PATH_nginx = infra/nginx
+SERVICE_PATH_prometheus = infra/prometheus
+SERVICE_PATH_grafana = infra/grafana
 SERVICE_PATH_ingest-api = apps/ingest-api
 SERVICE_PATH_ui-web = apps/ui-web
 
@@ -266,18 +279,21 @@ else
 	@echo "📋 Available services:"
 	@echo "  [1] postgres      [2] rabbitmq"
 	@echo "  [3] redis         [4] clickhouse"
-	@echo "  [5] nginx         [6] ingest-api"
-	@echo "  [7] ui-web"
+	@echo "  [5] nginx         [6] prometheus"
+	@echo "  [7] grafana       [8] ingest-api"
+	@echo "  [9] ui-web"
 	@echo ""
-	@read -p "Select service (1-7): " choice; \
+	@read -p "Select service (1-9): " choice; \
 	case $$choice in \
 		1) echo ""; echo "📜 Logs for postgres (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-postgres ;; \
 		2) echo ""; echo "📜 Logs for rabbitmq (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 rabbitmq ;; \
 		3) echo ""; echo "📜 Logs for redis (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-redis ;; \
 		4) echo ""; echo "📜 Logs for clickhouse (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 clickhouse-server ;; \
 		5) echo ""; echo "📜 Logs for nginx (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-nginx ;; \
-		6) echo ""; echo "📜 Logs for ingest-api (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ingest-api ;; \
-		7) echo ""; echo "📜 Logs for ui-web (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ui-web ;; \
+		6) echo ""; echo "📜 Logs for prometheus (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-prometheus ;; \
+		7) echo ""; echo "📜 Logs for grafana (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-grafana ;; \
+		8) echo ""; echo "📜 Logs for ingest-api (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ingest-api ;; \
+		9) echo ""; echo "📜 Logs for ui-web (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ui-web ;; \
 		*) echo "❌ Invalid choice"; exit 1 ;; \
 	esac
 endif
@@ -432,3 +448,61 @@ nginx-reload:
 nginx-test:
 	@echo "🧪 Testing NGINX configuration..."
 	@docker exec prospectflow-nginx nginx -t
+
+# ============================================
+# MONITORING MANAGEMENT
+# ============================================
+
+# Start all monitoring services (Prometheus + Grafana + Alertmanager)
+monitoring-up: network-create prometheus-up grafana-up
+	@echo ""
+	@echo "✅ Monitoring stack started!"
+	@echo "📊 Prometheus: http://localhost:9090"
+	@echo "📈 Grafana: http://localhost:3001 (admin/admin)"
+	@echo "🔔 Alertmanager: http://localhost:9093"
+
+# Stop all monitoring services
+monitoring-down: grafana-down prometheus-down
+	@echo "✅ Monitoring stack stopped"
+
+# Start Prometheus + Alertmanager
+prometheus-up: network-create
+	@echo "🚀 Starting Prometheus + Alertmanager..."
+	@cd infra/prometheus && docker compose --env-file ../../apps/ingest-api/env/.env.production up -d
+	@echo "✅ Prometheus started at http://localhost:9090"
+	@echo "✅ Alertmanager started at http://localhost:9093"
+
+# Stop Prometheus + Alertmanager
+prometheus-down:
+	@echo "🛑 Stopping Prometheus + Alertmanager..."
+	@-cd infra/prometheus && docker compose down
+	@echo "✅ Prometheus stopped"
+
+# Start Grafana
+grafana-up: network-create
+	@echo "🚀 Starting Grafana..."
+	@cd infra/grafana && docker compose up -d
+	@echo "✅ Grafana started at http://localhost:3001"
+	@echo "📝 Login: admin/admin (change on first login)"
+
+# Stop Grafana
+grafana-down:
+	@echo "🛑 Stopping Grafana..."
+	@-cd infra/grafana && docker compose down
+	@echo "✅ Grafana stopped"
+
+# Show monitoring logs
+monitoring-logs:
+	@echo "📜 Monitoring Logs (Ctrl+C to exit)..."
+	@echo ""
+	@echo "📋 Select service:"
+	@echo "  [1] Prometheus    [2] Grafana    [3] Alertmanager    [4] All"
+	@echo ""
+	@read -p "Select (1-4): " choice; \
+	case $$choice in \
+		1) docker logs -f --tail=100 prospectflow-prometheus ;; \
+		2) docker logs -f --tail=100 prospectflow-grafana ;; \
+		3) docker logs -f --tail=100 prospectflow-alertmanager ;; \
+		4) docker logs -f --tail=100 prospectflow-prometheus & docker logs -f --tail=100 prospectflow-grafana & docker logs -f --tail=100 prospectflow-alertmanager ;; \
+		*) echo "❌ Invalid choice"; exit 1 ;; \
+	esac

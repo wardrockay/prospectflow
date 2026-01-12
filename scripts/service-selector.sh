@@ -8,11 +8,14 @@ declare -A SERVICE_PATHS=(
     ["rabbitmq"]="infra/rabbitmq"
     ["redis"]="infra/redis"
     ["clickhouse"]="infra/clickhouse"
+    ["nginx"]="infra/nginx"
+    ["prometheus"]="infra/prometheus"
+    ["grafana"]="infra/grafana"
     ["ingest-api"]="apps/ingest-api"
     ["ui-web"]="apps/ui-web"
 )
 
-SERVICES=("postgres" "rabbitmq" "redis" "clickhouse" "ingest-api" "ui-web")
+SERVICES=("postgres" "rabbitmq" "redis" "clickhouse" "nginx" "prometheus" "grafana" "ingest-api" "ui-web")
 
 # Colors
 RED='\033[0;31m'
