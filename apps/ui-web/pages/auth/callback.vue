@@ -21,12 +21,12 @@
     }
 
     try {
-      // Exchange authorization code for tokens via backend API
+      // Exchange authorization code for tokens via Nuxt server API
       const response = await $fetch<{
         access_token: string;
         id_token: string;
         refresh_token: string;
-      }>(`${config.public.apiBase}/auth/callback`, {
+      }>('/api/auth/callback', {
         method: 'POST',
         body: { code },
       });

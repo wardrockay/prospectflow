@@ -10,6 +10,10 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Private keys (server-side only)
+    cognitoClientSecret: process.env.COGNITO_CLIENT_SECRET || '',
+
+    // Public keys (exposed to client)
     public: {
       apiBase: process.env.API_BASE_URL || 'http://localhost:3001',
       cognitoHostedUI: process.env.COGNITO_HOSTED_UI || '',

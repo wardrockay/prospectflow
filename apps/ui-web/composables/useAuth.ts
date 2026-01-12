@@ -42,9 +42,9 @@ export const useAuth = () => {
    */
   const logout = async () => {
     try {
-      // Clear session in backend
+      // Clear session via Nuxt server API
       if (accessToken.value) {
-        await $fetch(`${config.public.apiBase}/auth/logout`, {
+        await $fetch('/api/auth/logout', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken.value}`,
