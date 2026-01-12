@@ -13,16 +13,9 @@ route:
       receiver: 'pagerduty'
 
 receivers:
-  - name: 'slack'
-    slack_configs:
-      - api_url: '${SLACK_WEBHOOK_URL}'
-        channel: '#alerts'
-        title: 'ProspectFlow Alert'
-        text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}'
-
   - name: 'pagerduty'
     pagerduty_configs:
-      - routing_key: '${PAGERDUTY_ROUTING_KEY}'
+      - routing_key: 'R03EIERENRCMVNXU2XL7SKEM12RNDV4D'
 
 inhibit_rules:
   - source_match:

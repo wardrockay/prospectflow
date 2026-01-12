@@ -21,17 +21,13 @@ services:
       - prospectflow-network
 
   alertmanager:
-    build:
-      context: .
-      dockerfile: Dockerfile.alertmanager
+    image: prom/alertmanager:latest
     container_name: prospectflow-alertmanager
     volumes:
-      - ./alertmanager.yml.template:/etc/alertmanager/alertmanager.yml.template
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
       - alertmanager-data:/alertmanager
     ports:
       - '9093:9093'
-    environment:
-      - PAGERDUTY_ROUTING_KEY=${PAGERDUTY_ROUTING_KEY}
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
