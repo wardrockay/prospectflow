@@ -12,6 +12,9 @@
     "typecheck": "nuxt typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
     "deploy": "git pull && sudo docker compose -p prospectflow-ui-web up --build -d"
   },
   "dependencies": {
@@ -23,10 +26,15 @@
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^0.3.13",
+    "@nuxt/test-utils": "^3.10.0",
     "@nuxtjs/tailwindcss": "^6.11.4",
     "@types/node": "^20.11.5",
+    "@vitest/ui": "^1.2.0",
+    "@vue/test-utils": "^2.4.3",
     "eslint": "^8.57.0",
+    "happy-dom": "^12.10.3",
     "prettier": "^3.2.5",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
   }
 }

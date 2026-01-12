@@ -3,7 +3,24 @@
     layout: 'empty',
   });
 
+  const route = useRoute();
   const { login } = useAuth();
+  
+  // Check for session expiration
+  const showExpiredMessage = ref(route.query.expired === 'true');
+  const isLoggingIn = ref(false);
+  
+  // Auto-hide message after 5 seconds
+  if (showExpiredMessage.value) {
+    setTimeout(() => {
+      showExpiredMessage.value = false;
+    }, 5000);
+  }
+
+  const handleLogin = () => {
+    isLoggingIn.value = true;
+    login();
+  };
 </script>
 
 <template>
@@ -17,12 +34,31 @@
       </template>
 
       <div class="space-y-6 py-4">
+        <!-- Session expired alert -->
+        <UAlert
+          v-if="showExpiredMessage"
+          color="orange"
+          variant="soft"
+          title="Session expirée"
+          description="Votre session a expiré. Veuillez vous reconnecter."
+          icon="i-heroicons-exclamation-triangle"
+          :close-button="{ icon: 'i-heroicons-x-mark-20-solid', color: 'gray', variant: 'link' }"
+          @close="showExpiredMessage = false"
+        />
+
         <div class="text-center">
           <p class="text-gray-600">Connectez-vous pour accéder à votre espace de prospection</p>
         </div>
 
-        <UButton block size="xl" @click="login" icon="i-heroicons-arrow-right-on-rectangle">
-          Se connecter
+        <UButton 
+          block 
+          size="xl" 
+          @click="handleLogin" 
+          icon="i-heroicons-arrow-right-on-rectangle"
+          :loading="isLoggingIn"
+          :disabled="isLoggingIn"
+        >
+          {{ isLoggingIn ? 'Redirection...' : 'Se connecter' }}
         </UButton>
       </div>
 

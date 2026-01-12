@@ -1,32 +1,34 @@
 export const useAuth = () => {
   const config = useRuntimeConfig();
 
-  // Store access token in httpOnly cookie
-  const accessToken = useCookie('access_token', {
-    maxAge: 3600, // 1 hour
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  });
-
-  const idToken = useCookie('id_token', {
-    maxAge: 3600, // 1 hour
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  });
-
-  const refreshToken = useCookie('refresh_token', {
-    maxAge: 2592000, // 30 days
+  // Access token expiration time (readable client-side)
+  const tokenExpiresAt = useCookie('token_expires_at', {
+    maxAge: 3600,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
   });
 
   /**
+   * Check if token is expired
+   */
+  const isTokenExpired = (): boolean => {
+    if (!tokenExpiresAt.value) return true;
+    const expiresAt = parseInt(tokenExpiresAt.value, 10);
+    return Date.now() >= expiresAt;
+  };
+
+  /**
+   * Check if user is authenticated with valid (non-expired) token
+   */
+  const isAuthenticated = computed(() => {
+    return !!tokenExpiresAt.value && !isTokenExpired();
+  });
+
+  /**
    * Redirect to Cognito Hosted UI for login
    */
-  const login = () => {
+  const login = (): void => {
     const cognitoUrl =
       `${config.public.cognitoHostedUI}/login?` +
       `client_id=${config.public.cognitoClientId}&` +
@@ -40,25 +42,15 @@ export const useAuth = () => {
   /**
    * Logout: clear session and redirect to Cognito logout
    */
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
-      // Clear session via Nuxt server API
-      if (accessToken.value) {
-        await $fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken.value}`,
-          },
-        });
-      }
+      // Clear session via Nuxt server API (which calls backend and clears cookies)
+      await $fetch('/api/auth/logout', {
+        method: 'POST',
+      });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear all tokens
-      accessToken.value = null;
-      idToken.value = null;
-      refreshToken.value = null;
-
       // Redirect to Cognito logout
       const logoutUrl =
         `${config.public.cognitoHostedUI}/logout?` +
@@ -69,17 +61,10 @@ export const useAuth = () => {
     }
   };
 
-  /**
-   * Check if user is authenticated
-   */
-  const isAuthenticated = computed(() => !!accessToken.value);
-
   return {
     login,
     logout,
     isAuthenticated,
-    accessToken,
-    idToken,
-    refreshToken,
+    isTokenExpired,
   };
 };

@@ -34,28 +34,67 @@ export default defineEventHandler(async (event) => {
       },
     });
 
-    const { access_token, id_token, refresh_token, expires_in, token_type } = response.data;
+    const { access_token, id_token, refresh_token, expires_in } = response.data;
 
+    // Set tokens in httpOnly cookies (server-side only)
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // Access token (1 hour)
+    setCookie(event, 'access_token', access_token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 3600,
+      path: '/',
+    });
+
+    // ID token (1 hour)
+    setCookie(event, 'id_token', id_token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 3600,
+      path: '/',
+    });
+
+    // Refresh token (30 days)
+    setCookie(event, 'refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 2592000,
+      path: '/',
+    });
+
+    // Store token expiration time for validation
+    const expiresAt = Date.now() + expires_in * 1000;
+    setCookie(event, 'token_expires_at', expiresAt.toString(), {
+      httpOnly: false, // Accessible client-side for expiration check
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 3600,
+      path: '/',
+    });
+
+    // Return success without exposing tokens
     return {
-      access_token,
-      id_token,
-      refresh_token,
+      success: true,
       expires_in,
-      token_type,
     };
   } catch (error) {
     console.error('OAuth token exchange failed:', error);
 
     if (axios.isAxiosError(error)) {
+      // Don't expose Cognito error details to client
       throw createError({
-        statusCode: error.response?.status || 500,
-        message: error.response?.data?.error_description || 'Failed to exchange authorization code',
+        statusCode: 401,
+        message: 'Erreur de connexion. Veuillez réessayer.',
       });
     }
 
     throw createError({
       statusCode: 500,
-      message: 'Failed to process authentication callback',
+      message: 'Erreur de connexion. Veuillez réessayer.',
     });
   }
 });

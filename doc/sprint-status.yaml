@@ -70,7 +70,7 @@ development_status:
   # Epic UI-0: Frontend Foundation & Authentication
   epic-ui-0: in-progress
   ui-0-1-nuxt-project-setup: done
-  ui-0-2-authentication-ui: review
+  ui-0-2-authentication-ui: done
   ui-0-3-app-layout-navigation: backlog
   epic-ui-0-retrospective: optional
 

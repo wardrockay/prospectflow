@@ -22,41 +22,13 @@
 
     try {
       // Exchange authorization code for tokens via Nuxt server API
-      const response = await $fetch<{
-        access_token: string;
-        id_token: string;
-        refresh_token: string;
-      }>('/api/auth/callback', {
+      // Server will set httpOnly cookies automatically
+      await $fetch('/api/auth/callback', {
         method: 'POST',
         body: { code },
       });
 
-      // Store all tokens in secure httpOnly cookies
-      const accessToken = useCookie('access_token', {
-        maxAge: 3600, // 1 hour
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
-
-      const idToken = useCookie('id_token', {
-        maxAge: 3600, // 1 hour
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
-
-      const refreshToken = useCookie('refresh_token', {
-        maxAge: 2592000, // 30 days
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
-
-      accessToken.value = response.access_token;
-      idToken.value = response.id_token;
-      refreshToken.value = response.refresh_token;
-
+      // Cookies are set server-side with httpOnly flag
       // Redirect to dashboard
       await navigateTo('/');
     } catch (error) {
