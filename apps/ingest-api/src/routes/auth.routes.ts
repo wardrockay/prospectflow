@@ -20,11 +20,85 @@ const cognitoConfig = {
 
 /**
  * OAuth 2.0 Callback - Exchange authorization code for tokens
- * GET /auth/callback?code=xxx
+ * GET /auth/callback?code=xxx (deprecated, use POST)
+ * POST /auth/callback with body { code: string }
  */
 router.get('/callback', async (req: Request, res: Response) => {
   try {
     const { code } = req.query;
+
+    if (!code || typeof code !== 'string') {
+      logger.error('Authorization code missing from callback');
+      return res.status(400).json({
+        error: 'Invalid request',
+        message: 'Authorization code is required',
+      });
+    }
+
+    logger.info('Processing OAuth callback with authorization code (GET - deprecated)');
+
+    // Exchange authorization code for tokens
+    const tokenEndpoint = `https://${cognitoConfig.domain}/oauth2/token`;
+
+    const params = new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: cognitoConfig.clientId,
+      code,
+      redirect_uri: cognitoConfig.redirectUri,
+    });
+
+    // Add client secret if configured (for confidential clients)
+    if (cognitoConfig.clientSecret) {
+      params.append('client_secret', cognitoConfig.clientSecret);
+    }
+
+    const response = await axios.post(tokenEndpoint, params.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    const { access_token, id_token, refresh_token, expires_in, token_type } = response.data;
+
+    logger.info('Successfully exchanged authorization code for tokens');
+
+    // Return tokens to frontend
+    res.json({
+      access_token,
+      id_token,
+      refresh_token,
+      expires_in,
+      token_type,
+    });
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      logger.error(
+        { status: error.response?.status, data: error.response?.data },
+        'OAuth token exchange failed',
+      );
+
+      return res.status(error.response?.status || 500).json({
+        error: 'Token exchange failed',
+        message: error.response?.data?.error_description || 'Failed to exchange authorization code',
+      });
+    }
+
+    logger.error({ err: error }, 'Unexpected error in OAuth callback');
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to process authentication callback',
+    });
+  }
+});
+
+/**
+ * OAuth 2.0 Callback - Exchange authorization code for tokens (POST version)
+ * POST /auth/callback
+ * Body: { code: string }
+ */
+router.post('/callback', async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body;
 
     if (!code || typeof code !== 'string') {
       logger.error('Authorization code missing from callback');
@@ -62,7 +136,6 @@ router.get('/callback', async (req: Request, res: Response) => {
     logger.info('Successfully exchanged authorization code for tokens');
 
     // Return tokens to frontend
-    // In production, consider setting secure HTTP-only cookies instead
     res.json({
       access_token,
       id_token,

@@ -14,8 +14,8 @@ export default defineNuxtConfig({
       apiBase: process.env.API_BASE_URL || 'http://localhost:3001',
       cognitoHostedUI: process.env.COGNITO_HOSTED_UI || '',
       cognitoClientId: process.env.COGNITO_CLIENT_ID || '',
-      cognitoRedirectUri:
-        process.env.COGNITO_REDIRECT_URI || 'https://app.lightandshutter.fr/auth/callback',
+      cognitoRedirectUri: process.env.COGNITO_REDIRECT_URI || 'http://localhost:4000/auth/callback',
+      logoutUri: process.env.LOGOUT_URI || 'http://localhost:4000/login',
     },
   },
 

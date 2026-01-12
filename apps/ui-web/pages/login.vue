@@ -1,10 +1,9 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: 'empty',
-  middleware: 'auth',
-});
+  definePageMeta({
+    layout: 'empty',
+  });
 
-const { login } = useAuth();
+  const { login } = useAuth();
 </script>
 
 <template>
