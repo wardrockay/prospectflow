@@ -113,12 +113,12 @@ infra/nginx/
 
 Les fichiers générés par Certbot et NGINX sont exclus via `.gitignore` pour éviter les conflits lors des `git pull` sur le VPS :
 
-| Répertoire | Raison d'exclusion |
-|------------|-------------------|
+| Répertoire      | Raison d'exclusion                                 |
+| --------------- | -------------------------------------------------- |
 | `certbot/conf/` | Certificats SSL + clés privées (sensible + généré) |
-| `certbot/www/` | Challenges ACME temporaires |
-| `www/` | Fichiers webroot générés |
-| `logs/` | Logs NGINX (si activés) |
+| `certbot/www/`  | Challenges ACME temporaires                        |
+| `www/`          | Fichiers webroot générés                           |
+| `logs/`         | Logs NGINX (si activés)                            |
 
 **Important** : Ces répertoires sont créés automatiquement par Docker au premier démarrage.
 
@@ -157,7 +157,7 @@ infra/nginx/
 
    - Worker processes: auto
    - Worker connections: 1024
-   - Include conf.d/*.conf
+   - Include conf.d/\*.conf
    - Logging to stdout/stderr for Docker
    - Security headers baseline
 
@@ -261,11 +261,11 @@ infra/nginx/
    server {
        listen 80;
        server_name app.lightandshutter.fr;
-       
+
        location /.well-known/acme-challenge/ {
            root /var/www/certbot;
        }
-       
+
        location / {
            return 301 https://$host$request_uri;
        }
@@ -275,24 +275,24 @@ infra/nginx/
    server {
        listen 443 ssl http2;
        server_name app.lightandshutter.fr;
-       
+
        # SSL certificates
        ssl_certificate /etc/letsencrypt/live/app.lightandshutter.fr/fullchain.pem;
        ssl_certificate_key /etc/letsencrypt/live/app.lightandshutter.fr/privkey.pem;
-       
+
        # SSL configuration
        ssl_session_timeout 1d;
        ssl_session_cache shared:SSL:50m;
        ssl_session_tickets off;
-       
+
        # Modern TLS configuration
        ssl_protocols TLSv1.2 TLSv1.3;
        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
        ssl_prefer_server_ciphers off;
-       
+
        # HSTS
        add_header Strict-Transport-Security "max-age=63072000" always;
-       
+
        # Proxy to ui-web
        location / {
            proxy_pass http://ui-web:3000;
@@ -472,11 +472,11 @@ networks:
 
 ### Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DOMAIN` | Primary domain | `app.lightandshutter.fr` |
-| `EMAIL` | Let's Encrypt notifications | `admin@lightandshutter.fr` |
-| `STAGING` | Use Let's Encrypt staging | `0` (production) or `1` (staging) |
+| Variable  | Description                 | Example                           |
+| --------- | --------------------------- | --------------------------------- |
+| `DOMAIN`  | Primary domain              | `app.lightandshutter.fr`          |
+| `EMAIL`   | Let's Encrypt notifications | `admin@lightandshutter.fr`        |
+| `STAGING` | Use Let's Encrypt staging   | `0` (production) or `1` (staging) |
 
 ### Renewal Schedule
 
