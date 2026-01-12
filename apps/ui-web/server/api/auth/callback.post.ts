@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const { code } = await readBody(event);
@@ -28,13 +26,21 @@ export default defineEventHandler(async (event) => {
       params.append('client_secret', config.cognitoClientSecret);
     }
 
-    const response = await axios.post(tokenEndpoint, params.toString(), {
+    // Use $fetch (Nuxt native) instead of axios for better server compatibility
+    const response = await $fetch<{
+      access_token: string;
+      id_token: string;
+      refresh_token: string;
+      expires_in: number;
+    }>(tokenEndpoint, {
+      method: 'POST',
+      body: params.toString(),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
 
-    const { access_token, id_token, refresh_token, expires_in } = response.data;
+    const { access_token, id_token, refresh_token, expires_in } = response;
 
     // Set tokens in httpOnly cookies (server-side only)
     const isProduction = process.env.NODE_ENV === 'production';
@@ -81,11 +87,11 @@ export default defineEventHandler(async (event) => {
       success: true,
       expires_in,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('OAuth token exchange failed:', error);
 
-    if (axios.isAxiosError(error)) {
-      // Don't expose Cognito error details to client
+    // Check if it's a fetch error with status code
+    if (error.statusCode || error.status) {
       throw createError({
         statusCode: 401,
         message: 'Erreur de connexion. Veuillez réessayer.',
