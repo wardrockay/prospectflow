@@ -341,9 +341,6 @@ SERVICE_PATH_ui-web = apps/ui-web
 # Interactive service restart (shows selection menu)
 service-restart:
 ifdef SERVICE
-	@echo "🔄 Syncing .env files first..."
-	@./scripts/sync-env-to-vps.sh || true
-	@echo ""
 	@echo "🔄 Restarting service: $(SERVICE)..."
 ifeq ($(SERVICE),ingest-api)
 	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
@@ -354,9 +351,6 @@ else
 endif
 	@echo "✅ Service $(SERVICE) restarted"
 else
-	@echo "🔄 Syncing .env files first..."
-	@./scripts/sync-env-to-vps.sh || true
-	@echo ""
 	@./scripts/service-selector.sh restart
 endif
 
