@@ -1,8 +1,21 @@
 # ProspectFlow - Project Context
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Last Updated:** January 12, 2026  
 **Status:** Active Development
+
+---
+
+## 📍 Quick Navigation
+
+| Section          | Jump To                                                     |
+| ---------------- | ----------------------------------------------------------- |
+| **Logging**      | [Logging Standards](#logging-standards-mandatory)           |
+| **Multi-Tenant** | [Multi-Tenant Isolation](#multi-tenant-isolation-mandatory) |
+| **Errors**       | [Error Handling](#error-handling)                           |
+| **Tests**        | [Testing Standards](#testing-standards)                     |
+| **Deploy**       | [Deployment & Infrastructure](#deployment--infrastructure)  |
+| **Files**        | [File Structure](#file-structure)                           |
 
 ---
 
