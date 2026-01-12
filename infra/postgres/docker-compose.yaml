@@ -65,25 +65,25 @@ services:
       - prospectflow-network
 
   pgbouncer:
-    image: pgbouncer/pgbouncer:latest
+    image: edoburu/pgbouncer:latest
     container_name: prospectflow-pgbouncer
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-prospectflow}
-      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-changeme_app}
-      PGBOUNCER_DB_HOST: postgres
-      PGBOUNCER_DB_PORT: 5432
-      PGBOUNCER_POOL_MODE: transaction
-      PGBOUNCER_MAX_CLIENT_CONN: 100
-      PGBOUNCER_DEFAULT_POOL_SIZE: 25
-    volumes:
-      - ./pgbouncer/entrypoint.sh:/entrypoint.sh:ro
-    entrypoint: ['/bin/sh', '/entrypoint.sh']
+      DATABASE_URL: postgres://${POSTGRES_USER:-prospectflow}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-prospectflow}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 100
+      DEFAULT_POOL_SIZE: 25
     ports:
       - '127.0.0.1:6432:5432'
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost', '-p', '5432']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - prospectflow-network
 
