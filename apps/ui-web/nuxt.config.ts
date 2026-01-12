@@ -23,5 +23,25 @@ export default defineNuxtConfig({
     typeCheck: false, // Disable vite-plugin-checker to avoid vue-tsc dependency
   },
 
+  // Build settings
+  nitro: {
+    prerender: {
+      crawlLinks: false,
+    },
+  },
+
+  // App configuration
+  app: {
+    head: {
+      title: 'ProspectFlow',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'ProspectFlow - AI-Powered Outreach Platform' },
+      ],
+      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    },
+  },
+
   compatibilityDate: '2024-01-09',
 });

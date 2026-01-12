@@ -10,6 +10,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
     "deploy": "git pull && sudo docker compose -p prospectflow-ui-web up --build -d"
   },
   "dependencies": {
@@ -19,8 +21,11 @@
     "vue": "^3.4.15"
   },
   "devDependencies": {
+    "@nuxt/eslint-config": "^0.3.13",
     "@nuxtjs/tailwindcss": "^6.11.4",
     "@types/node": "^20.11.5",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
     "typescript": "^5.3.3"
   }
 }
