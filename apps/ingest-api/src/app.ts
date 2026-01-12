@@ -1,16 +1,35 @@
 // src/app.ts
 /// <reference path="./types/express.ts" />
 import express from 'express';
+import * as Sentry from '@sentry/node';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { correlationIdMiddleware } from './middlewares/correlation-id.middleware.js';
 import { loggerMiddleware } from './middlewares/logger.middleware.js';
+import { sentryContextMiddleware } from './middlewares/sentry.middleware.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middlewares/error.middleware.js';
+import { initSentry } from './config/sentry.js';
 import router from './routes/index.js';
 
+// Initialize Sentry BEFORE registering middlewares
+initSentry();
+
 const app = express();
+// Sentry request/tracing handlers (SDK v7/v8 compatibility)
+const requestHandler =
+  (Sentry as any).Handlers?.requestHandler?.() ?? ((req: any, _res: any, next: any) => next());
+const tracingHandler =
+  (Sentry as any).Handlers?.tracingHandler?.() ?? ((_req: any, _res: any, next: any) => next());
+const errorHandlerSentry =
+  (Sentry as any).Handlers?.errorHandler?.() ??
+  ((err: any, _req: any, _res: any, next: any) => next(err));
+
+// Must be first to capture request context
+app.use(requestHandler);
+// Optional performance tracing handler
+app.use(tracingHandler);
 
 // Trust proxy configuration (must be set before security middleware)
 app.set('trust proxy', true);
@@ -25,6 +44,7 @@ app.use(cookieParser());
 // Correlation ID must come before logger middleware
 app.use(correlationIdMiddleware);
 app.use(loggerMiddleware);
+app.use(sentryContextMiddleware);
 
 app.use(
   cors({
@@ -48,6 +68,8 @@ app.use((req, res) => {
   });
 });
 
+// Sentry error handler BEFORE custom error handler
+app.use(errorHandlerSentry);
 // Error handler (must be last)
 app.use(errorHandler);
 

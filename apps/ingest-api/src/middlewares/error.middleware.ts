@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { createChildLogger } from '../utils/logger.js';
 import { AppError } from '../errors/AppError.js';
 import { ZodError } from 'zod';
+import * as Sentry from '@sentry/node';
 
 const logger = createChildLogger('ErrorHandler');
 
@@ -55,6 +56,18 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
 
   // 🔍 Erreur JS standard
   if (err instanceof Error) {
+    // Capture server errors with Sentry
+    Sentry.captureException(err, {
+      tags: {
+        requestId: req.requestId,
+        path: req.path,
+        method: req.method,
+      },
+      extra: {
+        userId: req.user?.sub,
+        organisationId: req.user?.['custom:organisation_id'],
+      },
+    });
     log.error(`❌ Unexpected Error: ${err.message}`);
     return res.status(500).json({
       status: 'error',
@@ -64,6 +77,18 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
 
   // 🔍 Cas inconnu
   log.error({ err }, '❌ Unhandled error type');
+  // Capture unknown error type as generic
+  Sentry.captureException(err as unknown as Error, {
+    tags: {
+      requestId: req.requestId,
+      path: req.path,
+      method: req.method,
+    },
+    extra: {
+      userId: req.user?.sub,
+      organisationId: req.user?.['custom:organisation_id'],
+    },
+  });
   res.status(500).json({
     status: 'error',
     message: 'Unhandled server error',

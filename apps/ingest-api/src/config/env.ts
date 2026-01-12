@@ -32,6 +32,18 @@ const envSchema = z.object({
   COGNITO_USER_POOL_ID: z.string(),
   COGNITO_CLIENT_ID: z.string(),
   COGNITO_ISSUER: z.string(),
+
+  // Sentry
+  SENTRY_DSN: z.string().optional(),
+  SENTRY_ENVIRONMENT: z.enum(['development', 'staging', 'production']).optional(),
+  SENTRY_TRACES_SAMPLE_RATE: z
+    .string()
+    .transform((v) => {
+      const n = Number(v);
+      return Number.isNaN(n) ? 0.1 : n;
+    })
+    .optional(),
+  SENTRY_RELEASE: z.string().optional(),
 });
 
 // Parse and validate environment variables
@@ -54,6 +66,12 @@ const parsedEnv = envSchema.parse({
   COGNITO_USER_POOL_ID: process.env.COGNITO_USER_POOL_ID,
   COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
   COGNITO_ISSUER: process.env.COGNITO_ISSUER,
+
+  // Sentry
+  SENTRY_DSN: process.env.SENTRY_DSN,
+  SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
+  SENTRY_TRACES_SAMPLE_RATE: process.env.SENTRY_TRACES_SAMPLE_RATE,
+  SENTRY_RELEASE: process.env.SENTRY_RELEASE,
 });
 
 // Export typed environment configuration
@@ -80,4 +98,10 @@ export const env = {
     clientId: parsedEnv.COGNITO_CLIENT_ID,
     issuer: parsedEnv.COGNITO_ISSUER,
   },
+
+  // Sentry configuration
+  sentryDsn: parsedEnv.SENTRY_DSN,
+  sentryEnvironment: parsedEnv.SENTRY_ENVIRONMENT,
+  sentryTracesSampleRate: parsedEnv.SENTRY_TRACES_SAMPLE_RATE ?? 0.1,
+  sentryRelease: parsedEnv.SENTRY_RELEASE,
 };

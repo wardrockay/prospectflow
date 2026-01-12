@@ -4,6 +4,7 @@ import { createHealthRoutes } from './health.routes.js';
 import authTestRouter from './auth.test.routes.js';
 import authRouter from './auth.routes.js';
 import { getPool } from '../config/database.js';
+import testRouter from './test.routes.js';
 
 const router = Router();
 
@@ -19,5 +20,10 @@ router.use('/auth', authTestRouter);
 
 // Monter les routes
 router.use('/ingest', ingestRouter);
+
+// Dev-only test routes for error generation
+if (process.env.NODE_ENV !== 'production') {
+  router.use('/test', testRouter);
+}
 
 export default router;
