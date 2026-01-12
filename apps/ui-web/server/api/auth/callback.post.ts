@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
 
     // Set tokens in httpOnly cookies (server-side only)
     const isProduction = process.env.NODE_ENV === 'production';
-    
+
     // Access token (1 hour)
     setCookie(event, 'access_token', access_token, {
       httpOnly: true,

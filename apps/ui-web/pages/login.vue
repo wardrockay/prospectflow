@@ -5,11 +5,11 @@
 
   const route = useRoute();
   const { login } = useAuth();
-  
+
   // Check for session expiration
   const showExpiredMessage = ref(route.query.expired === 'true');
   const isLoggingIn = ref(false);
-  
+
   // Auto-hide message after 5 seconds
   if (showExpiredMessage.value) {
     setTimeout(() => {
@@ -50,10 +50,10 @@
           <p class="text-gray-600">Connectez-vous pour accéder à votre espace de prospection</p>
         </div>
 
-        <UButton 
-          block 
-          size="xl" 
-          @click="handleLogin" 
+        <UButton
+          block
+          size="xl"
+          @click="handleLogin"
           icon="i-heroicons-arrow-right-on-rectangle"
           :loading="isLoggingIn"
           :disabled="isLoggingIn"

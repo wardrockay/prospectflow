@@ -74,10 +74,9 @@ describe('useAuth Composable', () => {
         expect.stringContaining('client_id=test-client-id'),
         { external: true }
       );
-      expect(mockNavigateTo).toHaveBeenCalledWith(
-        expect.stringContaining('response_type=code'),
-        { external: true }
-      );
+      expect(mockNavigateTo).toHaveBeenCalledWith(expect.stringContaining('response_type=code'), {
+        external: true,
+      });
       expect(mockNavigateTo).toHaveBeenCalledWith(
         expect.stringContaining('scope=openid+email+profile'),
         { external: true }
@@ -100,10 +99,9 @@ describe('useAuth Composable', () => {
         expect.stringContaining('https://test.auth.cognito.com/logout'),
         { external: true }
       );
-      expect(mockNavigateTo).toHaveBeenCalledWith(
-        expect.stringContaining('logout_uri='),
-        { external: true }
-      );
+      expect(mockNavigateTo).toHaveBeenCalledWith(expect.stringContaining('logout_uri='), {
+        external: true,
+      });
     });
 
     it('should redirect to Cognito logout even if API call fails', async () => {
