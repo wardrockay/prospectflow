@@ -1,0 +1,27 @@
+# HTTP-only configuration for initial certificate provisioning
+# This file is used BEFORE obtaining the first SSL certificate
+# 
+# Usage:
+#   1. Replace conf.d/app.conf with this file temporarily
+#   2. Start nginx: docker compose up -d nginx
+#   3. Run init-letsencrypt.sh to obtain certificate
+#   4. Restore the full app.conf with HTTPS configuration
+#   5. Restart nginx: docker compose restart nginx
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name app.lightandshutter.fr;
+
+    # Let's Encrypt ACME challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        allow all;
+    }
+
+    # Temporary: serve a placeholder page
+    location / {
+        return 200 'ProspectFlow - SSL certificate provisioning in progress...';
+        add_header Content-Type text/plain;
+    }
+}

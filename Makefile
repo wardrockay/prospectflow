@@ -1,6 +1,7 @@
 .PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard
 .PHONY: prod-up prod-down prod-restart prod-logs service-restart service-stop service-logs health
 .PHONY: sync-env vps-connect deploy-ui deploy-api
+.PHONY: nginx-up nginx-down nginx-logs nginx-init-ssl nginx-renew-ssl
 
 # Default target
 help:
@@ -34,7 +35,16 @@ help:
 	@echo "  make deploy-ui         - Deploy UI Web to production"
 	@echo "  make deploy-api        - Deploy Ingest API to production"
 	@echo ""
-	@echo "💚 HEALTH CHECK:"
+	@echo "� NGINX & SSL:"
+	@echo "  make nginx-up          - Start NGINX reverse proxy"
+	@echo "  make nginx-down        - Stop NGINX reverse proxy"
+	@echo "  make nginx-logs        - Show NGINX logs"
+	@echo "  make nginx-init-ssl    - Initialize SSL certificate (first time)"
+	@echo "  make nginx-renew-ssl   - Manually renew SSL certificate"
+	@echo "  make nginx-reload      - Reload NGINX config"
+	@echo "  make nginx-test        - Test NGINX configuration"
+	@echo ""
+	@echo "�💚 HEALTH CHECK:"
 	@echo "  make health            - Show health status of all services"
 	@echo ""
 	@echo "🧪 TESTING:"
@@ -152,10 +162,10 @@ network-create:
 prod-up: network-create
 	@echo "🚀 Starting Production Environment..."
 	@echo ""
-	@echo "� Syncing .env files first..."
+	@echo "🔄 Syncing .env files first..."
 	@./scripts/sync-env-to-vps.sh || true
 	@echo ""
-	@echo "�📦 Starting Infrastructure..."
+	@echo "📦 Starting Infrastructure..."
 	@cd infra/postgres && docker compose up -d
 	@cd infra/rabbitmq && docker compose up -d
 	@cd infra/redis && docker compose up -d
@@ -167,12 +177,19 @@ prod-up: network-create
 	@cd apps/ingest-api && docker compose up -d
 	@cd apps/ui-web && docker compose up -d
 	@echo ""
+	@echo "🔒 Starting Reverse Proxy..."
+	@cd infra/nginx && docker compose up -d
+	@echo ""
 	@echo "✅ Production environment started!"
 	@echo "📊 Run 'make health' to check service status"
+	@echo "🔗 Access at: https://app.lightandshutter.fr"
 
 # Stop entire production environment
 prod-down:
 	@echo "🛑 Stopping Production Environment..."
+	@echo ""
+	@echo "🔒 Stopping Reverse Proxy..."
+	@-cd infra/nginx && docker compose down
 	@echo ""
 	@echo "🌐 Stopping Applications..."
 	@-cd apps/ui-web && docker compose down
@@ -203,6 +220,7 @@ SERVICE_PATH_postgres = infra/postgres
 SERVICE_PATH_rabbitmq = infra/rabbitmq
 SERVICE_PATH_redis = infra/redis
 SERVICE_PATH_clickhouse = infra/clickhouse
+SERVICE_PATH_nginx = infra/nginx
 SERVICE_PATH_ingest-api = apps/ingest-api
 SERVICE_PATH_ui-web = apps/ui-web
 
@@ -248,16 +266,18 @@ else
 	@echo "📋 Available services:"
 	@echo "  [1] postgres      [2] rabbitmq"
 	@echo "  [3] redis         [4] clickhouse"
-	@echo "  [5] ingest-api    [6] ui-web"
+	@echo "  [5] nginx         [6] ingest-api"
+	@echo "  [7] ui-web"
 	@echo ""
-	@read -p "Select service (1-6): " choice; \
+	@read -p "Select service (1-7): " choice; \
 	case $$choice in \
 		1) echo ""; echo "📜 Logs for postgres (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-postgres ;; \
 		2) echo ""; echo "📜 Logs for rabbitmq (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 rabbitmq ;; \
 		3) echo ""; echo "📜 Logs for redis (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-redis ;; \
 		4) echo ""; echo "📜 Logs for clickhouse (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 clickhouse-server ;; \
-		5) echo ""; echo "📜 Logs for ingest-api (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ingest-api ;; \
-		6) echo ""; echo "📜 Logs for ui-web (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ui-web ;; \
+		5) echo ""; echo "📜 Logs for nginx (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-nginx ;; \
+		6) echo ""; echo "📜 Logs for ingest-api (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ingest-api ;; \
+		7) echo ""; echo "📜 Logs for ui-web (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ui-web ;; \
 		*) echo "❌ Invalid choice"; exit 1 ;; \
 	esac
 endif
@@ -299,6 +319,15 @@ health:
 	@echo "UI Web:"
 	@docker ps --filter "name=prospectflow-ui-web" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
 	@curl -sf http://localhost:4000 2>/dev/null && echo "  ✅ UI responding" || echo "  ⚠️  UI not responding"
+	@echo ""
+	@echo "🔐 REVERSE PROXY:"
+	@echo ""
+	@echo "NGINX:"
+	@docker ps --filter "name=prospectflow-nginx" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@docker exec prospectflow-nginx nginx -t 2>/dev/null && echo "  ✅ Config valid" || echo "  ⚠️  Config check failed or not running"
+	@echo ""
+	@echo "Certbot:"
+	@docker ps --filter "name=prospectflow-certbot" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
 	@echo ""
 	@echo "============================"
 	@echo ""
@@ -348,3 +377,58 @@ vps-deploy: sync-env
 	@echo "🚀 Deploying to VPS..."
 	@ssh $(VPS_ALIAS) "cd $(VPS_PATH) && git pull && make prod-restart"
 	@echo "✅ Deployment complete!"
+
+# ============================================
+# NGINX & SSL MANAGEMENT
+# ============================================
+
+# Start NGINX reverse proxy (requires SSL cert to be initialized first)
+nginx-up: network-create
+	@echo "🚀 Starting NGINX reverse proxy..."
+	@cd infra/nginx && docker compose up -d
+	@echo "✅ NGINX started"
+	@echo "🔗 Serving at: https://app.lightandshutter.fr"
+
+# Stop NGINX and Certbot
+nginx-down:
+	@echo "🛑 Stopping NGINX..."
+	@-cd infra/nginx && docker compose down
+	@echo "✅ NGINX stopped"
+
+# Show NGINX logs
+nginx-logs:
+	@echo "📜 NGINX Logs (Ctrl+C to exit)..."
+	@docker logs -f --tail=100 prospectflow-nginx
+
+# Initialize SSL certificate (run once on VPS)
+nginx-init-ssl:
+	@echo "🔐 Initializing SSL certificate..."
+	@echo "⚠️  Make sure DNS is configured and port 80 is accessible!"
+	@echo ""
+	@cd infra/nginx && ./scripts/init-letsencrypt.sh
+
+# Initialize SSL with staging environment (for testing)
+nginx-init-ssl-staging:
+	@echo "🧪 Initializing SSL certificate (STAGING)..."
+	@cd infra/nginx && ./scripts/init-letsencrypt.sh --staging
+
+# Manually renew SSL certificate
+nginx-renew-ssl:
+	@echo "🔄 Renewing SSL certificate..."
+	@cd infra/nginx && ./scripts/renew-certs.sh
+
+# Test SSL renewal (dry-run)
+nginx-renew-ssl-dry:
+	@echo "🧪 Testing SSL renewal (dry-run)..."
+	@cd infra/nginx && ./scripts/renew-certs.sh --dry-run
+
+# Reload NGINX config without restart
+nginx-reload:
+	@echo "🔄 Reloading NGINX configuration..."
+	@docker exec prospectflow-nginx nginx -s reload
+	@echo "✅ NGINX config reloaded"
+
+# Test NGINX configuration
+nginx-test:
+	@echo "🧪 Testing NGINX configuration..."
+	@docker exec prospectflow-nginx nginx -t
