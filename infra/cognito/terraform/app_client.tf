@@ -9,22 +9,22 @@ resource "aws_cognito_user_pool_client" "api_client" {
 
   # Callback URLs
   # Note: Cognito requires HTTPS for non-localhost URLs
-  # For VPS deployment, configure nginx with SSL and use https://vps-ea22871d.vps.ovh.net/auth/callback
+  # For VPS deployment, configure nginx with SSL and use https://app.lightandshutter.fr/auth/callback
   callback_urls = var.environment == "production" ? [
-    "https://app.prospectflow.com/auth/callback"
+    "https://app.lightandshutter.fr/auth/callback"
     ] : [
     "http://localhost:4000/auth/callback",
     "http://localhost:5173/auth/callback",
-    "https://vps-ea22871d.vps.ovh.net/auth/callback"
+    "https://app.lightandshutter.fr/auth/callback"
   ]
 
   # Logout URLs
   logout_urls = var.environment == "production" ? [
-    "https://app.prospectflow.com/"
+    "https://app.lightandshutter.fr/"
     ] : [
     "http://localhost:4000/",
     "http://localhost:5173/",
-    "https://vps-ea22871d.vps.ovh.net/"
+    "https://app.lightandshutter.fr/"
   ]
 
   # Supported identity providers
