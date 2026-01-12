@@ -26,19 +26,29 @@ export default defineEventHandler(async (event) => {
       params.append('client_secret', config.cognitoClientSecret);
     }
 
-    // Use $fetch (Nuxt native) instead of axios for better server compatibility
-    const response = await $fetch<{
-      access_token: string;
-      id_token: string;
-      refresh_token: string;
-      expires_in: number;
-    }>(tokenEndpoint, {
+    // Use native fetch for better compatibility
+    const fetchResponse = await fetch(tokenEndpoint, {
       method: 'POST',
       body: params.toString(),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
+
+    if (!fetchResponse.ok) {
+      console.error('Cognito token exchange failed:', fetchResponse.status, fetchResponse.statusText);
+      throw createError({
+        statusCode: 401,
+        message: 'Erreur de connexion. Veuillez réessayer.',
+      });
+    }
+
+    const response = await fetchResponse.json() as {
+      access_token: string;
+      id_token: string;
+      refresh_token: string;
+      expires_in: number;
+    };
 
     const { access_token, id_token, refresh_token, expires_in } = response;
 
