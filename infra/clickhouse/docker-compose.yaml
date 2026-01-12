@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   clickhouse:
     image: clickhouse/clickhouse-server:latest
-    container_name: clickhouse-server
+    container_name: prospectflow-clickhouse
     ports:
       - '${CLICKHOUSE_HTTP_PORT}:8123' # HTTP interface
       - '${CLICKHOUSE_TCP_PORT}:9000' # Native TCP protocol
@@ -35,7 +33,7 @@ services:
 
   tabix:
     image: spoonest/clickhouse-tabix-web-client:latest
-    container_name: clickhouse-tabix
+    container_name: prospectflow-tabix
     ports:
       - '${TABIX_PORT}:80'
     environment:

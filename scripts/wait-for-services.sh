@@ -18,7 +18,7 @@ check_postgres() {
 
 # Function to check RabbitMQ
 check_rabbitmq() {
-    docker exec rabbitmq rabbitmq-diagnostics ping > /dev/null 2>&1
+    docker exec prospectflow-rabbitmq rabbitmq-diagnostics ping > /dev/null 2>&1
     return $?
 }
 
@@ -30,7 +30,19 @@ check_redis() {
 
 # Function to check ClickHouse
 check_clickhouse() {
-    docker exec clickhouse-server clickhouse-client --query "SELECT 1" > /dev/null 2>&1
+    docker exec prospectflow-clickhouse clickhouse-client --query "SELECT 1" > /dev/null 2>&1
+    return $?
+}
+
+# Function to check Ingest API
+check_ingest_api() {
+    docker exec prospectflow-ingest-api curl -f http://localhost:3000/health > /dev/null 2>&1
+    return $?
+}
+
+# Function to check UI Web
+check_ui_web() {
+    docker exec prospectflow-ui-web wget --no-verbose --tries=1 --spider http://localhost:3000/ > /dev/null 2>&1
     return $?
 }
 

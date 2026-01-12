@@ -139,7 +139,11 @@ apps-only:
 	@cd apps/ui-web && docker compose up -d
 	@echo ""
 	@echo "⏳ Waiting for applications to be healthy..."
-	@sleep 10
+	@sleep 5
+	@# Wait for ingest-api
+	@docker exec prospectflow-ingest-api curl -f http://localhost:3000/health > /dev/null 2>&1 || (echo "Waiting for ingest-api..." && sleep 5)
+	@# Wait for ui-web
+	@docker exec prospectflow-ui-web wget --no-verbose --tries=1 --spider http://localhost:3000/ > /dev/null 2>&1 || (echo "Waiting for ui-web..." && sleep 5)
 	@echo ""
 	@echo "✅ Application tier ready!"
 
@@ -213,13 +217,13 @@ dev-status:
 	@docker ps --filter "name=prospectflow-postgres" --format "  {{.Names}}: {{.Status}}"
 	@echo ""
 	@echo "RabbitMQ:"
-	@docker ps --filter "name=rabbitmq" --format "  {{.Names}}: {{.Status}}"
+	@docker ps --filter "name=prospectflow-rabbitmq" --format "  {{.Names}}: {{.Status}}"
 	@echo ""
 	@echo "Redis:"
 	@docker ps --filter "name=prospectflow-redis" --format "  {{.Names}}: {{.Status}}"
 	@echo ""
 	@echo "ClickHouse:"
-	@docker ps --filter "name=clickhouse-server" --format "  {{.Names}}: {{.Status}}"
+	@docker ps --filter "name=prospectflow-clickhouse" --format "  {{.Names}}: {{.Status}}"
 	@echo ""
 
 # Ensure environment is ready for integration tests
@@ -383,9 +387,9 @@ else
 	@read -p "Select service (1-9): " choice; \
 	case $$choice in \
 		1) echo ""; echo "📜 Logs for postgres (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-postgres ;; \
-		2) echo ""; echo "📜 Logs for rabbitmq (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 rabbitmq ;; \
+		2) echo ""; echo "📜 Logs for rabbitmq (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-rabbitmq ;; \
 		3) echo ""; echo "📜 Logs for redis (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-redis ;; \
-		4) echo ""; echo "📜 Logs for clickhouse (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 clickhouse-server ;; \
+		4) echo ""; echo "📜 Logs for clickhouse (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-clickhouse ;; \
 		5) echo ""; echo "📜 Logs for nginx (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-nginx ;; \
 		6) echo ""; echo "📜 Logs for prometheus (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-prometheus ;; \
 		7) echo ""; echo "📜 Logs for grafana (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-grafana ;; \
@@ -412,16 +416,16 @@ health:
 	@docker exec prospectflow-postgres pg_isready -U prospectflow 2>/dev/null && echo "  ✅ Database accepting connections" || echo "  ⚠️  Database not ready"
 	@echo ""
 	@echo "RabbitMQ:"
-	@docker ps --filter "name=rabbitmq" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
-	@docker exec rabbitmq rabbitmq-diagnostics ping 2>/dev/null && echo "  ✅ RabbitMQ healthy" || echo "  ⚠️  RabbitMQ not ready"
+	@docker ps --filter "name=prospectflow-rabbitmq" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@docker exec prospectflow-rabbitmq rabbitmq-diagnostics ping 2>/dev/null && echo "  ✅ RabbitMQ healthy" || echo "  ⚠️  RabbitMQ not ready"
 	@echo ""
 	@echo "Redis:"
 	@docker ps --filter "name=prospectflow-redis" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
 	@docker exec prospectflow-redis redis-cli ping 2>/dev/null && echo "  ✅ Redis responding" || echo "  ⚠️  Redis not ready"
 	@echo ""
 	@echo "ClickHouse:"
-	@docker ps --filter "name=clickhouse-server" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
-	@docker exec clickhouse-server clickhouse-client --query "SELECT 1" 2>/dev/null && echo "  ✅ ClickHouse healthy" || echo "  ⚠️  ClickHouse not ready"
+	@docker ps --filter "name=prospectflow-clickhouse" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@docker exec prospectflow-clickhouse clickhouse-client --query "SELECT 1" 2>/dev/null && echo "  ✅ ClickHouse healthy" || echo "  ⚠️  ClickHouse not ready"
 	@echo ""
 	@echo "🌐 APPLICATIONS:"
 	@echo ""

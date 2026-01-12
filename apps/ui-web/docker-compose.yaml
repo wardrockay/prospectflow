@@ -17,7 +17,7 @@ services:
       - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
       - COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI:-https://app.lightandshutter.fr/auth/callback}
     healthcheck:
-      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:3000/']
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/']
       interval: 10s
       timeout: 5s
       retries: 3

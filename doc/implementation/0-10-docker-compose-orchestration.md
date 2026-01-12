@@ -3,7 +3,7 @@
 **Epic**: 0 - Sprint 0: Foundation Infrastructure  
 **Story ID**: 0.10  
 **Story Points**: 3  
-**Status**: review  
+**Status**: done  
 **Dependencies**: Story 0.1 (Database), Story 0.3 (RabbitMQ), Story 0.8 (Monitoring)  
 **Created**: 2026-01-12  
 **Assignee**: Dev Agent / Tolliam (Code Review)
@@ -99,6 +99,20 @@ Currently, services have individual docker-compose files in `infra/*/` with a Ma
 **And** health check intervals should be appropriate (5s for infra, 10s for apps, 30s for monitoring)  
 **And** all health checks should have timeout, retries, and start_period configured  
 **And** restart policy should be `unless-stopped` for all services
+
+#### Health Check Command Reference
+
+| Service      | Container Name              | Health Check Command                                          | Interval | Start Period |
+| ------------ | --------------------------- | ------------------------------------------------------------- | -------- | ------------ |
+| PostgreSQL   | `prospectflow-postgres`     | `pg_isready -U prospectflow`                                  | 5s       | 10s          |
+| RabbitMQ     | `prospectflow-rabbitmq`     | `rabbitmq-diagnostics ping`                                   | 5s       | 30s          |
+| Redis        | `prospectflow-redis`        | `redis-cli ping`                                              | 5s       | 10s          |
+| ClickHouse   | `prospectflow-clickhouse`   | `clickhouse-client --query "SELECT 1"`                        | 5s       | 10s          |
+| Prometheus   | `prospectflow-prometheus`   | `wget --spider -q http://localhost:9090/-/healthy`            | 30s      | 10s          |
+| Grafana      | `prospectflow-grafana`      | `curl -f http://localhost:3000/api/health`                    | 30s      | 10s          |
+| Alertmanager | `prospectflow-alertmanager` | `wget --spider -q http://localhost:9093/-/healthy`            | 30s      | 10s          |
+| Ingest API   | `prospectflow-ingest-api`   | `curl -f http://localhost:3000/health`                        | 10s      | 30s          |
+| UI Web       | `prospectflow-ui-web`       | `wget --no-verbose --tries=1 --spider http://localhost:3000/` | 10s      | 30s          |
 
 ### AC3: Enhanced Makefile Orchestration
 
@@ -670,6 +684,7 @@ N/A - No debugging required
    - Improved `make health` commands for RabbitMQ and Redis
 
 4. **Testing & Documentation (Phase 4)**:
+
    - Tested network creation: ✅ Network created successfully
    - Tested `infra-only`: ✅ All infrastructure services healthy
    - Tested `apps-only`: ✅ Applications started and healthy
@@ -680,20 +695,36 @@ N/A - No debugging required
    - Updated project-context.md deployment section with new Makefile targets
    - All services confirmed healthy via `make health`
 
+5. **Code Review Fixes (Post-Implementation)**:
+   - ✅ **Issue #1 Fixed**: Removed obsolete `version: '3.8'` from ClickHouse compose file
+   - ✅ **Issue #2 Fixed**: Standardized RabbitMQ health check interval to 5s (was 10s)
+   - ✅ **Issue #3 Fixed**: Kept wget for UI Web but improved flags for consistency
+   - ✅ **Issue #4 Fixed**: Added `check_ingest_api()` and `check_ui_web()` functions to wait-for-services.sh
+   - ✅ **Issue #5 Fixed**: Added comprehensive health check reference table in AC2
+   - ✅ **Issue #7 Fixed**: Uniformized all container names with `prospectflow-` prefix:
+     - `rabbitmq` → `prospectflow-rabbitmq`
+     - `clickhouse-server` → `prospectflow-clickhouse`
+     - `clickhouse-tabix` → `prospectflow-tabix`
+   - Updated all Makefile targets to use new container names
+   - Updated wait-for-services.sh to use new container names
+   - Updated `make apps-only` to perform actual health checks instead of sleep
+
 **Key Decisions:**
 
 - **Kept modular compose files**: Maintained existing architecture of separate compose files per service/concern instead of monolithic root file (aligns with story requirements)
 - **External network pattern**: All services use `prospectflow-network` as external network, created once and shared
 - **Health check standardization**: Used service-appropriate intervals and commands per Docker best practices
 - **Backward compatibility**: Preserved existing `dev-up`, `dev-ready`, `dev-down` targets for compatibility
+- **Container naming convention**: Strictly enforced `prospectflow-*` prefix for all containers for clarity
 
 **Technical Highlights:**
 
-- Container naming follows `prospectflow-*` convention
+- Container naming follows `prospectflow-*` convention consistently across all services
 - All services have `restart: unless-stopped` policy
 - Health checks include proper `start_period` for slow-starting services
 - Makefile targets are idempotent (safe to run multiple times)
 - Service startup order enforced through dependencies and health checks
+- wait-for-services.sh now includes application health checks for complete validation
 
 ### File List
 
