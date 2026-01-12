@@ -77,10 +77,19 @@ cat ~/.ssh/github_actions_ed25519
 
 **What it does:**
 
-1. Lints code (ESLint)
-2. Runs unit tests for ingest-api
-3. Runs integration tests for ingest-api
-4. Builds Docker images (validation only, not pushed)
+1. **Lint**: Runs ESLint on ingest-api and ui-web
+2. **Test Ingest API**:
+   - Unit tests
+   - Integration tests (with PostgreSQL and Redis)
+   - Coverage tests with 70% threshold enforcement
+3. **Test UI Web**: Build validation
+4. **Build**: Docker image builds for both services (validation only, not pushed)
+
+**Coverage Requirements:**
+
+- Minimum 70% line coverage for ingest-api
+- Pipeline fails if coverage drops below threshold
+- Coverage report generated at `apps/ingest-api/coverage/coverage-summary.json`
 
 **Duration:** ~5-8 minutes
 
@@ -88,7 +97,8 @@ cat ~/.ssh/github_actions_ed25519
 
 - Go to **Actions** tab in GitHub
 - Click on the latest workflow run
-- Review each job (Lint, Test, Build)
+- Review each job (Lint, Test Ingest API, Test UI Web, Build)
+- Check coverage details in "Check coverage threshold" step
 
 ### Continuous Deployment (CD) - Production
 

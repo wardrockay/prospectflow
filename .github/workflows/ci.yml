@@ -97,10 +97,60 @@ jobs:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
 
+      - name: Run coverage tests
+        run: pnpm --filter prospectflow-ingest-api test:coverage
+        env:
+          NODE_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: prospectflow_test
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: prospectflow_test
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
+      - name: Check coverage threshold
+        run: |
+          if [ -f apps/ingest-api/coverage/coverage-summary.json ]; then
+            coverage=$(jq '.total.lines.pct' apps/ingest-api/coverage/coverage-summary.json)
+            echo "Coverage: $coverage%"
+            if (( $(echo "$coverage < 70" | bc -l) )); then
+              echo "❌ Coverage $coverage% is below 70% threshold"
+              exit 1
+            fi
+            echo "✅ Coverage $coverage% meets 70% threshold"
+          else
+            echo "⚠️  Coverage report not found, skipping threshold check"
+          fi
+
+  test-ui-web:
+    name: Test UI Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build UI Web
+        run: pnpm --filter @prospectflow/ui-web build
+
   build:
     name: Build Docker Images
     runs-on: ubuntu-latest
-    needs: [lint, test-ingest-api]
+    needs: [lint, test-ingest-api, test-ui-web]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
