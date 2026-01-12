@@ -7,11 +7,11 @@ services:
       dockerfile: apps/ui-web/Dockerfile
     container_name: prospectflow-ui-web
     ports:
-      - '4000:4000'
+      - '4000:3000'
     environment:
       - NODE_ENV=production
       - NUXT_HOST=0.0.0.0
-      - NUXT_PORT=4000
+      - NUXT_PORT=3000
       # API Configuration
       - API_BASE_URL=${API_BASE_URL:-http://localhost:3001}
       # Cognito Configuration
