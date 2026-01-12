@@ -3,7 +3,7 @@
 **Epic**: 0 - Sprint 0: Foundation Infrastructure  
 **Story ID**: 0.7  
 **Story Points**: 2  
-**Status**: ready-for-review  
+**Status**: in-review  
 **Dependencies**: Story 0.2 (Express.js API Foundation - ✅ done), Story 0.6 (Structured Logging - ✅ done)  
 **Created**: 2026-01-12  
 **Assignee**: Dev Team
