@@ -1,6 +1,6 @@
 # Story UI-0-1: Nuxt 3 Project Setup & Configuration
 
-**Status:** ready-for-dev  
+**Status:** done
 **Epic:** UI-0 - Frontend Foundation & Authentication  
 **Story Points:** 3  
 **Priority:** P0 (MVP Foundation)
