@@ -20,9 +20,9 @@ services:
       - COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI:-http://localhost:4000/auth/callback}
     restart: unless-stopped
     networks:
-      - prospectflow
+      - prospectflow-network
 
 networks:
-  prospectflow:
-    name: prospectflow
+  prospectflow-network:
     external: true
+    name: prospectflow-network
