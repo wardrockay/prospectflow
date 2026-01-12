@@ -17,6 +17,16 @@ import {
 } from '../../src/config/auth-middlewares';
 import { Request } from 'express';
 
+// Shared mock logger for verification - must use vi.hoisted for proper hoisting
+const { mockChildLogger } = vi.hoisted(() => ({
+  mockChildLogger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 // Mock logger to prevent console noise
 vi.mock('../../src/utils/logger', () => ({
   logger: {
@@ -25,6 +35,8 @@ vi.mock('../../src/utils/logger', () => ({
     info: vi.fn(),
     debug: vi.fn(),
   },
+  createChildLogger: vi.fn(() => mockChildLogger),
+  createRequestLogger: vi.fn(() => mockChildLogger),
 }));
 
 describe('Multi-Tenant Isolation', () => {
@@ -345,7 +357,8 @@ describe('Multi-Tenant Isolation', () => {
 
   describe('Audit Trail Verification', () => {
     it('should log warning on cross-tenant access attempt', async () => {
-      const { logger } = await import('../../src/utils/logger');
+      // Reset mock to track this specific call
+      mockChildLogger.warn.mockClear();
 
       try {
         checkOrganisationAccess(
@@ -357,7 +370,8 @@ describe('Multi-Tenant Isolation', () => {
       }
 
       // Pino logger signature: logger.warn(object, message)
-      expect(logger.warn).toHaveBeenCalledWith(
+      // The log is made via the child logger from createChildLogger('AuthMiddlewares')
+      expect(mockChildLogger.warn).toHaveBeenCalledWith(
         expect.objectContaining({
           resourceOrgId: prospectFromOrgAlpha.organisation_id,
           userOrgId: userFromOrgBeta.organisationId,

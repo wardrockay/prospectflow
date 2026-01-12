@@ -1,5 +1,4 @@
 // src/utils/logger.types.ts
-import type { Logger } from 'pino';
 
 /**
  * Standard log context included in all log entries

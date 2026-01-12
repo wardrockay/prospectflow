@@ -25,6 +25,18 @@ vi.mock('../../src/utils/logger', () => ({
     info: vi.fn(),
     debug: vi.fn(),
   },
+  createChildLogger: vi.fn(() => ({
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  })),
+  createRequestLogger: vi.fn(() => ({
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  })),
 }));
 
 describe('Security Tests', () => {

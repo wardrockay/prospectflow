@@ -3,7 +3,7 @@
 **Epic**: 0 - Sprint 0: Foundation Infrastructure  
 **Story ID**: 0.6  
 **Story Points**: 3  
-**Status**: 🔵 Ready for Dev  
+**Status**: ✅ Done  
 **Dependencies**: Story 0.2 (Express.js API Foundation - completed)  
 **Created**: 2026-01-12  
 **Assignee**: Dev Team
@@ -919,16 +919,16 @@ The following fields are automatically redacted:
 
 ## Definition of Done
 
-- [ ] Logger types defined (`logger.types.ts`)
-- [ ] Root logger upgraded with child logger factory
-- [ ] Correlation ID middleware implemented
-- [ ] HTTP logger middleware enhanced
-- [ ] Services updated to use child loggers
-- [ ] Unit tests written and passing
-- [ ] Documentation updated
-- [ ] Logs verified in development (pino-pretty)
-- [ ] Logs verified in production mode (JSON)
-- [ ] Sensitive data redaction confirmed
+- [x] Logger types defined (`logger.types.ts`)
+- [x] Root logger upgraded with child logger factory
+- [x] Correlation ID middleware implemented
+- [x] HTTP logger middleware enhanced
+- [x] Services updated to use child loggers
+- [x] Unit tests written and passing
+- [x] Documentation updated
+- [x] Logs verified in development (pino-pretty)
+- [x] Logs verified in production mode (JSON)
+- [x] Sensitive data redaction confirmed
 
 ---
 

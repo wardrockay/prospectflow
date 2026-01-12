@@ -81,6 +81,33 @@ describe('Logger Module', () => {
     });
   });
 
+  describe('logPerformance', () => {
+    it('should use warn level for slow operations (> 1000ms)', async () => {
+      const { logPerformance } = await import('../../../src/utils/logger.js');
+      const childLogger = createChildLogger('Test');
+      const warnSpy = vi.spyOn(childLogger, 'warn');
+
+      logPerformance(childLogger, 'slow.operation', 1500, true);
+
+      expect(warnSpy).toHaveBeenCalled();
+      const callArgs = warnSpy.mock.calls[0][0] as { durationMs: number; operation: string };
+      expect(callArgs.durationMs).toBe(1500);
+      expect(callArgs.operation).toBe('slow.operation');
+    });
+
+    it('should use info level for fast operations (<= 1000ms)', async () => {
+      const { logPerformance } = await import('../../../src/utils/logger.js');
+      const childLogger = createChildLogger('Test');
+      const infoSpy = vi.spyOn(childLogger, 'info');
+
+      logPerformance(childLogger, 'fast.operation', 500, true);
+
+      expect(infoSpy).toHaveBeenCalled();
+      const callArgs = infoSpy.mock.calls[0][0] as { durationMs: number; operation: string };
+      expect(callArgs.durationMs).toBe(500);
+    });
+  });
+
   describe('root logger', () => {
     it('should be defined', () => {
       expect(logger).toBeDefined();
