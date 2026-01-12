@@ -56,11 +56,8 @@ export const initSentry = (): void => {
       if (breadcrumb.category === 'http') {
         if (breadcrumb.data && typeof breadcrumb.data === 'object') {
           // Remove auth headers from breadcrumbs
-          // @ts-expect-error - dynamic shape
           if (breadcrumb.data.headers) {
-            // @ts-expect-error - dynamic shape
             delete breadcrumb.data.headers.authorization;
-            // @ts-expect-error - dynamic shape
             delete breadcrumb.data.headers.cookie;
           }
         }
