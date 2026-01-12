@@ -17,7 +17,7 @@ services:
       # Cognito Configuration
       - COGNITO_HOSTED_UI=${COGNITO_HOSTED_UI}
       - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
-      - COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI:-http://localhost:4000/auth/callback}
+      - COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI:-https://app.lightandshutter.fr/auth/callback}
     restart: unless-stopped
     networks:
       - prospectflow-network
