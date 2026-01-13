@@ -89,12 +89,17 @@ describe('useCampaigns', () => {
 
     useCampaigns({ page, limit: 20 });
 
+    // New architecture: calls local Nuxt server API (no baseURL)
+    // The Nuxt server then proxies to the campaign-api service
     expect(globalThis.useFetch).toHaveBeenCalledWith(
       '/api/campaigns',
       expect.objectContaining({
-        baseURL: 'http://localhost:3001',
         credentials: 'include',
       })
     );
+
+    // Verify baseURL is NOT passed (server proxy handles backend URL)
+    const callArgs = (globalThis.useFetch as ReturnType<typeof vi.fn>).mock.calls[0][1];
+    expect(callArgs).not.toHaveProperty('baseURL');
   });
 });
