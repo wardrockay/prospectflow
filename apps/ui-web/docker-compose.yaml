@@ -10,11 +10,13 @@ services:
       - NODE_ENV=production
       - NUXT_HOST=0.0.0.0
       - NUXT_PORT=3000
-      # API Configuration
+      # API Configuration - use Docker container name for internal communication
       - API_BASE_URL=${API_BASE_URL:-http://localhost:3001}
+      - CAMPAIGN_API_URL=http://prospectflow-campaign-api:3001
       # Cognito Configuration
       - COGNITO_HOSTED_UI=${COGNITO_HOSTED_UI}
       - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+      - COGNITO_CLIENT_SECRET=${COGNITO_CLIENT_SECRET}
       - COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI:-https://app.lightandshutter.fr/auth/callback}
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/']
