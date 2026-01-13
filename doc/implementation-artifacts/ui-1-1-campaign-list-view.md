@@ -1,6 +1,6 @@
 # Story UI-1.1: Campaign List View
 
-**Status**: review  
+**Status**: done  
 **Epic**: UI-1 (Campaign Management UI)  
 **Story Points**: 3  
 **Created**: 2026-01-13  
@@ -662,10 +662,19 @@ No issues encountered during implementation. All tasks completed smoothly.
 **Technical Decisions:**
 
 - Used `useFetch` instead of `$fetch` for SSR compatibility
-- Client-side filtering for search to reduce API calls
-- Status filter also client-side since we're fetching all campaigns for the page
+- Client-side filtering for search AND status to reduce API calls
 - Pagination handled server-side via API query params
 - Used NuxtUI components throughout for consistency with existing UI
+
+**Code Review Fixes Applied (2026-01-13):**
+
+- Fixed TypeScript globalThis declarations in `tests/setup.ts` for proper type safety
+- Fixed UPagination API to use NuxtUI v2 props (`v-model` and `page-count` instead of `v-model:page` and `items-per-page`)
+- Added Authorization Bearer token header in `useCampaigns.ts` for backend authentication
+- Changed status filtering to be 100% client-side (removed from API query params)
+- Added ARIA accessibility attributes (`role="navigation"`, `aria-label`, `role="alert"`)
+- Improved error handling with HTTP status code differentiation (401, 403, 500)
+- Added explicit Campaign type annotations in filter callbacks
 
 ### File List
 

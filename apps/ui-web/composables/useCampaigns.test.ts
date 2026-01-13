@@ -3,6 +3,9 @@ import { ref } from 'vue';
 import { useCampaigns } from './useCampaigns';
 import type { CampaignListResponse } from './useCampaigns';
 
+// Import setup to get globalThis type declarations
+import '../tests/setup';
+
 describe('useCampaigns', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -30,7 +33,7 @@ describe('useCampaigns', () => {
     };
 
     // Mock useFetch to return test data
-    (globalThis.useFetch as any).mockReturnValue({
+    globalThis.useFetch.mockReturnValue({
       data: ref(mockData),
       pending: ref(false),
       error: ref(null),
@@ -46,7 +49,7 @@ describe('useCampaigns', () => {
   });
 
   it('should return empty array when no data', () => {
-    (globalThis.useFetch as any).mockReturnValue({
+    globalThis.useFetch.mockReturnValue({
       data: ref(null),
       pending: ref(false),
       error: ref(null),
@@ -61,7 +64,7 @@ describe('useCampaigns', () => {
   it('should handle API errors gracefully', () => {
     const mockError = new Error('API Error');
 
-    (globalThis.useFetch as any).mockReturnValue({
+    globalThis.useFetch.mockReturnValue({
       data: ref(null),
       pending: ref(false),
       error: ref(mockError),
@@ -76,16 +79,15 @@ describe('useCampaigns', () => {
 
   it('should pass correct options to useFetch', () => {
     const page = ref(2);
-    const status = ref('active');
 
-    (globalThis.useFetch as any).mockReturnValue({
+    globalThis.useFetch.mockReturnValue({
       data: ref(null),
       pending: ref(true),
       error: ref(null),
       refresh: vi.fn(),
     });
 
-    useCampaigns({ page, limit: 20, status });
+    useCampaigns({ page, limit: 20 });
 
     expect(globalThis.useFetch).toHaveBeenCalledWith(
       '/api/campaigns',

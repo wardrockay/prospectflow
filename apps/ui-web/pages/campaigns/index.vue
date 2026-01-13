@@ -34,11 +34,10 @@
     });
   });
 
-  // Fetch campaigns with composable
+  // Fetch campaigns with composable (filtering done client-side)
   const { campaigns, pagination, pending, error, refresh } = useCampaigns({
     page: currentPage,
     limit: 10,
-    status: selectedStatus,
   });
 
   // Status filter options
@@ -56,13 +55,32 @@
 
     let result = campaigns.value;
 
+    // Apply status filter (client-side for better UX)
+    if (selectedStatus.value) {
+      result = result.filter((campaign: Campaign) => campaign.status === selectedStatus.value);
+    }
+
     // Apply search filter
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase();
-      result = result.filter((campaign) => campaign.name.toLowerCase().includes(query));
+      result = result.filter((campaign: Campaign) => campaign.name.toLowerCase().includes(query));
     }
 
     return result;
+  });
+
+  // Compute error message based on HTTP status
+  const errorMessage = computed(() => {
+    if (!error.value) return null;
+    const statusCode = (error.value as any)?.statusCode || (error.value as any)?.status;
+    if (statusCode === 401) {
+      // Redirect handled by middleware, but show message just in case
+      return 'Session expirée. Veuillez vous reconnecter.';
+    }
+    if (statusCode === 403) {
+      return "Accès refusé. Vous n'avez pas les permissions nécessaires.";
+    }
+    return 'Une erreur serveur est survenue lors du chargement des campagnes.';
   });
 
   // Format date helper
@@ -123,9 +141,12 @@
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="text-center py-12">
-        <p class="text-red-500 mb-4">Une erreur est survenue lors du chargement des campagnes</p>
-        <UButton @click="refresh()" variant="outline"> Réessayer </UButton>
+      <div v-else-if="error" class="text-center py-12" role="alert" aria-live="polite">
+        <UIcon name="i-heroicons-exclamation-triangle" class="text-6xl text-red-400 mb-4" />
+        <p class="text-red-500 mb-4">{{ errorMessage }}</p>
+        <UButton @click="refresh()" variant="outline" aria-label="Réessayer le chargement">
+          Réessayer
+        </UButton>
       </div>
 
       <!-- Empty State -->
@@ -150,6 +171,7 @@
           :loading="pending"
           @select="(row: Campaign) => goToCampaign(row.id)"
           class="cursor-pointer"
+          aria-label="Liste des campagnes"
         >
           <template #name-data="{ row }">
             <div>
@@ -174,13 +196,13 @@
         </UTable>
 
         <!-- Pagination -->
-        <div v-if="pagination && pagination.totalPages > 1" class="flex justify-center mt-6">
-          <UPagination
-            v-model="currentPage"
-            :total="pagination.total"
-            :page-count="10"
-            show-edges
-          />
+        <div
+          v-if="pagination && pagination.totalPages > 1"
+          class="flex justify-center mt-6"
+          role="navigation"
+          aria-label="Pagination des campagnes"
+        >
+          <UPagination v-model="currentPage" :total="pagination.total" :page-count="10" />
         </div>
       </div>
     </div>
