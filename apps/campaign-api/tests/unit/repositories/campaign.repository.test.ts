@@ -330,4 +330,140 @@ describe('CampaignRepository', () => {
       );
     });
   });
+
+  describe('Archive Filtering', () => {
+    describe('findAll with includeArchived=false (default)', () => {
+      it('should exclude archived campaigns from count query', async () => {
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+        await repository.findAll('org-123', { includeArchived: false });
+
+        // Verify count query includes status filter
+        const countQuery = mockPool.query.mock.calls[0][0];
+        expect(countQuery).toContain("AND c.status != 'archived'");
+      });
+
+      it('should exclude archived campaigns from results query', async () => {
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+        await repository.findAll('org-123', { includeArchived: false });
+
+        // Verify SELECT query includes status filter
+        const selectQuery = mockPool.query.mock.calls[1][0];
+        expect(selectQuery).toContain("AND c.status != 'archived'");
+      });
+
+      it('should use default includeArchived=false when not specified', async () => {
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '0' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+        await repository.findAll('org-123', {});
+
+        // Default behavior should exclude archived
+        const countQuery = mockPool.query.mock.calls[0][0];
+        expect(countQuery).toContain("AND c.status != 'archived'");
+      });
+
+      it('should work with pagination when archived campaigns exist', async () => {
+        // Simulate 20 non-archived campaigns (out of 30 total with 10 archived)
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '20' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+        const result = await repository.findAll('org-123', {
+          page: 1,
+          limit: 10,
+          includeArchived: false,
+        });
+
+        expect(result.pagination.totalItems).toBe(20);
+        expect(result.pagination.totalPages).toBe(2);
+      });
+    });
+
+    describe('findAll with includeArchived=true', () => {
+      it('should NOT add status filter to count query', async () => {
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '2' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+        await repository.findAll('org-123', { includeArchived: true });
+
+        const countQuery = mockPool.query.mock.calls[0][0];
+        expect(countQuery).not.toContain("c.status != 'archived'");
+      });
+
+      it('should NOT add status filter to results query', async () => {
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '2' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+        await repository.findAll('org-123', { includeArchived: true });
+
+        const selectQuery = mockPool.query.mock.calls[1][0];
+        expect(selectQuery).not.toContain("c.status != 'archived'");
+      });
+
+      it('should include archived campaigns in results', async () => {
+        const mockCampaigns = [
+          {
+            id: 'active-1',
+            organisationId: 'org-123',
+            name: 'Active Campaign',
+            status: 'running',
+            totalProspects: 10,
+            emailsSent: 5,
+            responseCount: 2,
+            responseRate: 40.0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'archived-1',
+            organisationId: 'org-123',
+            name: 'Archived Campaign',
+            status: 'archived',
+            totalProspects: 5,
+            emailsSent: 2,
+            responseCount: 1,
+            responseRate: 50.0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
+
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '2' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: mockCampaigns });
+
+        const result = await repository.findAll('org-123', { includeArchived: true });
+
+        expect(result.campaigns).toHaveLength(2);
+        expect(result.campaigns[0].status).toBe('running');
+        expect(result.campaigns[1].status).toBe('archived');
+      });
+    });
+
+    describe('Multi-tenant isolation with archive filter', () => {
+      it('should enforce organisation_id filter with includeArchived=false', async () => {
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+        await repository.findAll('org-123', { includeArchived: false });
+
+        const countQuery = mockPool.query.mock.calls[0][0];
+        expect(countQuery).toContain('WHERE c.organisation_id = $1');
+        expect(mockPool.query.mock.calls[0][1]).toContain('org-123');
+      });
+
+      it('should enforce organisation_id filter with includeArchived=true', async () => {
+        mockPool.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
+        mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+        await repository.findAll('org-123', { includeArchived: true });
+
+        const countQuery = mockPool.query.mock.calls[0][0];
+        expect(countQuery).toContain('WHERE c.organisation_id = $1');
+        expect(mockPool.query.mock.calls[0][1]).toContain('org-123');
+      });
+    });
+  });
 });

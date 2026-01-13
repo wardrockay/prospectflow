@@ -213,9 +213,15 @@ describe('isValidStatusTransition', () => {
     expect(isValidStatusTransition('draft', 'paused')).toBe(false);
   });
 
-  it('should reject archived -> any status', () => {
-    expect(isValidStatusTransition('archived', 'draft')).toBe(false);
+  it('should allow unarchiving: archived -> draft', () => {
+    expect(isValidStatusTransition('archived', 'draft')).toBe(true);
+  });
+
+  it('should reject archived -> running', () => {
     expect(isValidStatusTransition('archived', 'running')).toBe(false);
+  });
+
+  it('should reject archived -> paused', () => {
     expect(isValidStatusTransition('archived', 'paused')).toBe(false);
   });
 

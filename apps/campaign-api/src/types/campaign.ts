@@ -30,6 +30,7 @@ export interface CampaignListQueryParams {
   limit?: number;
   sortBy?: 'updatedAt' | 'createdAt' | 'name';
   order?: 'asc' | 'desc';
+  includeArchived?: boolean;
 }
 
 export interface PaginationMetadata {

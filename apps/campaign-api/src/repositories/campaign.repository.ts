@@ -48,7 +48,13 @@ export class CampaignRepository {
     organisationId: string,
     params: CampaignListQueryParams,
   ): Promise<CampaignListResult> {
-    const { page = 1, limit = 25, sortBy = 'updatedAt', order = 'desc' } = params;
+    const {
+      page = 1,
+      limit = 25,
+      sortBy = 'updatedAt',
+      order = 'desc',
+      includeArchived = false,
+    } = params;
     const offset = (page - 1) * limit;
 
     // Security: Whitelist mapping to prevent SQL injection
@@ -62,14 +68,20 @@ export class CampaignRepository {
     const sortColumn = sortColumns[sortBy] || sortColumns.updatedAt;
     const sortOrder = sortOrders[order] || sortOrders.desc;
 
-    logger.debug({ organisationId, page, limit, sortBy, order }, 'Fetching campaign list');
+    // Build status filter: exclude archived by default
+    const statusFilter = includeArchived ? '' : "AND c.status != 'archived'";
+
+    logger.debug(
+      { organisationId, page, limit, sortBy, order, includeArchived },
+      'Fetching campaign list',
+    );
 
     // Count total campaigns for pagination
     const countResult = await trackDatabaseQuery('SELECT', 'outreach', async () => {
       return this.pool.query<{ count: string }>(
         `SELECT COUNT(*) as count
-         FROM outreach.campaigns
-         WHERE organisation_id = $1`,
+         FROM outreach.campaigns c
+         WHERE c.organisation_id = $1 ${statusFilter}`,
         [organisationId],
       );
     });
@@ -108,7 +120,7 @@ export class CampaignRepository {
          LEFT JOIN outreach.tasks t ON t.organisation_id = c.organisation_id AND t.campaign_id = c.id
          LEFT JOIN crm.people p ON p.organisation_id = t.organisation_id AND p.id = t.person_id
          LEFT JOIN outreach.messages m ON m.organisation_id = c.organisation_id AND m.campaign_id = c.id
-         WHERE c.organisation_id = $1
+         WHERE c.organisation_id = $1 ${statusFilter}
          GROUP BY c.id, c.organisation_id, c.name, c.value_prop, c.template_id, c.status, c.created_at, c.updated_at
          ORDER BY ${sortColumn} ${sortOrder}
          LIMIT $2 OFFSET $3`,

@@ -146,6 +146,7 @@ describe('CampaignController', () => {
         limit: 25,
         sortBy: 'updatedAt',
         order: 'desc',
+        includeArchived: false,
       });
     });
 

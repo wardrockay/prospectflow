@@ -30,6 +30,11 @@ export const listCampaignsQuerySchema = z.object({
     .refine((val) => val > 0 && val <= 100, 'Limit must be between 1 and 100'),
   sortBy: z.enum(['updatedAt', 'createdAt', 'name']).optional().default('updatedAt'),
   order: z.enum(['asc', 'desc']).optional().default('desc'),
+  includeArchived: z
+    .string()
+    .optional()
+    .default('false')
+    .transform((val) => val === 'true'),
 });
 
 export type ListCampaignsQueryDto = z.infer<typeof listCampaignsQuerySchema>;
@@ -71,7 +76,7 @@ export function isValidStatusTransition(from: CampaignStatus, to: CampaignStatus
     draft: ['running', 'archived'],
     running: ['paused', 'archived'],
     paused: ['running', 'archived'],
-    archived: [], // Cannot transition from archived
+    archived: ['draft'], // Can unarchive to draft
   };
 
   return transitions[from]?.includes(to) ?? false;

@@ -154,4 +154,80 @@ describe('CampaignService', () => {
       ).rejects.toThrow(NotFoundError);
     });
   });
+
+  describe('Archive Status Transitions', () => {
+    it('should allow transition from draft to archived', async () => {
+      const mockCurrent = { id: 'campaign-1', status: 'draft' };
+      const mockUpdated = { id: 'campaign-1', status: 'archived' };
+
+      mockRepository.findById.mockResolvedValue(mockCurrent);
+      mockRepository.update.mockResolvedValue(mockUpdated);
+
+      const result = await service.updateCampaign('org-123', 'campaign-1', { status: 'archived' });
+
+      expect(result.status).toBe('archived');
+    });
+
+    it('should allow transition from running to archived', async () => {
+      const mockCurrent = { id: 'campaign-1', status: 'running' };
+      const mockUpdated = { id: 'campaign-1', status: 'archived' };
+
+      mockRepository.findById.mockResolvedValue(mockCurrent);
+      mockRepository.update.mockResolvedValue(mockUpdated);
+
+      const result = await service.updateCampaign('org-123', 'campaign-1', { status: 'archived' });
+
+      expect(result.status).toBe('archived');
+    });
+
+    it('should allow transition from paused to archived', async () => {
+      const mockCurrent = { id: 'campaign-1', status: 'paused' };
+      const mockUpdated = { id: 'campaign-1', status: 'archived' };
+
+      mockRepository.findById.mockResolvedValue(mockCurrent);
+      mockRepository.update.mockResolvedValue(mockUpdated);
+
+      const result = await service.updateCampaign('org-123', 'campaign-1', { status: 'archived' });
+
+      expect(result.status).toBe('archived');
+    });
+
+    it('should allow unarchiving (archived to draft)', async () => {
+      const mockCurrent = { id: 'campaign-1', status: 'archived' };
+      const mockUpdated = { id: 'campaign-1', status: 'draft' };
+
+      mockRepository.findById.mockResolvedValue(mockCurrent);
+      mockRepository.update.mockResolvedValue(mockUpdated);
+
+      const result = await service.updateCampaign('org-123', 'campaign-1', { status: 'draft' });
+
+      expect(result.status).toBe('draft');
+    });
+
+    it('should reject transition from archived to running', async () => {
+      const mockCurrent = { id: 'campaign-1', status: 'archived' };
+      mockRepository.findById.mockResolvedValue(mockCurrent);
+
+      await expect(
+        service.updateCampaign('org-123', 'campaign-1', { status: 'running' }),
+      ).rejects.toThrow('Invalid status transition');
+    });
+
+    it('should reject transition from archived to paused', async () => {
+      const mockCurrent = { id: 'campaign-1', status: 'archived' };
+      mockRepository.findById.mockResolvedValue(mockCurrent);
+
+      await expect(
+        service.updateCampaign('org-123', 'campaign-1', { status: 'paused' }),
+      ).rejects.toThrow('Invalid status transition');
+    });
+
+    it('should throw NotFoundError when archiving non-existent campaign', async () => {
+      mockRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.updateCampaign('org-123', 'nonexistent', { status: 'archived' }),
+      ).rejects.toThrow(NotFoundError);
+    });
+  });
 });
