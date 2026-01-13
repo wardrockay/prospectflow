@@ -171,6 +171,48 @@ export const campaignsListDuration = new promClient.Histogram({
 });
 
 /**
+ * Business metric: Campaign details requests counter
+ */
+export const campaignDetailsTotal = new promClient.Counter({
+  name: 'prospectflow_campaign_details_total',
+  help: 'Total number of campaign detail requests',
+  labelNames: ['organisation_id', 'success'], // success: 'true' or 'false'
+  registers: [register],
+});
+
+/**
+ * Business metric: Campaign details request duration histogram
+ */
+export const campaignDetailsDuration = new promClient.Histogram({
+  name: 'prospectflow_campaign_details_duration_seconds',
+  help: 'Campaign details request duration in seconds',
+  labelNames: ['organisation_id'],
+  buckets: [0.1, 0.5, 1, 2, 5], // Detail queries should be fast
+  registers: [register],
+});
+
+/**
+ * Business metric: Campaign update requests counter
+ */
+export const campaignUpdateTotal = new promClient.Counter({
+  name: 'prospectflow_campaign_update_total',
+  help: 'Total number of campaign update requests',
+  labelNames: ['organisation_id', 'success'], // success: 'true' or 'false'
+  registers: [register],
+});
+
+/**
+ * Business metric: Campaign update request duration histogram
+ */
+export const campaignUpdateDuration = new promClient.Histogram({
+  name: 'prospectflow_campaign_update_duration_seconds',
+  help: 'Campaign update request duration in seconds',
+  labelNames: ['organisation_id'],
+  buckets: [0.1, 0.5, 1, 2, 5], // Update queries should be fast
+  registers: [register],
+});
+
+/**
  * Business metric: Active campaigns gauge
  */
 export const activeCampaigns = new promClient.Gauge({

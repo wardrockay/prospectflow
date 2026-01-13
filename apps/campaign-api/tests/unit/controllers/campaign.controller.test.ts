@@ -1,11 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CampaignController } from '../../../src/controllers/campaign.controller.js';
+import { NotFoundError } from '../../../src/errors/http-errors.js';
+import { ValidationError } from '../../../src/errors/ValidationError.js';
 
 // Mock metrics
 vi.mock('../../../src/config/metrics', () => ({
   campaignsCreatedTotal: { inc: vi.fn() },
   campaignsListTotal: { inc: vi.fn() },
   campaignsListDuration: { observe: vi.fn() },
+  campaignDetailsTotal: { inc: vi.fn() },
+  campaignDetailsDuration: { observe: vi.fn() },
+  campaignUpdateTotal: { inc: vi.fn() },
+  campaignUpdateDuration: { observe: vi.fn() },
 }));
 
 describe('CampaignController', () => {
@@ -19,12 +25,15 @@ describe('CampaignController', () => {
     mockService = {
       createCampaign: vi.fn(),
       listCampaigns: vi.fn(),
+      getCampaignDetails: vi.fn(),
+      updateCampaign: vi.fn(),
     };
     controller = new CampaignController(mockService);
 
     mockReq = {
       body: {},
       query: {},
+      params: {},
       organisationId: 'org-123',
       log: {
         info: vi.fn(),
@@ -150,6 +159,108 @@ describe('CampaignController', () => {
           message: 'Invalid query parameters',
         }),
       );
+    });
+  });
+
+  describe('getCampaign', () => {
+    it('should return 200 with campaign data', async () => {
+      const mockCampaign = { id: 'campaign-1', name: 'Test' };
+      mockReq.params = { id: '550e8400-e29b-41d4-a716-446655440000' };
+      mockService.getCampaignDetails.mockResolvedValue(mockCampaign);
+
+      await controller.getCampaign(mockReq, mockRes, mockNext);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        data: mockCampaign,
+      });
+    });
+
+    it('should return validation error for invalid UUID', async () => {
+      mockReq.params = { id: 'invalid-uuid' };
+
+      await controller.getCampaign(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Invalid campaign ID format',
+        }),
+      );
+    });
+
+    it('should pass NotFoundError to next', async () => {
+      mockReq.params = { id: '550e8400-e29b-41d4-a716-446655440000' };
+      const error = new NotFoundError('Campaign not found');
+      mockService.getCampaignDetails.mockRejectedValue(error);
+
+      await controller.getCampaign(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('updateCampaign', () => {
+    it('should return 200 with updated campaign', async () => {
+      const mockUpdated = { id: 'campaign-1', name: 'Updated' };
+      mockReq.params = { id: '550e8400-e29b-41d4-a716-446655440000' };
+      mockReq.body = { name: 'Updated' };
+      mockService.updateCampaign.mockResolvedValue(mockUpdated);
+
+      await controller.updateCampaign(mockReq, mockRes, mockNext);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        data: mockUpdated,
+        message: 'Campaign updated successfully',
+      });
+    });
+
+    it('should return validation error for invalid UUID', async () => {
+      mockReq.params = { id: 'invalid-uuid' };
+      mockReq.body = { name: 'Updated' };
+
+      await controller.updateCampaign(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Invalid campaign ID format',
+        }),
+      );
+    });
+
+    it('should return validation error for empty body', async () => {
+      mockReq.params = { id: '550e8400-e29b-41d4-a716-446655440000' };
+      mockReq.body = {};
+
+      await controller.updateCampaign(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Invalid campaign data',
+        }),
+      );
+    });
+
+    it('should return validation error for invalid name length', async () => {
+      mockReq.params = { id: '550e8400-e29b-41d4-a716-446655440000' };
+      mockReq.body = { name: 'a'.repeat(101) };
+
+      await controller.updateCampaign(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('should pass ValidationError to next for invalid status transition', async () => {
+      mockReq.params = { id: '550e8400-e29b-41d4-a716-446655440000' };
+      mockReq.body = { status: 'running' };
+      const error = new ValidationError('Invalid status transition');
+      mockService.updateCampaign.mockRejectedValue(error);
+
+      await controller.updateCampaign(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(error);
     });
   });
 });

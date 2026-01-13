@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { createChildLogger } from '../utils/logger.js';
 import { AppError } from '../errors/AppError.js';
+import { ValidationError } from '../errors/ValidationError.js';
 import { ZodError } from 'zod';
 import * as Sentry from '@sentry/node';
 
@@ -44,7 +45,18 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     });
   }
 
-  // 🔍 Custom AppError (includes ValidationError, DatabaseError, etc.)
+  // 🔍 Custom ValidationError with fieldErrors
+  if (err instanceof ValidationError) {
+    log.info(`⚠️ ValidationError ${err.statusCode} - ${err.message}`);
+    return res.status(err.statusCode).json({
+      status: 'error',
+      message: err.message,
+      ...(err.fieldErrors && { fieldErrors: err.fieldErrors }),
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    });
+  }
+
+  // 🔍 Custom AppError (includes DatabaseError, etc.)
   if (err instanceof AppError) {
     log.info(`⚠️ AppError ${err.statusCode} - ${err.message}`);
     return res.status(err.statusCode).json({

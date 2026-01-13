@@ -206,4 +206,128 @@ describe('CampaignRepository', () => {
       expect(result.campaigns[0].responseRate).toBe(100.0);
     });
   });
+
+  describe('findById', () => {
+    it('should return campaign with metrics', async () => {
+      const mockCampaign = {
+        id: 'campaign-1',
+        organisationId: 'org-123',
+        name: 'Test Campaign',
+        valueProp: 'Test value',
+        status: 'draft',
+        totalProspects: 10,
+        emailsSent: 5,
+        responseCount: 2,
+        responseRate: 40.0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockPool.query.mockResolvedValueOnce({ rows: [mockCampaign] });
+
+      const result = await repository.findById('org-123', 'campaign-1');
+
+      const queryCall = mockPool.query.mock.calls[0];
+      expect(queryCall[0]).toContain('WHERE c.organisation_id = $1');
+      expect(queryCall[0]).toContain('AND c.id = $2');
+      expect(queryCall[1]).toEqual(['org-123', 'campaign-1']);
+      expect(result).toEqual(mockCampaign);
+    });
+
+    it('should return null when campaign not found', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+      const result = await repository.findById('org-123', 'nonexistent');
+
+      expect(result).toBeNull();
+    });
+
+    it('should include LEFT JOINs for metrics', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [{}] });
+
+      await repository.findById('org-123', 'campaign-1');
+
+      expect(mockPool.query).toHaveBeenCalledWith(
+        expect.stringContaining('LEFT JOIN outreach.tasks'),
+        expect.any(Array),
+      );
+      expect(mockPool.query).toHaveBeenCalledWith(
+        expect.stringContaining('LEFT JOIN crm.people'),
+        expect.any(Array),
+      );
+      expect(mockPool.query).toHaveBeenCalledWith(
+        expect.stringContaining('LEFT JOIN outreach.messages'),
+        expect.any(Array),
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('should update name field', async () => {
+      const mockUpdated = {
+        id: 'campaign-1',
+        organisationId: 'org-123',
+        name: 'Updated Name',
+        valueProp: 'Original value',
+        status: 'draft',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockPool.query.mockResolvedValueOnce({ rows: [mockUpdated] });
+
+      const result = await repository.update('org-123', 'campaign-1', { name: 'Updated Name' });
+
+      expect(mockPool.query).toHaveBeenCalledWith(
+        expect.stringContaining('SET name = $3'),
+        expect.arrayContaining(['org-123', 'campaign-1', 'Updated Name']),
+      );
+      expect(result).toEqual(mockUpdated);
+    });
+
+    it('should update multiple fields', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [{}] });
+
+      await repository.update('org-123', 'campaign-1', {
+        name: 'New Name',
+        valueProp: 'New value',
+        status: 'running',
+      });
+
+      expect(mockPool.query).toHaveBeenCalledWith(
+        expect.stringContaining('SET name = $3, value_prop = $4, status = $5'),
+        expect.arrayContaining(['org-123', 'campaign-1', 'New Name', 'New value', 'running']),
+      );
+    });
+
+    it('should update updated_at timestamp', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [{}] });
+
+      await repository.update('org-123', 'campaign-1', { name: 'New' });
+
+      expect(mockPool.query).toHaveBeenCalledWith(
+        expect.stringContaining('updated_at = now()'),
+        expect.any(Array),
+      );
+    });
+
+    it('should return null when campaign not found', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+      const result = await repository.update('org-123', 'nonexistent', { name: 'New' });
+
+      expect(result).toBeNull();
+    });
+
+    it('should use RETURNING clause', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [{}] });
+
+      await repository.update('org-123', 'campaign-1', { name: 'New' });
+
+      expect(mockPool.query).toHaveBeenCalledWith(
+        expect.stringContaining('RETURNING'),
+        expect.any(Array),
+      );
+    });
+  });
 });

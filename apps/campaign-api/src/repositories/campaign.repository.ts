@@ -8,6 +8,7 @@ import type {
   CampaignListQueryParams,
   CampaignListResult,
 } from '../types/campaign.js';
+import type { UpdateCampaignDto } from '../schemas/campaign.schema.js';
 
 const logger = createChildLogger('CampaignRepository');
 
@@ -126,5 +127,129 @@ export class CampaignRepository {
         totalPages,
       },
     };
+  }
+
+  /**
+   * Find campaign by ID with aggregated metrics
+   * Uses same JOIN pattern as findAll for consistency
+   */
+  async findById(
+    organisationId: string,
+    campaignId: string,
+  ): Promise<CampaignListItem | null> {
+    logger.debug({ organisationId, campaignId }, 'Fetching campaign by ID');
+
+    const result = await trackDatabaseQuery('SELECT', 'outreach', async () => {
+      return this.pool.query<CampaignListItem>(
+        `SELECT
+           c.id,
+           c.organisation_id AS "organisationId",
+           c.name,
+           c.value_prop AS "valueProp",
+           c.template_id AS "templateId",
+           c.status,
+           c.created_at AS "createdAt",
+           c.updated_at AS "updatedAt",
+
+           -- Aggregated metrics (same as list query for consistency)
+           COALESCE(COUNT(DISTINCT p.id), 0)::int AS "totalProspects",
+           COALESCE(COUNT(DISTINCT CASE WHEN m.sent_at IS NOT NULL THEN m.id END), 0)::int AS "emailsSent",
+           COALESCE(COUNT(DISTINCT CASE WHEN m.replied_at IS NOT NULL THEN m.id END), 0)::int AS "responseCount",
+           CASE
+             WHEN COUNT(DISTINCT CASE WHEN m.sent_at IS NOT NULL THEN m.id END) > 0
+             THEN ROUND(
+               COUNT(DISTINCT CASE WHEN m.replied_at IS NOT NULL THEN m.id END)::numeric /
+               COUNT(DISTINCT CASE WHEN m.sent_at IS NOT NULL THEN m.id END)::numeric * 100,
+               2
+             )
+             ELSE 0
+           END AS "responseRate"
+
+         FROM outreach.campaigns c
+         -- LEFT JOINs to include campaigns with 0 prospects/messages
+         LEFT JOIN outreach.tasks t
+           ON t.organisation_id = c.organisation_id
+           AND t.campaign_id = c.id
+         LEFT JOIN crm.people p
+           ON p.organisation_id = t.organisation_id
+           AND p.id = t.person_id
+         LEFT JOIN outreach.messages m
+           ON m.organisation_id = c.organisation_id
+           AND m.campaign_id = c.id
+         WHERE c.organisation_id = $1
+           AND c.id = $2
+         GROUP BY c.id, c.organisation_id, c.name, c.value_prop, c.template_id, c.status, c.created_at, c.updated_at`,
+        [organisationId, campaignId],
+      );
+    });
+
+    if (result.rows.length === 0) {
+      logger.warn({ organisationId, campaignId }, 'Campaign not found');
+      return null;
+    }
+
+    logger.info({ organisationId, campaignId }, 'Campaign fetched successfully');
+    return result.rows[0];
+  }
+
+  /**
+   * Update campaign fields
+   * Dynamically builds SET clause based on provided fields
+   * @returns Updated campaign (basic fields only, no metrics)
+   */
+  async update(
+    organisationId: string,
+    campaignId: string,
+    updates: UpdateCampaignDto,
+  ): Promise<Campaign | null> {
+    const fields = Object.keys(updates);
+    if (fields.length === 0) {
+      throw new Error('No fields to update');
+    }
+
+    // Build SET clause dynamically: "name = $3, value_prop = $4"
+    // Map camelCase to snake_case for DB columns
+    const columnMapping: Record<string, string> = {
+      name: 'name',
+      valueProp: 'value_prop',
+      status: 'status',
+    };
+
+    const setClauses = fields.map((field, index) => {
+      const column = columnMapping[field];
+      return `${column} = $${index + 3}`; // $1, $2 are organisationId, campaignId
+    });
+
+    const values = fields.map((field) => updates[field as keyof UpdateCampaignDto]);
+
+    logger.debug({ organisationId, campaignId, updates }, 'Updating campaign');
+
+    const result = await trackDatabaseQuery('UPDATE', 'outreach', async () => {
+      return this.pool.query<Campaign>(
+        `UPDATE outreach.campaigns
+         SET ${setClauses.join(', ')},
+             updated_at = now()
+         WHERE organisation_id = $1
+           AND id = $2
+         RETURNING
+           id,
+           organisation_id AS "organisationId",
+           name,
+           value_prop AS "valueProp",
+           template_id AS "templateId",
+           status,
+           created_at AS "createdAt",
+           updated_at AS "updatedAt"`,
+        [organisationId, campaignId, ...values],
+      );
+    });
+
+    if (result.rows.length === 0) {
+      logger.warn({ organisationId, campaignId }, 'Campaign not found for update');
+      return null;
+    }
+
+    logger.info({ organisationId, campaignId, updates }, 'Campaign updated successfully');
+    return result.rows[0];
   }
 }

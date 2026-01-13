@@ -17,4 +17,10 @@ const campaignController = new CampaignController(campaignService);
 router.get('/', campaignController.listCampaigns);
 router.post('/', campaignController.createCampaign);
 
+// Get campaign details
+router.get('/:id', campaignController.getCampaign);
+
+// Update campaign (inline editing, status change)
+router.patch('/:id', campaignController.updateCampaign);
+
 export { router as campaignRoutes };
