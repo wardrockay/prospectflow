@@ -24,6 +24,13 @@ vi.mock('#app', () => ({
   $fetch: mockFetch,
 }));
 
+vi.mock('#imports', () => ({
+  useRuntimeConfig: mockUseRuntimeConfig,
+  useCookie: mockUseCookie,
+  navigateTo: mockNavigateTo,
+  $fetch: mockFetch,
+}));
+
 // Import after mocking
 import { useAuth } from '~/composables/useAuth';
 

@@ -2,6 +2,10 @@
   definePageMeta({
     middleware: 'auth',
   });
+
+  useHead({
+    title: 'Prospects | ProspectFlow',
+  });
 </script>
 
 <template>

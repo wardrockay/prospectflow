@@ -10,6 +10,11 @@ vi.mock('#app', () => ({
   defineNuxtRouteMiddleware: (fn: any) => fn,
 }));
 
+vi.mock('#imports', () => ({
+  defineNuxtRouteMiddleware: (fn: any) => fn,
+  navigateTo: mockNavigateTo,
+}));
+
 vi.mock('~/composables/useAuth', () => ({
   useAuth: () => ({
     isAuthenticated: mockIsAuthenticated,

@@ -25,7 +25,7 @@ describe('Layout/Header.vue', () => {
             template: '<div class="container"><slot /></div>',
           },
           UButton: {
-            template: `<button @click="$emit('click')"><slot /></button>`,
+            template: `<button @click="$emit('click')" :class="$attrs.class"><slot /></button>`,
             props: ['icon', 'variant', 'class', 'ariaLabel'],
           },
           NuxtLink: {
@@ -106,6 +106,13 @@ describe('Layout/Header.vue', () => {
         await buttons[0].trigger('click');
         expect(wrapper.emitted('toggle-mobile-menu')).toBeTruthy();
       }
+    });
+
+    it('should have md:hidden class on hamburger for responsive behavior', () => {
+      const wrapper = mountHeader();
+      const hamburgerButton = wrapper.find('button.md\\:hidden');
+      // Check if hamburger button with md:hidden class exists
+      expect(hamburgerButton.exists()).toBe(true);
     });
   });
 });

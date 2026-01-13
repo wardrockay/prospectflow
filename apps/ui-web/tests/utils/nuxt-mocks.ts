@@ -71,6 +71,9 @@ export function setupNuxtMocks() {
   // @ts-expect-error - global mock
   globalThis.definePageMeta = vi.fn();
 
+  // @ts-expect-error - global mock
+  globalThis.defineNuxtRouteMiddleware = (fn: any) => fn;
+
   // @ts-expect-error - global mock for useAuth composable
   globalThis.useAuth = mockUseAuth;
 }

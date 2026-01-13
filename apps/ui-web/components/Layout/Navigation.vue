@@ -31,7 +31,10 @@
       :variant="isActive(item.to) ? 'soft' : 'ghost'"
       :color="isActive(item.to) ? 'primary' : 'gray'"
       :icon="item.icon"
-      class="transition-colors duration-200"
+      :class="{
+        'border-b-2 border-primary': isActive(item.to),
+        'transition-colors duration-200': true,
+      }"
     >
       {{ item.label }}
     </UButton>
