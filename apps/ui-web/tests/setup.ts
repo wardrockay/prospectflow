@@ -8,11 +8,19 @@ globalThis.useRuntimeConfig = vi.fn(() => ({
     cognitoClientId: 'test-client-id',
     cognitoRedirectUri: 'http://localhost:4000/auth/callback',
     logoutUri: 'http://localhost:4000/login',
+    apiBase: 'http://localhost:3001',
   },
 }));
 
 globalThis.navigateTo = vi.fn();
 globalThis.$fetch = vi.fn();
+
+globalThis.useFetch = vi.fn((url: string, options?: any) => ({
+  data: ref(null),
+  pending: ref(false),
+  error: ref(null),
+  refresh: vi.fn(),
+}));
 
 globalThis.useCookie = vi.fn((name: string) => ({
   value: name === 'token_expires_at' ? String(Date.now() + 3600000) : null,
