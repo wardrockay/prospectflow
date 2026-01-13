@@ -15,17 +15,18 @@ export default defineEventHandler(async (event) => {
     hasConfig: !!config.campaignApiUrl,
   });
 
-  // Get access token from cookies (set during auth callback)
-  const accessToken = getCookie(event, 'access_token');
+  // Get ID token from cookies (used for backend API authentication)
+  // Note: campaign-api validates ID tokens, not access tokens
+  const idToken = getCookie(event, 'id_token');
 
   // Debug: log token presence
   console.log('[CampaignProxy GET] Token:', {
-    hasToken: !!accessToken,
-    tokenLength: accessToken?.length || 0,
-    tokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : 'none',
+    hasToken: !!idToken,
+    tokenLength: idToken?.length || 0,
+    tokenPreview: idToken ? `${idToken.substring(0, 20)}...` : 'none',
   });
 
-  if (!accessToken) {
+  if (!idToken) {
     throw createError({
       statusCode: 401,
       message: 'Non authentifié. Veuillez vous connecter.',
@@ -51,7 +52,7 @@ export default defineEventHandler(async (event) => {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
       },
     });

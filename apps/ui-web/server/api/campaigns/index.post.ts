@@ -9,10 +9,11 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
 
-  // Get access token from cookies (set during auth callback)
-  const accessToken = getCookie(event, 'access_token');
+  // Get ID token from cookies (used for backend API authentication)
+  // Note: campaign-api validates ID tokens, not access tokens
+  const idToken = getCookie(event, 'id_token');
 
-  if (!accessToken) {
+  if (!idToken) {
     throw createError({
       statusCode: 401,
       message: 'Non authentifié. Veuillez vous connecter.',
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
