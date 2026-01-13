@@ -5,25 +5,19 @@ const mockNavigateTo = vi.fn();
 const mockIsAuthenticated = { value: true };
 const mockIsTokenExpired = vi.fn(() => false);
 
-vi.mock('#app', () => ({
-  navigateTo: mockNavigateTo,
-  defineNuxtRouteMiddleware: (fn: any) => fn,
+// Mock useAuth as global (Nuxt auto-import)
+const mockUseAuth = vi.fn(() => ({
+  isAuthenticated: mockIsAuthenticated,
+  isTokenExpired: mockIsTokenExpired,
 }));
 
-vi.mock('#imports', () => ({
-  defineNuxtRouteMiddleware: (fn: any) => fn,
-  navigateTo: mockNavigateTo,
-}));
-
-vi.mock('~/composables/useAuth', () => ({
-  useAuth: () => ({
-    isAuthenticated: mockIsAuthenticated,
-    isTokenExpired: mockIsTokenExpired,
-  }),
-}));
+// Set up global mocks before importing the middleware
+vi.stubGlobal('navigateTo', mockNavigateTo);
+vi.stubGlobal('useAuth', mockUseAuth);
+vi.stubGlobal('defineNuxtRouteMiddleware', (fn: any) => fn);
 
 // Import after mocking
-import authMiddleware from '~/middleware/auth';
+import authMiddleware from './auth';
 
 describe('Auth Middleware', () => {
   beforeEach(() => {

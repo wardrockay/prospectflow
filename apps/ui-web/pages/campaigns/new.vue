@@ -8,14 +8,12 @@
     title: 'Créer une campagne | ProspectFlow',
   });
 
-  const router = useRouter();
-
   /**
    * Handle successful campaign creation
    * Redirects to campaign details page
    */
   const handleSuccess = (campaignId: string) => {
-    router.push(`/campaigns/${campaignId}`);
+    navigateTo(`/campaigns/${campaignId}`);
   };
 
   /**
@@ -23,7 +21,7 @@
    * Returns to campaign list
    */
   const handleCancel = () => {
-    router.push('/campaigns');
+    navigateTo('/campaigns');
   };
 </script>
 

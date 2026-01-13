@@ -40,6 +40,18 @@
   };
 
   /**
+   * Focus on the first invalid field
+   * Called when form validation fails on submit
+   */
+  const focusFirstInvalidField = () => {
+    if (errors.value.name) {
+      document.getElementById('campaign-name')?.focus();
+    } else if (errors.value.valueProp) {
+      document.getElementById('campaign-value-prop')?.focus();
+    }
+  };
+
+  /**
    * Handle form submission
    */
   const handleSubmit = async () => {
@@ -58,9 +70,14 @@
       if (response && typeof response === 'object' && 'id' in response) {
         emit('success', response.id as string);
       }
-    } catch (error) {
-      // Error is already set in composable
-      // Show error toast only for non-validation errors
+    } catch (error: any) {
+      // Focus on first invalid field if validation error
+      if (error.message === 'Validation failed') {
+        focusFirstInvalidField();
+        return;
+      }
+
+      // Show error toast for API errors
       if (errors.value.form) {
         toast.add({
           title: 'Erreur',
@@ -129,7 +146,7 @@
     <!-- Value Proposition field -->
     <div class="space-y-2">
       <label for="campaign-value-prop" class="block text-sm font-medium text-gray-900">
-        Proposition de valeur <span class="text-red-600">*</span>
+        Proposition de valeur <span class="text-gray-400 text-xs">(optionnel)</span>
       </label>
       <UTextarea
         id="campaign-value-prop"
@@ -138,7 +155,6 @@
         :rows="3"
         maxlength="150"
         :error="!!errors.valueProp"
-        aria-required="true"
         :aria-describedby="errors.valueProp ? 'valueProp-error' : 'valueProp-helper'"
         @blur="handleBlur('valueProp')"
       />

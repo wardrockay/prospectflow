@@ -1,6 +1,6 @@
 # Story UI-1.2: Campaign Creation Form
 
-**Status**: review  
+**Status**: done  
 **Epic**: UI-1 (Campaign Management UI)  
 **Story Points**: 5  
 **Created**: 2026-01-13  
@@ -186,6 +186,12 @@
 - [x] **7.10** Test with French language labels and messages (All French labels implemented)
 
 **Acceptance Criteria Covered:** All
+
+---
+
+### Review Follow-ups (Code Review 2026-01-13)
+
+- [x] **[RESOLVED][AC3-CONFLICT]** valueProp est maintenant optionnel dans le backend ET le frontend, conforme à AC3.
 
 ---
 
@@ -936,13 +942,26 @@ describe('CampaignForm', () => {
 
 ### Agent Model Used
 
-Claude Sonnet 4.5
+Claude Sonnet 4.5 (Initial Implementation)  
+Claude Opus 4.5 (Code Review & Fixes)
 
 ### Debug Log References
 
 No critical errors encountered during implementation.
 
 Minor TypeScript warning: Nuxt auto-import of `useCampaignForm` composable - will resolve automatically when dev server starts.
+
+### Code Review Fixes Applied (2026-01-13)
+
+| Issue                                          | Severity | Fix Applied                                             |
+| ---------------------------------------------- | -------- | ------------------------------------------------------- |
+| Used `router.push()` instead of `navigateTo()` | MEDIUM   | Changed to `navigateTo()` in new.vue                    |
+| Missing 403 error handling                     | MEDIUM   | Added explicit 403 case in useCampaignForm.ts           |
+| Auto-focus on invalid field not implemented    | MEDIUM   | Added `focusFirstInvalidField()` in Form.vue            |
+| Unstructured console.error logging             | MEDIUM   | Changed to structured error object in index.post.ts     |
+| No unit tests for useCampaignForm              | HIGH     | Created useCampaignForm.test.ts with 31 tests           |
+| Auth middleware tests failing                  | HIGH     | Fixed global mocking in auth.test.ts (7 tests pass)     |
+| AC3 valueProp optional vs backend required     | HIGH     | ✅ Fixed - valueProp now optional in backend & frontend |
 
 ### Completion Notes List
 
@@ -984,18 +1003,20 @@ Minor TypeScript warning: Nuxt auto-import of `useCampaignForm` composable - wil
 **Created Files:**
 
 - [x] `apps/ui-web/pages/campaigns/new.vue` (51 lines)
-- [x] `apps/ui-web/components/Campaign/Form.vue` (194 lines)
-- [x] `apps/ui-web/composables/useCampaignForm.ts` (184 lines)
-- [x] `apps/ui-web/server/api/campaigns/index.post.ts` (74 lines)
+- [x] `apps/ui-web/components/Campaign/Form.vue` (~210 lines - updated with auto-focus)
+- [x] `apps/ui-web/composables/useCampaignForm.ts` (~190 lines - updated with 403 handling)
+- [x] `apps/ui-web/server/api/campaigns/index.post.ts` (74 lines - updated with structured logging)
+- [x] `apps/ui-web/composables/useCampaignForm.test.ts` (31 unit tests - NEW from code review)
 
 **Modified Files:**
 
-- [x] `doc/sprint-status.yaml` (Updated ui-1-2-campaign-creation-form status: ready-for-dev → in-progress → review)
+- [x] `doc/sprint-status.yaml` (Updated ui-1-2-campaign-creation-form status: ready-for-dev → in-progress → review → in-progress)
+- [x] `apps/ui-web/middleware/auth.test.ts` (Fixed test mocking - 7 tests now passing)
 
 **Test Files:**
 
-- Unit tests not created for MVP - manual testing checklist provided instead
-- Frontend component testing can be added in future sprint if needed
+- [x] `apps/ui-web/composables/useCampaignForm.test.ts` - 31 unit tests covering validation, error handling, form submission
+- [x] `apps/ui-web/middleware/auth.test.ts` - 7 tests fixed and passing (pre-existing file)
 
 ---
 

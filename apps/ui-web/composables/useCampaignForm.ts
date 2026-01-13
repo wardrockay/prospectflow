@@ -25,7 +25,6 @@ const validationRules = {
     maxLength: { value: 100, message: 'Le nom ne peut pas dépasser 100 caractères' },
   },
   valueProp: {
-    required: 'La proposition de valeur est requise',
     maxLength: {
       value: 150,
       message: 'La proposition de valeur ne peut pas dépasser 150 caractères',
@@ -55,7 +54,6 @@ export const useCampaignForm = (initialData?: Partial<CampaignFormData>) => {
     return (
       form.value.name.trim().length > 0 &&
       form.value.name.trim().length <= 100 &&
-      form.value.valueProp.trim().length > 0 &&
       form.value.valueProp.trim().length <= 150
     );
   });
@@ -78,10 +76,7 @@ export const useCampaignForm = (initialData?: Partial<CampaignFormData>) => {
       errors.value.name = undefined;
       return true;
     } else if (field === 'valueProp') {
-      if (value.length === 0) {
-        errors.value.valueProp = validationRules.valueProp.required;
-        return false;
-      }
+      // valueProp is optional, only validate max length
       if (value.length > validationRules.valueProp.maxLength.value) {
         errors.value.valueProp = validationRules.valueProp.maxLength.message;
         return false;
@@ -133,6 +128,8 @@ export const useCampaignForm = (initialData?: Partial<CampaignFormData>) => {
         errors.value.form = error.data?.message || 'Données invalides';
       } else if (error.statusCode === 401) {
         errors.value.form = 'Session expirée. Veuillez vous reconnecter.';
+      } else if (error.statusCode === 403) {
+        errors.value.form = "Accès refusé. Vous n'avez pas les permissions nécessaires.";
       } else if (error.statusCode === 500) {
         errors.value.form = 'Erreur serveur. Veuillez réessayer.';
       } else {

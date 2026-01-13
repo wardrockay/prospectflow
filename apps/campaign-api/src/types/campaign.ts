@@ -2,7 +2,7 @@ export interface Campaign {
   id: string;
   organisationId: string;
   name: string;
-  valueProp: string;
+  valueProp: string | null;
   templateId: string | null;
   status: CampaignStatus;
   createdAt: Date;
@@ -14,7 +14,7 @@ export type CampaignStatus = 'draft' | 'running' | 'paused' | 'archived';
 
 export interface CreateCampaignInput {
   name: string;
-  valueProp: string;
+  valueProp?: string;
   templateId?: string;
 }
 

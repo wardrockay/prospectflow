@@ -65,7 +65,12 @@ export default defineEventHandler(async (event) => {
       throw error;
     }
 
-    console.error('Campaign creation API proxy error:', error);
+    // Log error with structured context for debugging
+    console.error('[CampaignProxy] API error:', {
+      error: error instanceof Error ? error.message : String(error),
+      url,
+      timestamp: new Date().toISOString(),
+    });
     throw createError({
       statusCode: 500,
       message: 'Erreur de communication avec le service campagnes',

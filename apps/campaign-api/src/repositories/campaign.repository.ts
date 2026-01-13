@@ -35,7 +35,7 @@ export class CampaignRepository {
            status,
            created_at AS "createdAt",
            updated_at AS "updatedAt"`,
-        [id, organisationId, input.name, input.valueProp, input.templateId || null, now],
+        [id, organisationId, input.name, input.valueProp || null, input.templateId || null, now],
       );
     });
 

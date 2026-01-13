@@ -9,9 +9,9 @@ export const createCampaignSchema = z.object({
     .trim(),
   valueProp: z
     .string()
-    .min(1, 'Value proposition is required')
     .max(150, 'Value proposition must be 150 characters or less')
-    .trim(),
+    .trim()
+    .optional(),
   templateId: z.string().uuid('Invalid template ID format').optional(),
 });
 
