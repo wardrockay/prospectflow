@@ -79,7 +79,7 @@ development_status:
   1-1-create-new-campaign: done
   1-2-view-campaign-list: done
   1-3-view-campaign-details: done
-  1-4-archive-campaign: review
+  1-4-archive-campaign: done
   epic-1-retrospective: optional
 
   # Epic UI-1: Campaign Management UI

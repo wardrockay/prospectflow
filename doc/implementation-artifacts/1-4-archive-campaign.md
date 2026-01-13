@@ -3,7 +3,7 @@
 **Epic**: 1 - Campaign Management Foundation  
 **Story ID**: 1.4  
 **Story Points**: 2  
-**Status**: review  
+**Status**: done  
 **Dependencies**: E1.3 (View Campaign Details)  
 **Created**: 2026-01-13  
 **Assignee**: Dev Team
@@ -634,42 +634,42 @@ describe('Campaign Archive API', () => {
 
 1. **Archive a campaign**:
 
-   - [ ] Send PATCH request: `PATCH /api/v1/campaigns/{id}` with `{ "status": "archived" }`
-   - [ ] Verify 200 OK response with updated campaign
-   - [ ] Verify `status` field is "archived"
-   - [ ] Verify `updatedAt` timestamp changed
+   - [x] Send PATCH request: `PATCH /api/v1/campaigns/{id}` with `{ "status": "archived" }`
+   - [x] Verify 200 OK response with updated campaign
+   - [x] Verify `status` field is "archived"
+   - [x] Verify `updatedAt` timestamp changed
 
 2. **Verify archived campaign excluded from default list**:
 
-   - [ ] Send GET request: `GET /api/v1/campaigns`
-   - [ ] Verify archived campaign NOT in results
-   - [ ] Verify pagination totals exclude archived campaign
+   - [x] Send GET request: `GET /api/v1/campaigns`
+   - [x] Verify archived campaign NOT in results
+   - [x] Verify pagination totals exclude archived campaign
 
 3. **Verify archived campaign included with flag**:
 
-   - [ ] Send GET request: `GET /api/v1/campaigns?includeArchived=true`
-   - [ ] Verify archived campaign IS in results
-   - [ ] Verify pagination totals include archived campaign
+   - [x] Send GET request: `GET /api/v1/campaigns?includeArchived=true`
+   - [x] Verify archived campaign IS in results
+   - [x] Verify pagination totals include archived campaign
 
 4. **Unarchive a campaign**:
 
-   - [ ] Send PATCH request: `PATCH /api/v1/campaigns/{id}` with `{ "status": "draft" }`
-   - [ ] Verify 200 OK response
-   - [ ] Send GET request: `GET /api/v1/campaigns` (no flag)
-   - [ ] Verify campaign now appears in default list
+   - [x] Send PATCH request: `PATCH /api/v1/campaigns/{id}` with `{ "status": "draft" }`
+   - [x] Verify 200 OK response
+   - [x] Send GET request: `GET /api/v1/campaigns` (no flag)
+   - [x] Verify campaign now appears in default list
 
 5. **Multi-tenant isolation**:
 
-   - [ ] Create campaign as Org A
-   - [ ] Archive campaign as Org A
-   - [ ] Attempt to list campaigns as Org B
-   - [ ] Verify Org A's archived campaign not visible to Org B (even with includeArchived=true)
+   - [x] Create campaign as Org A
+   - [x] Archive campaign as Org A
+   - [x] Attempt to list campaigns as Org B
+   - [x] Verify Org A's archived campaign not visible to Org B (even with includeArchived=true)
 
 6. **Error handling**:
-   - [ ] Attempt to archive non-existent campaign
-   - [ ] Verify 404 Not Found response
-   - [ ] Attempt invalid status transition (if any exist)
-   - [ ] Verify 400 Bad Request with clear error message
+   - [x] Attempt to archive non-existent campaign
+   - [x] Verify 404 Not Found response
+   - [x] Attempt invalid status transition (if any exist)
+   - [x] Verify 400 Bad Request with clear error message
 
 ---
 
