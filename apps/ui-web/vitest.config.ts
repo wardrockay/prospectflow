@@ -18,6 +18,7 @@ export default defineConfig({
       '~': resolve(__dirname, './'),
       '@': resolve(__dirname, './'),
       '#app': resolve(__dirname, './.nuxt'),
+      '@tests': resolve(__dirname, './tests'),
     },
   },
 });
