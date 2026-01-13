@@ -41,7 +41,42 @@ make infra-restart
 make dev-restart
 ```
 
-### 📊 Sprint Dashboard
+### � Gestion Interactive des Services
+
+Menu interactif pour gérer les services individuellement :
+
+```bash
+# Redémarrer un ou plusieurs services (menu interactif avec fzf)
+make service-restart
+
+# Ou spécifier directement le service
+make service-restart SERVICE=campaign-api
+make service-restart SERVICE=ingest-api
+make service-restart SERVICE=ui-web
+
+# Arrêter un service
+make service-stop SERVICE=postgres
+
+# Voir les logs d'un service
+make service-logs SERVICE=campaign-api
+```
+
+**Services disponibles:** `postgres`, `rabbitmq`, `redis`, `clickhouse`, `nginx`, `prometheus`, `grafana`, `ingest-api`, `campaign-api`, `ui-web`
+
+### 📦 Migrations Base de Données
+
+```bash
+# Exécuter les migrations Flyway
+make db-migrate
+
+# Ou directement via le script
+./scripts/service-selector.sh flyway
+```
+
+Les migrations sont stockées dans `infra/postgres/db/migrations/` avec le format :
+`V{YYYYMMDD_HHMMSS}___{description}.sql`
+
+### �📊 Sprint Dashboard
 
 Visualisez la progression du projet en temps réel :
 

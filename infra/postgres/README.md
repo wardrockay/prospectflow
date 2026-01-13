@@ -189,7 +189,13 @@ If you are using pgBouncer in `transaction` mode, prefer `SET LOCAL app.organisa
 ### Migrations
 
 ```bash
-# Run migrations (auto-run on container start)
+# Option 1: Via Makefile (recommended - from project root)
+make db-migrate
+
+# Option 2: Via script
+./scripts/service-selector.sh flyway
+
+# Option 3: Via Docker Compose (from infra/postgres/)
 docker compose up flyway
 
 # Rollback NOT supported by Flyway - use manual undo scripts if needed

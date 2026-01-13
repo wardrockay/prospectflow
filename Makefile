@@ -1,7 +1,7 @@
 .PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard
 .PHONY: infra-only apps-only full-stack infra-restart apps-restart
-.PHONY: prod-up prod-down prod-restart prod-logs service-restart service-stop service-logs health
-.PHONY: sync-env vps-connect deploy-ui deploy-api network-create
+.PHONY: prod-up prod-down prod-restart prod-logs service-restart service-stop service-logs health db-migrate
+.PHONY: sync-env vps-connect deploy-ui deploy-api deploy-campaign-api network-create
 .PHONY: nginx-up nginx-down nginx-logs nginx-init-ssl nginx-renew-ssl
 
 # Default target
@@ -35,6 +35,7 @@ help:
 	@echo "  make service-restart   - Interactive: select service(s) to restart"
 	@echo "  make service-stop      - Interactive: select service(s) to stop"
 	@echo "  make service-logs      - Interactive: select service to view logs"
+	@echo "  make db-migrate        - Run Flyway database migrations"
 	@echo "  Or use: make service-restart SERVICE=<name> for direct restart"
 	@echo ""
 	@echo "🔐 VPS DEPLOYMENT:"
@@ -405,6 +406,11 @@ else
 		*) echo "❌ Invalid choice"; exit 1 ;; \
 	esac
 endif
+
+# Run Flyway database migrations
+db-migrate:
+	@echo "📦 Running Flyway database migrations..."
+	@./scripts/service-selector.sh flyway
 
 # ============================================
 # HEALTH CHECK

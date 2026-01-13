@@ -12,10 +12,11 @@ declare -A SERVICE_PATHS=(
     ["prometheus"]="infra/prometheus"
     ["grafana"]="infra/grafana"
     ["ingest-api"]="apps/ingest-api"
+    ["campaign-api"]="apps/campaign-api"
     ["ui-web"]="apps/ui-web"
 )
 
-SERVICES=("postgres" "rabbitmq" "redis" "clickhouse" "nginx" "prometheus" "grafana" "ingest-api" "ui-web")
+SERVICES=("postgres" "rabbitmq" "redis" "clickhouse" "nginx" "prometheus" "grafana" "ingest-api" "campaign-api" "ui-web")
 
 # Colors
 RED='\033[0;31m'
@@ -25,7 +26,20 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-ACTION=${1:-restart}  # restart, logs, or stop
+ACTION=${1:-restart}  # restart, logs, stop, or flyway
+
+# Handle flyway as a standalone command (no service selection needed)
+if [ "$ACTION" = "flyway" ]; then
+    cd "$(dirname "$0")/.." || exit 1
+    echo -e "${YELLOW}📦 Running Flyway migrations...${NC}"
+    cd "infra/postgres" && docker compose up flyway
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Flyway migrations completed${NC}"
+    else
+        echo -e "${RED}❌ Flyway migrations failed${NC}"
+    fi
+    exit $?
+fi
 
 show_header() {
     echo ""
@@ -42,7 +56,7 @@ do_restart() {
     echo -e "${YELLOW}🔄 Restarting ${service}...${NC}"
     
     # For applications, use pnpm run deploy (includes tests and proper build)
-    if [ "$service" = "ingest-api" ] || [ "$service" = "ui-web" ]; then
+    if [ "$service" = "ingest-api" ] || [ "$service" = "campaign-api" ] || [ "$service" = "ui-web" ]; then
         cd "$path" && pnpm run deploy
     else
         # For infrastructure services, use docker compose directly
@@ -75,6 +89,18 @@ do_stop() {
         echo -e "${GREEN}✅ ${service} stopped${NC}"
     else
         echo -e "${RED}❌ Failed to stop ${service}${NC}"
+    fi
+    cd - > /dev/null
+}
+
+# Function to run Flyway migrations
+do_flyway() {
+    echo -e "${YELLOW}📦 Running Flyway migrations...${NC}"
+    cd "infra/postgres" && docker compose up flyway
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Flyway migrations completed${NC}"
+    else
+        echo -e "${RED}❌ Flyway migrations failed${NC}"
     fi
     cd - > /dev/null
 }
@@ -197,6 +223,10 @@ main() {
                     ;;
                 stop)
                     do_stop "$service"
+                    ;;
+                flyway)
+                    do_flyway
+                    break  # Flyway only runs once, not per service
                     ;;
             esac
             echo ""
