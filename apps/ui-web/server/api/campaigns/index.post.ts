@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
   // In dev: localhost:3001
   const backendUrl = config.campaignApiUrl || 'http://localhost:3001';
 
-  const url = `${backendUrl}/api/campaigns`;
+  const url = `${backendUrl}/api/v1/campaigns`;
 
   try {
     const response = await fetch(url, {
