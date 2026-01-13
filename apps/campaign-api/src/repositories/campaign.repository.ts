@@ -19,7 +19,7 @@ export class CampaignRepository {
       return this.pool.query<Campaign>(
         `INSERT INTO outreach.campaigns 
          (id, organisation_id, name, value_prop, template_id, status, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, 'Draft', $6, $6)
+         VALUES ($1, $2, $3, $4, $5, 'draft', $6, $6)
          RETURNING 
            id,
            organisation_id AS "organisationId",

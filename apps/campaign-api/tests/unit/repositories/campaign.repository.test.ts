@@ -35,7 +35,7 @@ describe('CampaignRepository', () => {
         name: 'Test Campaign',
         valueProp: 'Test value',
         templateId: null,
-        status: 'Draft',
+        status: 'draft',
         createdAt: new Date(),
         updatedAt: new Date(),
       };

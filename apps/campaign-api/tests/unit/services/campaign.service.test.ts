@@ -29,7 +29,7 @@ describe('CampaignService', () => {
         organisationId: 'org-123',
         name: 'Test Campaign',
         valueProp: 'Test value',
-        status: 'Draft',
+        status: 'draft',
       };
 
       mockRepository.create.mockResolvedValue(mockCampaign);

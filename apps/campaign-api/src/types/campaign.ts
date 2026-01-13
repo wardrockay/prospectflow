@@ -9,14 +9,11 @@ export interface Campaign {
   updatedAt: Date;
 }
 
-export type CampaignStatus = 'Draft' | 'Active' | 'Paused' | 'Completed' | 'Archived';
+// Must match DB CHECK constraint: ('draft','running','paused','archived')
+export type CampaignStatus = 'draft' | 'running' | 'paused' | 'archived';
 
 export interface CreateCampaignInput {
   name: string;
   valueProp: string;
   templateId?: string;
-}
-
-export interface CreateCampaignResult {
-  campaign: Campaign;
 }

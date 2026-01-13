@@ -16,7 +16,7 @@ export const register = new promClient.Registry();
 export const initMetrics = (): void => {
   // Add default labels to all metrics
   register.setDefaultLabels({
-    service: 'ingest-api',
+    service: 'campaign-api',
     environment: process.env.NODE_ENV || 'development',
   });
 

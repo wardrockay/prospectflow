@@ -3,7 +3,7 @@
 **Epic**: 1 - Campaign Management Foundation  
 **Story ID**: 1.1  
 **Story Points**: 5  
-**Status**: � Review  
+**Status**: ✅ Done  
 **Dependencies**: Epic 0 (Foundation Infrastructure - completed)  
 **Created**: 2026-01-13  
 **Assignee**: Dev Team
@@ -861,7 +861,7 @@ COGNITO_CLIENT_ID=<client-id>
 ### Design Decisions
 
 - **UUID Generation**: Server-side for consistency and security
-- **Status Default**: "Draft" allows users to configure before activating
+- **Status Default**: "draft" (lowercase) - matches DB CHECK constraint, allows users to configure before activating
 - **Template Optional**: MVP allows campaigns without templates; template library is Epic 10
 
 ### Migration Considerations
@@ -950,6 +950,22 @@ N/A - No debugging required
 ✅ **Database Migration**
 
 - Created `V20260113_140000___add_campaign_fields.sql` to add value_prop and template_id columns
+- Created `V20260113_150000___campaign_column_constraints.sql` to add VARCHAR(100) and VARCHAR(150) constraints
+
+### Code Review Fixes (2026-01-13)
+
+**Issues Fixed:**
+
+- **H1**: Fixed `CampaignStatus` type to use lowercase values ('draft', 'running', 'paused', 'archived') matching DB CHECK constraint
+- **H2**: Added migration `V20260113_150000___campaign_column_constraints.sql` for VARCHAR(100) on name, VARCHAR(150) NOT NULL on value_prop
+- **M1**: Fixed metrics service label from 'ingest-api' to 'campaign-api'
+- **M2**: Synced sprint-status.yaml (1-1-create-new-campaign: review → done)
+- **L1**: Translated French comment to English in database.ts
+- **L2**: Removed unused `CreateCampaignResult` type
+
+**Deferred:**
+
+- **M4**: Integration tests - To be added in future story or tech debt ticket
 
 ### File List
 
@@ -976,6 +992,7 @@ N/A - No debugging required
 - `apps/campaign-api/tsconfig.json`
 - `apps/campaign-api/Dockerfile`
 - `infra/postgres/db/migrations/V20260113_140000___add_campaign_fields.sql`
+- `infra/postgres/db/migrations/V20260113_150000___campaign_column_constraints.sql`
 
 **Modified Files:**
 

@@ -12,7 +12,7 @@ let pool: Pool | null = null;
 export { pool };
 
 /**
- * Récupère ou crée le pool de connexions PostgreSQL
+ * Gets or creates the PostgreSQL connection pool
  */
 export const getPool = (): Pool => {
   if (!pool) {
