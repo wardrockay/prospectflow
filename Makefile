@@ -42,6 +42,7 @@ help:
 	@echo "  make vps-connect       - SSH connect to VPS"
 	@echo "  make deploy-ui         - Deploy UI Web to production"
 	@echo "  make deploy-api        - Deploy Ingest API to production"
+	@echo "  make deploy-campaign-api - Deploy Campaign API to production"
 	@echo ""
 	@echo "� NGINX & SSL:"
 	@echo "  make nginx-up          - Start NGINX reverse proxy"
@@ -135,6 +136,8 @@ apps-only:
 	@echo ""
 	@echo "🌐 Starting Ingest API..."
 	@cd apps/ingest-api && docker compose up -d
+	@echo "🌐 Starting Campaign API..."
+	@cd apps/campaign-api && docker compose up -d
 	@echo "🌐 Starting UI Web..."
 	@cd apps/ui-web && docker compose up -d
 	@echo ""
@@ -142,6 +145,8 @@ apps-only:
 	@sleep 5
 	@# Wait for ingest-api
 	@docker exec prospectflow-ingest-api curl -f http://localhost:3000/health > /dev/null 2>&1 || (echo "Waiting for ingest-api..." && sleep 5)
+	@# Wait for campaign-api
+	@docker exec prospectflow-campaign-api curl -f http://localhost:3001/health > /dev/null 2>&1 || (echo "Waiting for campaign-api..." && sleep 5)
 	@# Wait for ui-web
 	@docker exec prospectflow-ui-web wget --no-verbose --tries=1 --spider http://localhost:3000/ > /dev/null 2>&1 || (echo "Waiting for ui-web..." && sleep 5)
 	@echo ""
@@ -154,12 +159,13 @@ full-stack: network-create infra-only apps-only monitoring-up
 	@echo ""
 	@echo "📊 Service URLs:"
 	@echo "  • Ingest API: http://localhost:3000"
+	@echo "  • Campaign API: http://localhost:3001"
 	@echo "  • UI Web: http://localhost:4000"
 	@echo "  • PostgreSQL: localhost:5432"
 	@echo "  • RabbitMQ Management: http://localhost:15672"
 	@echo "  • Redis: localhost:6379"
 	@echo "  • Prometheus: http://localhost:9090"
-	@echo "  • Grafana: http://localhost:3001"
+	@echo "  • Grafana: http://localhost:3002"
 	@echo ""
 	@echo "💡 Run 'make health' to check service status"
 
@@ -189,6 +195,7 @@ apps-restart:
 	@echo ""
 	@echo "🛑 Stopping applications..."
 	@-cd apps/ui-web && docker compose down
+	@-cd apps/campaign-api && docker compose down
 	@-cd apps/ingest-api && docker compose down
 	@echo ""
 	@echo "🚀 Starting applications..."
@@ -285,6 +292,7 @@ prod-up: network-create
 	@echo ""
 	@echo "🌐 Starting Applications..."
 	@cd apps/ingest-api && docker compose up -d
+	@cd apps/campaign-api && docker compose up -d
 	@cd apps/ui-web && docker compose up -d
 	@echo ""
 	@echo "🔒 Starting Reverse Proxy..."
@@ -305,6 +313,7 @@ prod-down:
 	@echo ""
 	@echo "🌐 Stopping Applications..."
 	@-cd apps/ui-web && docker compose down
+	@-cd apps/campaign-api && docker compose down
 	@-cd apps/ingest-api && docker compose down
 	@echo ""
 	@echo "📦 Stopping Infrastructure..."
@@ -336,6 +345,7 @@ SERVICE_PATH_nginx = infra/nginx
 SERVICE_PATH_prometheus = infra/prometheus
 SERVICE_PATH_grafana = infra/grafana
 SERVICE_PATH_ingest-api = apps/ingest-api
+SERVICE_PATH_campaign-api = apps/campaign-api
 SERVICE_PATH_ui-web = apps/ui-web
 
 # Interactive service restart (shows selection menu)
@@ -343,6 +353,8 @@ service-restart:
 ifdef SERVICE
 	@echo "🔄 Restarting service: $(SERVICE)..."
 ifeq ($(SERVICE),ingest-api)
+	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
+else ifeq ($(SERVICE),campaign-api)
 	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
 else ifeq ($(SERVICE),ui-web)
 	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
@@ -372,13 +384,13 @@ ifdef SERVICE
 else
 	@echo ""
 	@echo "📋 Available services:"
-	@echo "  [1] postgres      [2] rabbitmq"
-	@echo "  [3] redis         [4] clickhouse"
-	@echo "  [5] nginx         [6] prometheus"
-	@echo "  [7] grafana       [8] ingest-api"
-	@echo "  [9] ui-web"
+	@echo "  [1] postgres        [2] rabbitmq"
+	@echo "  [3] redis           [4] clickhouse"
+	@echo "  [5] nginx           [6] prometheus"
+	@echo "  [7] grafana         [8] ingest-api"
+	@echo "  [9] campaign-api    [10] ui-web"
 	@echo ""
-	@read -p "Select service (1-9): " choice; \
+	@read -p "Select service (1-10): " choice; \
 	case $$choice in \
 		1) echo ""; echo "📜 Logs for postgres (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-postgres ;; \
 		2) echo ""; echo "📜 Logs for rabbitmq (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-rabbitmq ;; \
@@ -388,7 +400,8 @@ else
 		6) echo ""; echo "📜 Logs for prometheus (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-prometheus ;; \
 		7) echo ""; echo "📜 Logs for grafana (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-grafana ;; \
 		8) echo ""; echo "📜 Logs for ingest-api (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ingest-api ;; \
-		9) echo ""; echo "📜 Logs for ui-web (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ui-web ;; \
+		9) echo ""; echo "📜 Logs for campaign-api (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-campaign-api ;; \
+		10) echo ""; echo "📜 Logs for ui-web (Ctrl+C to exit)..."; echo ""; docker logs -f --tail=100 prospectflow-ui-web ;; \
 		*) echo "❌ Invalid choice"; exit 1 ;; \
 	esac
 endif
@@ -427,6 +440,10 @@ health:
 	@docker ps --filter "name=prospectflow-ingest-api" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
 	@curl -sf http://localhost:3000/health 2>/dev/null && echo "  ✅ API responding" || echo "  ⚠️  API not responding (or no /health endpoint)"
 	@echo ""
+	@echo "Campaign API:"
+	@docker ps --filter "name=prospectflow-campaign-api" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
+	@curl -sf http://localhost:3001/health 2>/dev/null && echo "  ✅ API responding" || echo "  ⚠️  API not responding (or no /health endpoint)"
+	@echo ""
 	@echo "UI Web:"
 	@docker ps --filter "name=prospectflow-ui-web" --format "  Status: {{.Status}}" 2>/dev/null || echo "  ❌ Not running"
 	@curl -sf http://localhost:4000 2>/dev/null && echo "  ✅ UI responding" || echo "  ⚠️  UI not responding"
@@ -463,6 +480,15 @@ deploy-api: network-create
 	@cd apps/ingest-api && pnpm run deploy
 	@echo ""
 	@echo "✅ Ingest API deployed successfully!"
+	@echo "🌐 Access at: http://localhost:3000"
+
+# Deploy Campaign API to production
+deploy-campaign-api: network-create
+	@echo "🚀 Deploying Campaign API to production..."
+	@./scripts/sync-env-to-vps.sh || true
+	@cd apps/campaign-api && pnpm run deploy
+	@echo ""
+	@echo "✅ Campaign API deployed successfully!"
 	@echo "🌐 Access at: http://localhost:3001"
 
 # ============================================

@@ -1,0 +1,25 @@
+services:
+  prospectflow-campaign-api:
+    image: starlightcoder/prospectflow-campaign-api:latest
+    container_name: prospectflow-campaign-api
+    build:
+      context: ../..
+      dockerfile: apps/campaign-api/Dockerfile
+    ports:
+      - '3002:3001'
+    env_file:
+      - ./env/.env.production
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - prospectflow-network
+
+networks:
+  prospectflow-network:
+    external: true
+    name: prospectflow-network

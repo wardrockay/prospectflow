@@ -138,3 +138,23 @@ export const prospectsProcessedTotal = new promClient.Counter({
   labelNames: ['organisation_id', 'action'], // action: 'imported', 'validated', 'researched'
   registers: [register],
 });
+
+/**
+ * Business metric: Campaigns created counter
+ */
+export const campaignsCreatedTotal = new promClient.Counter({
+  name: 'prospectflow_campaigns_created_total',
+  help: 'Total number of campaigns created',
+  labelNames: ['organisation_id', 'success'], // success: 'true' or 'false'
+  registers: [register],
+});
+
+/**
+ * Business metric: Active campaigns gauge
+ */
+export const activeCampaigns = new promClient.Gauge({
+  name: 'active_campaigns',
+  help: 'Number of currently active campaigns',
+  labelNames: ['organisation_id'],
+  registers: [register],
+});

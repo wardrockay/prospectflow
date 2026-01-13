@@ -163,14 +163,14 @@ erDiagram
     organisations ||--o{ users : "has"
     organisations ||--o{ organisation_users : "contains"
     users ||--o{ organisation_users : "belongs to"
-    
+
     %% CRM Schema
     organisations ||--o{ companies : "owns"
     organisations ||--o{ people : "owns"
     organisations ||--o{ positions : "owns"
     companies ||--o{ positions : "has"
     people ||--o{ positions : "has"
-    
+
     %% Outreach Schema
     organisations ||--o{ campaigns : "owns"
     campaigns ||--o{ workflow_steps : "has"
@@ -181,7 +181,7 @@ erDiagram
     campaign_enrollments ||--o{ tasks : "generates"
     tasks ||--o{ messages : "produces"
     positions ||--o{ messages : "receives"
-    
+
     %% Tracking Schema
     messages ||--o{ pixels : "tracked by"
     pixels ||--o{ open_stats : "aggregated to"
@@ -215,11 +215,11 @@ Example:
     ├── person_id (UUID)
     ├── company_id (UUID)
     └── email (CITEXT)
-    
+
     UNIQUE (organisation_id, company_id, person_id, email)
     FK (organisation_id, person_id) → people(organisation_id, id)
     FK (organisation_id, company_id) → companies(organisation_id, id)
-    
+
     Result: Impossible to link person from Org A to company in Org B
 ```
 
@@ -237,34 +237,34 @@ sequenceDiagram
     participant Svc as Service
     participant Repo as Repository
     participant DB as PostgreSQL
-    
+
     Pharow->>API: POST /api/v1/ingest
     Note over Pharow,API: { data: [...pharow_items] }
-    
+
     API->>Val: Validate schema
     alt Invalid Schema
         Val-->>API: ZodError
         API-->>Pharow: 400 Validation Error
     end
-    
+
     Val->>Svc: processIngest(data)
     Svc->>Repo: create(items)
-    
+
     Repo->>DB: BEGIN TRANSACTION
-    
+
     loop For each item
         Repo->>DB: INSERT company ON CONFLICT UPDATE
         DB-->>Repo: company_id
-        
+
         Repo->>DB: INSERT person ON CONFLICT UPDATE
         DB-->>Repo: person_id
-        
+
         Repo->>DB: INSERT position ON CONFLICT UPDATE
         DB-->>Repo: position_id
     end
-    
+
     Repo->>DB: COMMIT
-    
+
     DB-->>Repo: Success
     Repo-->>Svc: IngestEntity
     Svc-->>API: Result
@@ -285,35 +285,35 @@ sequenceDiagram
     participant AI as OpenAI
     participant Gmail as Gmail API
     participant Recip as Recipient
-    
+
     User->>UI: Create campaign
     UI->>API: POST /campaigns
     API->>DB: Save campaign
-    
+
     User->>UI: Add workflow steps
     UI->>API: POST /workflow-steps
     API->>DB: Save steps
-    
+
     User->>UI: Enroll contacts
     UI->>API: POST /enrollments
     API->>DB: Create enrollments
     API->>Queue: Publish draft tasks
-    
+
     Queue-->>Worker: Consume task
     Worker->>DB: Get prompt + context
     Worker->>AI: Generate email draft
     AI-->>Worker: Email content
     Worker->>DB: Save draft
     Worker->>Queue: Publish send task
-    
+
     Queue-->>Gmail: Send email
     Gmail->>Recip: Deliver email
     Gmail-->>DB: Update message status
-    
+
     Recip->>Gmail: Open email (load pixel)
     Gmail->>API: GET /pixel/{token}
     API->>DB: Log open event
-    
+
     Recip->>Gmail: Reply
     Gmail-->>Queue: New reply detected
     Queue-->>Worker: Process reply
@@ -455,15 +455,15 @@ sequenceDiagram
 
 ### Request Authorization Matrix
 
-| Endpoint | Method | Auth Required | Tenant Check | Rate Limit |
-|----------|--------|---------------|--------------|------------|
-| /health | GET | ❌ No | ❌ No | ✅ 100/15min |
-| /metrics | GET | ❌ No | ❌ No | ✅ 100/15min |
-| /api/v1/ingest | POST | ✅ Yes | ✅ Yes | ✅ 10/min |
-| /api/v1/campaigns | GET | ✅ Yes | ✅ Yes | ✅ 100/15min |
-| /api/v1/campaigns | POST | ✅ Yes | ✅ Yes | ✅ 20/min |
-| /api/v1/campaigns/:id | PUT | ✅ Yes | ✅ Yes + Owner | ✅ 50/min |
-| /api/v1/campaigns/:id | DELETE | ✅ Yes | ✅ Yes + Owner | ✅ 10/min |
+| Endpoint              | Method | Auth Required | Tenant Check   | Rate Limit   |
+| --------------------- | ------ | ------------- | -------------- | ------------ |
+| /health               | GET    | ❌ No         | ❌ No          | ✅ 100/15min |
+| /metrics              | GET    | ❌ No         | ❌ No          | ✅ 100/15min |
+| /api/v1/ingest        | POST   | ✅ Yes        | ✅ Yes         | ✅ 10/min    |
+| /api/v1/campaigns     | GET    | ✅ Yes        | ✅ Yes         | ✅ 100/15min |
+| /api/v1/campaigns     | POST   | ✅ Yes        | ✅ Yes         | ✅ 20/min    |
+| /api/v1/campaigns/:id | PUT    | ✅ Yes        | ✅ Yes + Owner | ✅ 50/min    |
+| /api/v1/campaigns/:id | DELETE | ✅ Yes        | ✅ Yes + Owner | ✅ 10/min    |
 
 ---
 
@@ -641,7 +641,7 @@ All services on `prospectflow-network` can communicate using service names:
 ```typescript
 // From ingest-api, connect to postgres:
 const pool = new Pool({
-  host: 'postgres',  // ← Service name resolves via Docker DNS
+  host: 'postgres', // ← Service name resolves via Docker DNS
   port: 5432,
   // ...
 });
@@ -664,30 +664,30 @@ const connection = await amqp.connect('amqp://rabbitmq:5672');
 graph LR
     A[Git Push] --> B[GitHub Actions]
     B --> C{Branch?}
-    
+
     C -->|main| D[Build & Test]
     C -->|dev| E[Build & Test]
     C -->|feature/*| F[Build & Test]
-    
+
     D --> G[Docker Build]
     E --> H[Docker Build]
     F --> I[PR Check Only]
-    
+
     G --> J[Push to Registry]
     H --> K[Push to Registry]
-    
+
     J --> L[Deploy Production]
     K --> M[Deploy Staging]
-    
+
     L --> N[Health Check]
     M --> O[Health Check]
-    
+
     N --> P{Healthy?}
     O --> Q{Healthy?}
-    
+
     P -->|No| R[Rollback]
     P -->|Yes| S[Success]
-    
+
     Q -->|No| T[Alert Dev]
     Q -->|Yes| U[Success]
 ```
@@ -696,22 +696,22 @@ graph LR
 
 ## 📚 Technology Stack Summary
 
-| Layer | Technology | Version | Status |
-|-------|-----------|---------|--------|
-| **Runtime** | Node.js | 20.x | ✅ Active |
-| **Language** | TypeScript | 5.8.2 | ✅ Active |
-| **Framework** | Express.js | 4.21.2 | ✅ Active |
-| **Validation** | Zod | 3.24.3 | ✅ Active |
-| **Database** | PostgreSQL | 18 | ✅ Active |
-| **Analytics** | ClickHouse | Latest | ⚙️ Configured |
-| **Cache** | Redis | 7 | ⚙️ Configured |
-| **Queue** | RabbitMQ | Latest | ⚙️ Configured |
-| **Migration** | Flyway | 11 | ✅ Active |
-| **Logging** | Pino | 9.6.0 | ✅ Active |
-| **Testing** | Vitest | 3.0.5 | ✅ Active |
-| **Container** | Docker | Latest | ✅ Active |
-| **Orchestration** | Docker Compose | v2 | ✅ Active |
-| **Package Manager** | pnpm | 10.9.0 | ✅ Active |
+| Layer               | Technology     | Version | Status        |
+| ------------------- | -------------- | ------- | ------------- |
+| **Runtime**         | Node.js        | 20.x    | ✅ Active     |
+| **Language**        | TypeScript     | 5.8.2   | ✅ Active     |
+| **Framework**       | Express.js     | 4.21.2  | ✅ Active     |
+| **Validation**      | Zod            | 3.24.3  | ✅ Active     |
+| **Database**        | PostgreSQL     | 18      | ✅ Active     |
+| **Analytics**       | ClickHouse     | Latest  | ⚙️ Configured |
+| **Cache**           | Redis          | 7       | ⚙️ Configured |
+| **Queue**           | RabbitMQ       | Latest  | ⚙️ Configured |
+| **Migration**       | Flyway         | 11      | ✅ Active     |
+| **Logging**         | Pino           | 9.6.0   | ✅ Active     |
+| **Testing**         | Vitest         | 3.0.5   | ✅ Active     |
+| **Container**       | Docker         | Latest  | ✅ Active     |
+| **Orchestration**   | Docker Compose | v2      | ✅ Active     |
+| **Package Manager** | pnpm           | 10.9.0  | ✅ Active     |
 
 ---
 
@@ -720,11 +720,13 @@ graph LR
 ### Horizontal Scaling Strategy
 
 **Stateless Services (Easy to Scale):**
+
 - Ingest API → Can run multiple instances behind load balancer
 - Campaign API → Stateless, cache in Redis
 - Worker services → Multiple consumers on same queue
 
 **Stateful Services (Require Clustering):**
+
 - PostgreSQL → Primary + Read Replicas
 - RabbitMQ → Cluster mode (3+ nodes)
 - ClickHouse → Distributed tables across shards
@@ -732,14 +734,93 @@ graph LR
 
 ### Performance Targets
 
-| Metric | Current | Target (MVP) | Target (1 Year) |
-|--------|---------|--------------|-----------------|
-| **API Latency (p95)** | ~100ms | < 200ms | < 100ms |
-| **Throughput** | ~10 req/s | 100 req/s | 1000 req/s |
-| **Database Queries** | ~50ms | < 100ms | < 50ms |
-| **Concurrent Users** | 1 | 100 | 10,000 |
-| **Emails/Hour** | 0 | 1,000 | 100,000 |
+| Metric                | Current   | Target (MVP) | Target (1 Year) |
+| --------------------- | --------- | ------------ | --------------- |
+| **API Latency (p95)** | ~100ms    | < 200ms      | < 100ms         |
+| **Throughput**        | ~10 req/s | 100 req/s    | 1000 req/s      |
+| **Database Queries**  | ~50ms     | < 100ms      | < 50ms          |
+| **Concurrent Users**  | 1         | 100          | 10,000          |
+| **Emails/Hour**       | 0         | 1,000        | 100,000         |
 
 ---
 
-*Architecture documentation by BMAD Analyst Agent - January 8, 2025*
+_Architecture documentation by BMAD Analyst Agent - January 8, 2025_
+
+---
+
+## 📋 Service Boundary Decisions & Guidelines
+
+### Decision Log
+
+#### [2026-01-13] Campaign API Extracted from Ingest API
+
+**Context:**  
+Story 1.1 (Create New Campaign) was initially implemented in `ingest-api`. During review, the team identified a semantic mismatch: "ingest" implies data ingestion from external sources (Pharrow), not campaign management.
+
+**Decision:**  
+Created dedicated `campaign-api` service (port 3001) to handle all campaign-related operations.
+
+**Rationale:**
+
+- **Separation of Concerns**: Ingest = external data ingestion; Campaign = business domain management
+- **Bounded Context (DDD)**: Campaign Management is a distinct bounded context with its own lifecycle
+- **Scalability**: Campaign operations (CRUD, workflows, A/B testing) will evolve independently from ingestion
+- **Team Cognitive Load**: Clear service boundaries reduce confusion and improve developer velocity
+
+**Migration:**
+
+- Files moved: types, schemas, repositories, services, controllers, routes
+- Tests migrated: 13/13 unit tests passing
+- Infrastructure shared: auth, logging, metrics, error handling
+- Port allocation: 3001 (ingest-api remains on 3000)
+
+**Impact:**
+
+- ✅ Clean architecture from MVP start
+- ✅ Future extraction avoided (would be 5-10x more expensive with 10+ stories)
+- ⚠️ Requires 2 services deployment instead of 1
+
+---
+
+### Service Boundaries Guidelines
+
+**When to create a new service:**
+
+✅ **DO create a new service when:**
+
+- The domain represents a distinct **Bounded Context** (DDD principle)
+- The service has a **different scalability profile** than existing services
+- The team can clearly articulate the service's **single responsibility**
+- The service will have **>5 endpoints** in the domain
+- The functionality will **evolve independently** from other services
+
+❌ **DON'T create a new service when:**
+
+- It's only 1-2 endpoints (add to existing service first)
+- The domain heavily overlaps with existing service (e.g., campaign + prospect CRUD could share)
+- You're optimizing prematurely without load data
+- It introduces excessive **inter-service communication** (network calls > in-process)
+
+**Service Naming Convention:**
+
+- Use **domain-api** format (e.g., `campaign-api`, `tracking-api`)
+- Avoid vague names like `core-api`, `main-api`, `backend-api`
+- Service name should reflect its **primary bounded context**
+
+**Port Allocation:**
+
+- 3000: ingest-api (external data ingestion)
+- 3001: campaign-api (campaign management)
+- 3002: tracking-api (email opens/clicks)
+- 3003+: Future services
+
+**Shared Infrastructure:**
+
+- All services share: auth-core package, database, Redis, RabbitMQ
+- Each service has: own Dockerfile, package.json, independent deployment
+- Configuration: env files per service, shared secrets in Vault
+
+---
+
+**Last Updated:** January 13, 2026  
+_Architecture documentation maintained by BMAD Team_
