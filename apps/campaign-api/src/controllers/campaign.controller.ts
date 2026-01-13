@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { createCampaignSchema } from '../schemas/campaign.schema.js';
+import { createCampaignSchema, listCampaignsQuerySchema } from '../schemas/campaign.schema.js';
 import { CampaignService } from '../services/campaign.service.js';
 import { ValidationError } from '../errors/ValidationError.js';
 import { campaignsCreatedTotal } from '../config/metrics.js';
@@ -50,6 +50,40 @@ export class CampaignController {
         organisation_id: req.organisationId || 'unknown',
         success: 'false',
       });
+      next(error);
+    }
+  };
+
+  listCampaigns = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // Validate query parameters
+      const parseResult = listCampaignsQuerySchema.safeParse(req.query);
+
+      if (!parseResult.success) {
+        req.log.warn({ errors: parseResult.error.flatten() }, 'List campaigns validation failed');
+        throw new ValidationError(
+          'Invalid query parameters',
+          parseResult.error.flatten().fieldErrors,
+        );
+      }
+
+      const organisationId = req.organisationId!;
+      const params = parseResult.data;
+
+      req.log.info({ organisationId, ...params }, 'Fetching campaigns list');
+
+      const result = await this.campaignService.listCampaigns(organisationId, params);
+
+      req.log.info(
+        { organisationId, totalItems: result.pagination.totalItems },
+        'Campaigns list retrieved',
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
       next(error);
     }
   };

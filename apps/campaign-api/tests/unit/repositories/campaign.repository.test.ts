@@ -62,4 +62,70 @@ describe('CampaignRepository', () => {
       ).rejects.toThrow('Connection failed');
     });
   });
+
+  describe('findAll', () => {
+    it('should return campaigns with metrics and pagination', async () => {
+      const mockCampaigns = [
+        {
+          id: 'campaign-1',
+          organisationId: 'org-123',
+          name: 'Campaign 1',
+          valueProp: 'Value 1',
+          templateId: null,
+          status: 'draft',
+          totalProspects: 10,
+          emailsSent: 5,
+          responseCount: 2,
+          responseRate: 40.0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      // Mock COUNT query
+      mockPool.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
+      // Mock SELECT query
+      mockPool.query.mockResolvedValueOnce({ rows: mockCampaigns });
+
+      const result = await repository.findAll('org-123', {
+        page: 1,
+        limit: 25,
+        sortBy: 'updatedAt',
+        order: 'desc',
+      });
+
+      expect(mockPool.query).toHaveBeenCalledTimes(2); // COUNT + SELECT
+      expect(result.campaigns).toEqual(mockCampaigns);
+      expect(result.pagination).toEqual({
+        page: 1,
+        limit: 25,
+        totalItems: 1,
+        totalPages: 1,
+      });
+    });
+
+    it('should handle empty result', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [{ count: '0' }] });
+      mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+      const result = await repository.findAll('org-123', {});
+
+      expect(result.campaigns).toEqual([]);
+      expect(result.pagination.totalItems).toBe(0);
+    });
+
+    it('should apply pagination correctly', async () => {
+      mockPool.query.mockResolvedValueOnce({ rows: [{ count: '100' }] });
+      mockPool.query.mockResolvedValueOnce({ rows: [] });
+
+      const result = await repository.findAll('org-123', { page: 2, limit: 25 });
+
+      // Verify OFFSET calculation: (2-1) * 25 = 25
+      expect(mockPool.query).toHaveBeenCalledWith(
+        expect.stringContaining('LIMIT $2 OFFSET $3'),
+        expect.arrayContaining(['org-123', 25, 25]),
+      );
+      expect(result.pagination.totalPages).toBe(4); // 100 / 25
+    });
+  });
 });

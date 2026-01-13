@@ -16,11 +16,13 @@ describe('CampaignController', () => {
   beforeEach(() => {
     mockService = {
       createCampaign: vi.fn(),
+      listCampaigns: vi.fn(),
     };
     controller = new CampaignController(mockService);
 
     mockReq = {
       body: {},
+      query: {},
       organisationId: 'org-123',
       log: {
         info: vi.fn(),
@@ -82,6 +84,70 @@ describe('CampaignController', () => {
       await controller.createCampaign(mockReq, mockRes, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
+    });
+  });
+
+  describe('listCampaigns', () => {
+    it('should return 200 with campaign list', async () => {
+      const mockResult = {
+        campaigns: [
+          {
+            id: 'campaign-1',
+            organisationId: 'org-123',
+            name: 'Test',
+            valueProp: 'Value',
+            templateId: null,
+            status: 'draft',
+            totalProspects: 0,
+            emailsSent: 0,
+            responseCount: 0,
+            responseRate: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+        pagination: { page: 1, limit: 25, totalItems: 1, totalPages: 1 },
+      };
+
+      mockReq.query = {};
+      mockService.listCampaigns.mockResolvedValue(mockResult);
+
+      await controller.listCampaigns(mockReq, mockRes, mockNext);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        data: mockResult,
+      });
+    });
+
+    it('should apply default query parameters', async () => {
+      mockReq.query = {};
+      mockService.listCampaigns.mockResolvedValue({
+        campaigns: [],
+        pagination: { page: 1, limit: 25, totalItems: 0, totalPages: 0 },
+      });
+
+      await controller.listCampaigns(mockReq, mockRes, mockNext);
+
+      expect(mockService.listCampaigns).toHaveBeenCalledWith('org-123', {
+        page: 1,
+        limit: 25,
+        sortBy: 'updatedAt',
+        order: 'desc',
+      });
+    });
+
+    it('should return validation error for invalid query params', async () => {
+      mockReq.query = { page: '-1' };
+
+      await controller.listCampaigns(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Invalid query parameters',
+        }),
+      );
     });
   });
 });

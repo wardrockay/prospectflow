@@ -13,6 +13,8 @@ const campaignService = new CampaignService(campaignRepository);
 const campaignController = new CampaignController(campaignService);
 
 // Routes - Authentication applied at router level in index.ts
+// List campaigns (must be BEFORE /:id routes to avoid conflicts)
+router.get('/', campaignController.listCampaigns);
 router.post('/', campaignController.createCampaign);
 
 export { router as campaignRoutes };

@@ -17,3 +17,29 @@ export interface CreateCampaignInput {
   valueProp: string;
   templateId?: string;
 }
+
+export interface CampaignListItem extends Campaign {
+  totalProspects: number;
+  emailsSent: number;
+  responseCount: number;
+  responseRate: number;
+}
+
+export interface CampaignListQueryParams {
+  page?: number;
+  limit?: number;
+  sortBy?: 'updatedAt' | 'createdAt' | 'name';
+  order?: 'asc' | 'desc';
+}
+
+export interface PaginationMetadata {
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CampaignListResult {
+  campaigns: CampaignListItem[];
+  pagination: PaginationMetadata;
+}
