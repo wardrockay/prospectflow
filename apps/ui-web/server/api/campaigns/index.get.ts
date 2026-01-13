@@ -9,8 +9,21 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
 
+  // Debug: log config to see if NUXT_ variables are loaded
+  console.log('[CampaignProxy GET] Config:', {
+    campaignApiUrl: config.campaignApiUrl,
+    hasConfig: !!config.campaignApiUrl,
+  });
+
   // Get access token from cookies (set during auth callback)
   const accessToken = getCookie(event, 'access_token');
+
+  // Debug: log token presence
+  console.log('[CampaignProxy GET] Token:', {
+    hasToken: !!accessToken,
+    tokenLength: accessToken?.length || 0,
+    tokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : 'none',
+  });
 
   if (!accessToken) {
     throw createError({
