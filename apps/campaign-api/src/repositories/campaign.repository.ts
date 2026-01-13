@@ -133,10 +133,7 @@ export class CampaignRepository {
    * Find campaign by ID with aggregated metrics
    * Uses same JOIN pattern as findAll for consistency
    */
-  async findById(
-    organisationId: string,
-    campaignId: string,
-  ): Promise<CampaignListItem | null> {
+  async findById(organisationId: string, campaignId: string): Promise<CampaignListItem | null> {
     logger.debug({ organisationId, campaignId }, 'Fetching campaign by ID');
 
     const result = await trackDatabaseQuery('SELECT', 'outreach', async () => {

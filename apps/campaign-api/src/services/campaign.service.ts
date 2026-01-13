@@ -42,10 +42,7 @@ export class CampaignService {
    * Get campaign details by ID
    * @throws NotFoundError if campaign not found
    */
-  async getCampaignDetails(
-    organisationId: string,
-    campaignId: string,
-  ): Promise<CampaignListItem> {
+  async getCampaignDetails(organisationId: string, campaignId: string): Promise<CampaignListItem> {
     logger.info({ organisationId, campaignId }, 'Fetching campaign details');
 
     const campaign = await this.campaignRepository.findById(organisationId, campaignId);
