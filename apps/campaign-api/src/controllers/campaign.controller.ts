@@ -2,7 +2,11 @@ import type { Request, Response, NextFunction } from 'express';
 import { createCampaignSchema, listCampaignsQuerySchema } from '../schemas/campaign.schema.js';
 import { CampaignService } from '../services/campaign.service.js';
 import { ValidationError } from '../errors/ValidationError.js';
-import { campaignsCreatedTotal } from '../config/metrics.js';
+import {
+  campaignsCreatedTotal,
+  campaignsListTotal,
+  campaignsListDuration,
+} from '../config/metrics.js';
 
 export class CampaignController {
   constructor(private readonly campaignService: CampaignService) {}
@@ -17,10 +21,7 @@ export class CampaignController {
           { errors: parseResult.error.flatten() },
           'Campaign creation validation failed',
         );
-        const errorMessages = Object.entries(parseResult.error.flatten().fieldErrors)
-          .map(([field, errors]) => `${field}: ${errors?.join(', ')}`)
-          .join('; ');
-        throw new ValidationError(errorMessages || 'Invalid campaign data');
+        throw new ValidationError('Invalid campaign data', parseResult.error.flatten().fieldErrors);
       }
 
       const { name, valueProp, templateId } = parseResult.data;
@@ -55,24 +56,32 @@ export class CampaignController {
   };
 
   listCampaigns = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const startTime = Date.now();
+    const organisationId = req.organisationId || 'unknown';
+
     try {
       // Validate query parameters
       const parseResult = listCampaignsQuerySchema.safeParse(req.query);
 
       if (!parseResult.success) {
         req.log.warn({ errors: parseResult.error.flatten() }, 'List campaigns validation failed');
+        campaignsListTotal.inc({ organisation_id: organisationId, success: 'false' });
         throw new ValidationError(
           'Invalid query parameters',
           parseResult.error.flatten().fieldErrors,
         );
       }
 
-      const organisationId = req.organisationId!;
       const params = parseResult.data;
 
       req.log.info({ organisationId, ...params }, 'Fetching campaigns list');
 
       const result = await this.campaignService.listCampaigns(organisationId, params);
+
+      // Track metrics
+      const duration = (Date.now() - startTime) / 1000;
+      campaignsListTotal.inc({ organisation_id: organisationId, success: 'true' });
+      campaignsListDuration.observe({ organisation_id: organisationId }, duration);
 
       req.log.info(
         { organisationId, totalItems: result.pagination.totalItems },
@@ -84,6 +93,7 @@ export class CampaignController {
         data: result,
       });
     } catch (error) {
+      campaignsListTotal.inc({ organisation_id: organisationId, success: 'false' });
       next(error);
     }
   };

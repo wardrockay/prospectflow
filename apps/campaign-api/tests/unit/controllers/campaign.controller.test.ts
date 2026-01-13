@@ -4,6 +4,8 @@ import { CampaignController } from '../../../src/controllers/campaign.controller
 // Mock metrics
 vi.mock('../../../src/config/metrics', () => ({
   campaignsCreatedTotal: { inc: vi.fn() },
+  campaignsListTotal: { inc: vi.fn() },
+  campaignsListDuration: { observe: vi.fn() },
 }));
 
 describe('CampaignController', () => {
@@ -70,7 +72,7 @@ describe('CampaignController', () => {
 
       expect(mockNext).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('Campaign name is required'),
+          message: 'Invalid campaign data',
         }),
       );
     });

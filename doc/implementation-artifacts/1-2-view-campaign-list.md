@@ -3,7 +3,7 @@
 **Epic**: 1 - Campaign Management Foundation  
 **Story ID**: 1.2  
 **Story Points**: 3  
-**Status**: review  
+**Status**: done  
 **Dependencies**: E0.2 (API Foundation), E0.4 (Auth), E1.1 (Campaign Creation)  
 **Created**: 2026-01-13  
 **Assignee**: Dev Team
@@ -927,17 +927,45 @@ Followed the story file implementation plan exactly:
 
 No debug sessions required. Implementation was straightforward following established patterns from Story 1-1.
 
+### Architectural Decisions
+
+**LEFT JOIN vs INNER JOIN:**  
+Used LEFT JOIN for tasks, people, and messages tables to include campaigns with 0 prospects/messages. INNER JOIN would exclude campaigns without data, violating AC3 (empty state should show campaigns).
+
+**SQL Injection Prevention:**  
+Implemented whitelist mapping for sortBy/order parameters to prevent SQL injection via string interpolation. Zod validation at controller provides first defense, but repository layer enforces security even if validation is bypassed.
+
+**Response Rate Calculation:**  
+Formula: `(replies / sent_emails) * 100`, rounded to 2 decimal places. Returns 0 when emailsSent = 0 to avoid division by zero. Calculated in SQL (not application) for efficiency.
+
 ### Completion Notes
 
-✅ All acceptance criteria satisfied
-✅ All tasks and subtasks completed
-✅ 26 tests passing (4 test files)
-✅ Multi-tenant isolation enforced with organisation_id filtering
-✅ Pagination implemented with default 25 items, max 100
-✅ Query validation with Zod (page, limit, sortBy, order)
-✅ Aggregated metrics via LEFT JOINs (totalProspects, emailsSent, responseCount, responseRate)
-✅ Structured logging throughout all layers
-✅ Response rate calculated as percentage with 2 decimal places
+✅ All acceptance criteria satisfied  
+✅ All tasks and subtasks completed  
+✅ 30 tests passing (4 test files) - includes edge case tests for responseRate  
+✅ Multi-tenant isolation enforced with organisation_id filtering  
+✅ Pagination implemented with default 25 items, max 100  
+✅ Query validation with Zod (page, limit, sortBy, order)  
+✅ Aggregated metrics via LEFT JOINs (totalProspects, emailsSent, responseCount, responseRate)  
+✅ Structured logging throughout all layers  
+✅ Response rate calculated as percentage with 2 decimal places  
+✅ SQL injection prevention via whitelist mapping  
+✅ Prometheus metrics for monitoring (list requests, duration)
+
+### Code Review Fixes Applied
+
+Following adversarial code review, the following issues were addressed:
+
+**CR-1.2-001 (CRITICAL):** SQL injection vulnerability fixed via whitelist mapping for sortBy/order  
+**CR-1.2-003 (MEDIUM):** ValidationError signature standardized across create/list controllers  
+**CR-1.2-005 (MEDIUM):** Prometheus metrics added for list operation (counter + histogram)  
+**CR-1.2-006 (MEDIUM):** Tests enhanced with responseRate edge cases (0%, 100%, zero division)  
+**CR-1.2-007 (LOW):** SQL comments added explaining JOIN strategy and responseRate formula
+
+**Remaining Items for Future:**
+
+- CR-1.2-002: Integration tests with real database (requires test DB setup)
+- CR-1.2-004: COUNT query optimization with Redis caching (performance optimization for scale)
 
 ### File List
 

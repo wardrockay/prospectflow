@@ -150,6 +150,27 @@ export const campaignsCreatedTotal = new promClient.Counter({
 });
 
 /**
+ * Business metric: Campaign list requests counter
+ */
+export const campaignsListTotal = new promClient.Counter({
+  name: 'prospectflow_campaigns_list_total',
+  help: 'Total number of campaign list requests',
+  labelNames: ['organisation_id', 'success'], // success: 'true' or 'false'
+  registers: [register],
+});
+
+/**
+ * Business metric: Campaign list request duration histogram
+ */
+export const campaignsListDuration = new promClient.Histogram({
+  name: 'prospectflow_campaigns_list_duration_seconds',
+  help: 'Campaign list request duration in seconds',
+  labelNames: ['organisation_id'],
+  buckets: [0.1, 0.5, 1, 2, 5], // List queries should be fast
+  registers: [register],
+});
+
+/**
  * Business metric: Active campaigns gauge
  */
 export const activeCampaigns = new promClient.Gauge({

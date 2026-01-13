@@ -50,6 +50,17 @@ export class CampaignRepository {
     const { page = 1, limit = 25, sortBy = 'updatedAt', order = 'desc' } = params;
     const offset = (page - 1) * limit;
 
+    // Security: Whitelist mapping to prevent SQL injection
+    const sortColumns: Record<string, string> = {
+      updatedAt: 'c.updated_at',
+      createdAt: 'c.created_at',
+      name: 'c.name',
+    };
+    const sortOrders: Record<string, string> = { asc: 'ASC', desc: 'DESC' };
+
+    const sortColumn = sortColumns[sortBy] || sortColumns.updatedAt;
+    const sortOrder = sortOrders[order] || sortOrders.desc;
+
     logger.debug({ organisationId, page, limit, sortBy, order }, 'Fetching campaign list');
 
     // Count total campaigns for pagination
@@ -65,7 +76,8 @@ export class CampaignRepository {
     const totalItems = parseInt(countResult.rows[0].count, 10);
     const totalPages = Math.ceil(totalItems / limit);
 
-    // Fetch campaigns with aggregated metrics
+    // Fetch campaigns with aggregated metrics via LEFT JOINs
+    // LEFT JOIN used (not INNER) to include campaigns with 0 prospects/messages
     const result = await trackDatabaseQuery('SELECT', 'outreach', async () => {
       return this.pool.query<CampaignListItem>(
         `SELECT
@@ -80,6 +92,8 @@ export class CampaignRepository {
            COALESCE(COUNT(DISTINCT p.id), 0)::int AS "totalProspects",
            COALESCE(COUNT(DISTINCT CASE WHEN m.sent_at IS NOT NULL THEN m.id END), 0)::int AS "emailsSent",
            COALESCE(COUNT(DISTINCT CASE WHEN m.replied_at IS NOT NULL THEN m.id END), 0)::int AS "responseCount",
+           -- Calculate response rate as percentage: (replies / sent_emails) * 100
+           -- Returns 0 if no emails sent to avoid division by zero
            CASE
              WHEN COUNT(DISTINCT CASE WHEN m.sent_at IS NOT NULL THEN m.id END) > 0
              THEN ROUND(
@@ -95,7 +109,7 @@ export class CampaignRepository {
          LEFT JOIN outreach.messages m ON m.organisation_id = c.organisation_id AND m.campaign_id = c.id
          WHERE c.organisation_id = $1
          GROUP BY c.id, c.organisation_id, c.name, c.value_prop, c.template_id, c.status, c.created_at, c.updated_at
-         ORDER BY c.${sortBy} ${order}
+         ORDER BY ${sortColumn} ${sortOrder}
          LIMIT $2 OFFSET $3`,
         [organisationId, limit, offset],
       );

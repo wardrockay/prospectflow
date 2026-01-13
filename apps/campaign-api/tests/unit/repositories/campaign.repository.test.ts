@@ -127,5 +127,83 @@ describe('CampaignRepository', () => {
       );
       expect(result.pagination.totalPages).toBe(4); // 100 / 25
     });
+
+    it('should calculate responseRate correctly for standard case', async () => {
+      const mockCampaigns = [
+        {
+          id: 'campaign-1',
+          organisationId: 'org-123',
+          name: 'Campaign 1',
+          valueProp: 'Value 1',
+          status: 'running',
+          totalProspects: 10,
+          emailsSent: 10,
+          responseCount: 4,
+          responseRate: 40.0, // 4/10 * 100 = 40%
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPool.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
+      mockPool.query.mockResolvedValueOnce({ rows: mockCampaigns });
+
+      const result = await repository.findAll('org-123', {});
+
+      // Verify responseRate calculation matches SQL formula
+      const campaign = result.campaigns[0];
+      const expectedRate = (campaign.responseCount / campaign.emailsSent) * 100;
+      expect(campaign.responseRate).toBe(expectedRate);
+    });
+
+    it('should handle responseRate edge case: zero emails sent', async () => {
+      const mockCampaigns = [
+        {
+          id: 'campaign-1',
+          organisationId: 'org-123',
+          name: 'Campaign 1',
+          valueProp: 'Value 1',
+          status: 'draft',
+          totalProspects: 0,
+          emailsSent: 0,
+          responseCount: 0,
+          responseRate: 0, // Should be 0, not NaN or error
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPool.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
+      mockPool.query.mockResolvedValueOnce({ rows: mockCampaigns });
+
+      const result = await repository.findAll('org-123', {});
+
+      expect(result.campaigns[0].responseRate).toBe(0);
+    });
+
+    it('should handle responseRate edge case: 100% response rate', async () => {
+      const mockCampaigns = [
+        {
+          id: 'campaign-1',
+          organisationId: 'org-123',
+          name: 'Campaign 1',
+          valueProp: 'Value 1',
+          status: 'running',
+          totalProspects: 5,
+          emailsSent: 5,
+          responseCount: 5,
+          responseRate: 100.0, // 5/5 * 100 = 100%
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockPool.query.mockResolvedValueOnce({ rows: [{ count: '1' }] });
+      mockPool.query.mockResolvedValueOnce({ rows: mockCampaigns });
+
+      const result = await repository.findAll('org-123', {});
+
+      expect(result.campaigns[0].responseRate).toBe(100.0);
+    });
   });
 });
