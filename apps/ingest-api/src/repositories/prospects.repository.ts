@@ -97,6 +97,42 @@ class ProspectsRepository {
   }
 
   /**
+   * Create a new import upload record
+   */
+  async createUpload(
+    uploadId: string,
+    campaignId: string,
+    organisationId: string,
+    filename: string,
+    fileSize: number,
+    fileBuffer: Buffer,
+    rowCount: number,
+  ): Promise<ImportUpload> {
+    const pool = getPool();
+
+    try {
+      const result = await timeOperation(logger, 'db.prospects.createUpload', async () => {
+        return pool.query<ImportUpload>(
+          `INSERT INTO crm.import_uploads 
+             (id, campaign_id, organisation_id, filename, file_size, file_buffer, row_count, uploaded_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+           RETURNING id, campaign_id as "campaignId", organisation_id as "organisationId",
+                     filename, file_size as "fileSize", file_buffer as "fileBuffer",
+                     detected_columns as "detectedColumns", column_mappings as "columnMappings",
+                     row_count as "rowCount", uploaded_at as "uploadedAt"`,
+          [uploadId, campaignId, organisationId, filename, fileSize, fileBuffer, rowCount],
+        );
+      });
+
+      logger.info({ uploadId, filename, fileSize, rowCount }, 'Upload record created');
+      return result.rows[0];
+    } catch (error) {
+      logger.error({ err: error, uploadId }, 'Failed to create upload record');
+      throw new DatabaseError('Failed to create upload record');
+    }
+  }
+
+  /**
    * Update detected columns and suggested mappings for an upload
    */
   async updateUploadColumns(

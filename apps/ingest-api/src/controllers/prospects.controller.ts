@@ -104,6 +104,7 @@ export class ProspectsController {
         data: result,
       });
     } catch (error) {
+      logger.error({ err: error, uploadId, organisationId }, 'Failed to get column mappings');
       next(error);
     }
   }
@@ -152,6 +153,7 @@ export class ProspectsController {
         data: result,
       });
     } catch (error) {
+      logger.error({ err: error, uploadId, organisationId }, 'Failed to parse CSV with mappings');
       next(error);
     }
   }

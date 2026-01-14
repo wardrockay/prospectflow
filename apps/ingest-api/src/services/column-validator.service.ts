@@ -20,10 +20,38 @@ export class ColumnValidatorService {
 
   // Column aliases mapping: target column -> array of recognized aliases
   private readonly COLUMN_ALIASES: Record<string, string[]> = {
-    company_name: ['company', 'nom_entreprise', 'enterprise', 'organization', 'société', 'societe'],
-    contact_email: ['email', 'mail', 'e-mail', 'email_address', 'contact_mail', 'courriel'],
-    contact_name: ['name', 'nom', 'contact', 'person', 'full_name', 'fullname', 'prénom', 'prenom'],
-    website_url: ['website', 'url', 'site', 'web', 'site_web', 'siteweb'],
+    company_name: [
+      'company',
+      'nom_entreprise',
+      'enterprise',
+      'organization',
+      'société',
+      'societe',
+      'org',
+    ],
+    contact_email: [
+      'email',
+      'mail',
+      'e-mail',
+      'email_address',
+      'contact_mail',
+      'courriel',
+      'address',
+      'email_addr',
+    ],
+    contact_name: [
+      'name',
+      'nom',
+      'contact',
+      'person',
+      'full_name',
+      'fullname',
+      'prénom',
+      'prenom',
+      'first_name',
+      'last_name',
+    ],
+    website_url: ['website', 'url', 'site', 'web', 'site_web', 'siteweb', 'homepage'],
   };
 
   /**

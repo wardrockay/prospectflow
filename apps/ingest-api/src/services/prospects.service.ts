@@ -55,10 +55,17 @@ export class ProspectsService {
     logger.debug({ rowCount, fileSize: file.size }, 'CSV parsed');
 
     const uploadId = uuidv4();
-    const uploadedAt = new Date().toISOString();
 
-    // TODO: Store file temporarily for next step (parsing/validation)
-    // For now, we just return metadata
+    // Store upload record with file buffer in database
+    const upload = await prospectsRepository.createUpload(
+      uploadId,
+      campaignId,
+      organisationId,
+      file.originalname,
+      file.size,
+      file.buffer,
+      rowCount,
+    );
 
     logger.info({ uploadId, campaignId, rowCount }, 'CSV upload processed successfully');
 
@@ -67,7 +74,7 @@ export class ProspectsService {
       filename: file.originalname,
       fileSize: file.size,
       rowCount,
-      uploadedAt,
+      uploadedAt: upload.uploadedAt.toISOString(),
     };
   }
 
