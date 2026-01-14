@@ -47,7 +47,7 @@ describe('ProspectsService', () => {
       expect(result.uploadedAt).toBeDefined();
     });
 
-    it('should throw error when campaign not found', async () => {
+    it('should throw 404 AppError when campaign not found', async () => {
       // Arrange
       const campaignId = 'nonexistent-campaign';
       const organisationId = 'org-123';
@@ -60,9 +60,13 @@ describe('ProspectsService', () => {
       vi.mocked(prospectsRepository.findCampaignByIdAndOrg).mockResolvedValue(null);
 
       // Act & Assert
-      await expect(
-        prospectsService.handleUpload(campaignId, organisationId, mockFile),
-      ).rejects.toThrow('Campaign not found');
+      try {
+        await prospectsService.handleUpload(campaignId, organisationId, mockFile);
+        expect.fail('Should have thrown an error');
+      } catch (error: any) {
+        expect(error.message).toBe('Campaign not found');
+        expect(error.statusCode).toBe(404);
+      }
     });
 
     it('should count CSV rows correctly', async () => {

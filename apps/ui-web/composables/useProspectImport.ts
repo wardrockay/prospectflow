@@ -91,7 +91,7 @@ export const useProspectImport = (campaignId: string) => {
       formData.append('file', file.value);
 
       const response = await $fetch<{ success: boolean; data: UploadResult }>(
-        `/api/v1/campaigns/${campaignId}/prospects/upload`,
+        `/api/campaigns/${campaignId}/prospects/upload`,
         {
           method: 'POST',
           body: formData,
@@ -116,9 +116,9 @@ export const useProspectImport = (campaignId: string) => {
    */
   const downloadTemplate = async () => {
     try {
-      // Use browser download
+      // Use server proxy for authenticated download
       const link = document.createElement('a');
-      link.href = '/api/v1/campaigns/prospects/template';
+      link.href = '/api/campaigns/prospects/template';
       link.download = 'prospect_import_template.csv';
       document.body.appendChild(link);
       link.click();

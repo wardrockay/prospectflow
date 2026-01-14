@@ -4,6 +4,7 @@ import { createChildLogger } from '../utils/logger.js';
 import { AppError } from '../errors/AppError.js';
 import { ZodError } from 'zod';
 import * as Sentry from '@sentry/node';
+import multer from 'multer';
 
 const logger = createChildLogger('ErrorHandler');
 
@@ -23,6 +24,30 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     },
     'Error occurred',
   );
+
+  // 🔍 Multer file upload errors
+  if (err instanceof multer.MulterError) {
+    log.warn({ code: err.code, field: err.field }, '❌ Multer Error');
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        status: 'error',
+        error: 'File too large. Maximum size is 5MB (approximately 5000 prospects)',
+      });
+    }
+    return res.status(400).json({
+      status: 'error',
+      error: `File upload error: ${err.message}`,
+    });
+  }
+
+  // 🔍 Multer file filter rejection (custom error from fileFilter)
+  if (err instanceof Error && err.message.includes('CSV')) {
+    log.warn({ message: err.message }, '❌ File Type Validation Error');
+    return res.status(400).json({
+      status: 'error',
+      error: err.message,
+    });
+  }
 
   // 🔍 Validation error (Zod)
   if (err instanceof ZodError) {

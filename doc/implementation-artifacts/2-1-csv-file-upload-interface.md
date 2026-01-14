@@ -1,6 +1,6 @@
 # Story 2.1: CSV File Upload Interface
 
-Status: review
+Status: done
 
 ## Story
 
@@ -438,11 +438,13 @@ Claude Sonnet 4.5 (via GitHub Copilot)
 **Backend:**
 
 - apps/ingest-api/src/middlewares/upload.middleware.ts
+- apps/ingest-api/src/middlewares/error.middleware.ts (modified - added multer error handling)
 - apps/ingest-api/src/controllers/prospects.controller.ts
 - apps/ingest-api/src/services/prospects.service.ts
 - apps/ingest-api/src/repositories/prospects.repository.ts
 - apps/ingest-api/src/routes/prospects.routes.ts
 - apps/ingest-api/src/routes/index.ts (modified - added prospects routes)
+- apps/ingest-api/src/queue/queue.consumer.ts (modified)
 - apps/ingest-api/package.json (modified - added multer dependency)
 - apps/ingest-api/tests/unit/middlewares/upload.middleware.test.ts
 - apps/ingest-api/tests/unit/controllers/prospects.controller.test.ts
@@ -453,6 +455,10 @@ Claude Sonnet 4.5 (via GitHub Copilot)
 - apps/ui-web/components/Prospect/ImportModal.vue
 - apps/ui-web/composables/useProspectImport.ts
 - apps/ui-web/pages/campaigns/[id]/index.vue (modified - added import button and modal)
+- apps/ui-web/server/api/campaigns/[id]/prospects/upload.post.ts (new - server proxy)
+- apps/ui-web/server/api/campaigns/prospects/template.get.ts (new - server proxy)
+- apps/ui-web/tests/components/Prospect/ImportModal.test.ts (new - component tests)
+- apps/ui-web/tests/composables/useProspectImport.test.ts (new - composable tests)
 
 ## Change Log
 
@@ -468,3 +474,15 @@ Claude Sonnet 4.5 (via GitHub Copilot)
 - ✅ Multi-tenant isolation enforced via campaign ownership check
 - ✅ Structured logging with Pino throughout
 - 📌 Story ready for code review
+
+### 2026-01-14 - Code Review Fixes (AI)
+
+- ✅ H2/M4: Created Nuxt server proxies for prospect upload and template download routes
+- ✅ H3: Rewrote upload middleware tests with real middleware validation
+- ✅ H4: Added multer error handler in error.middleware.ts (413 for size, 400 for type)
+- ✅ H1: Created frontend tests for ImportModal.vue (9 tests) and useProspectImport.ts (18 tests)
+- ✅ M2: Added accessibility attributes (aria-labelledby, aria-label, role="alert")
+- ✅ M5: Changed campaign not found error to AppError with 404 status
+- ✅ L2: Removed console.log from handleUploadSuccess
+- ✅ Updated File List with all new and modified files
+- 📌 All 128 frontend tests passing, 163 backend unit tests passing

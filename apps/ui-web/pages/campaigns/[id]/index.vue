@@ -25,7 +25,6 @@
 
   // Handle successful upload
   const handleUploadSuccess = (uploadId: string) => {
-    console.log('Upload successful:', uploadId);
     // TODO: Navigate to validation step in next story
     useToast().add({
       title: 'Import en cours',

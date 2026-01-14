@@ -4,6 +4,7 @@
 import { createChildLogger } from '../utils/logger.js';
 import { prospectsRepository } from '../repositories/prospects.repository.js';
 import { v4 as uuidv4 } from 'uuid';
+import { AppError } from '../errors/AppError.js';
 
 const logger = createChildLogger('ProspectsService');
 
@@ -37,7 +38,7 @@ export class ProspectsService {
 
     if (!campaign) {
       logger.warn({ campaignId, organisationId }, 'Campaign not found or access denied');
-      throw new Error('Campaign not found');
+      throw new AppError('Campaign not found', 404);
     }
 
     // Count rows in CSV (excluding header)

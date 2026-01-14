@@ -107,15 +107,20 @@
 </script>
 
 <template>
-  <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-2xl' }">
+  <UModal
+    v-model="isOpen"
+    :ui="{ width: 'sm:max-w-2xl' }"
+    :aria="{ labelledby: 'import-modal-title' }"
+  >
     <UCard>
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Importer des Prospects</h3>
+          <h3 id="import-modal-title" class="text-lg font-semibold">Importer des Prospects</h3>
           <UButton
             color="gray"
             variant="ghost"
             icon="i-heroicons-x-mark-20-solid"
+            aria-label="Fermer"
             @click="handleCancel"
           />
         </div>
@@ -152,6 +157,8 @@
         <div
           class="relative rounded-lg border-2 border-dashed border-gray-300 p-8 text-center transition-colors hover:border-primary-500"
           :class="{ 'border-primary-500 bg-primary-50': file }"
+          role="region"
+          aria-label="Zone de téléchargement de fichier CSV"
           @drop="handleDrop"
           @dragover.prevent
         >
@@ -201,6 +208,8 @@
           variant="soft"
           icon="i-heroicons-exclamation-triangle"
           :title="error"
+          role="alert"
+          aria-live="polite"
         />
       </div>
 
