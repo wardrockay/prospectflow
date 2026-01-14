@@ -1,6 +1,6 @@
 # Story UI-1.3: Campaign Details Page
 
-**Status**: review  
+**Status**: done  
 **Epic**: UI-1 (Campaign Management UI)  
 **Story Points**: 3  
 **Created**: 2026-01-14  
@@ -1028,12 +1028,13 @@ Applied in:
 
 - `apps/ui-web/pages/campaigns/[id].vue` - Campaign details page component
 - `apps/ui-web/composables/useCampaign.ts` - Single campaign data fetching composable
+- `apps/ui-web/composables/useCampaign.test.ts` - Unit tests for useCampaign composable (12 tests)
 - `apps/ui-web/server/api/campaigns/[id].get.ts` - Server proxy for GET campaign details
 - `apps/ui-web/server/api/campaigns/[id].patch.ts` - Server proxy for PATCH campaign updates
 
 **Modified:**
 
-- `apps/ui-web/components/Campaign/StatusBadge.vue` - Added 'archived' status support
+- `apps/ui-web/components/Campaign/StatusBadge.vue` - Added 'archived' status with neutral color
 - `apps/ui-web/composables/useCampaigns.ts` - Renamed Campaign to CampaignListItem
 - `apps/ui-web/pages/campaigns/index.vue` - Updated type imports to CampaignListItem
 
@@ -1056,3 +1057,11 @@ Applied in:
 - Loading skeletons and error handling
 - Status badge extended to support archived campaigns
 - TypeScript and accessibility issues resolved
+
+**2026-01-14:** Code Review Fixes Applied
+
+- **M1 Fixed:** StatusBadge 'archived' color changed from 'gray' to 'neutral' (differentiates from 'draft')
+- **M2-M3 Fixed:** Added "Voir tous les prospects" button in prospects preview section
+- **M4 Fixed:** UModal now has proper `aria-labelledby` linking to modal title
+- **H1 Fixed:** Created `useCampaign.test.ts` with 12 comprehensive unit tests
+- **Note:** Server proxy tests (H3) deferred - require Nitro/H3 test infrastructure not currently in place

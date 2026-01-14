@@ -236,20 +236,41 @@
         <!-- Prospects Preview (Placeholder for Task 4) -->
         <UCard>
           <template #header>
-            <h2 class="text-lg font-semibold">Prospects ({{ campaign.prospect_count }})</h2>
+            <div class="flex justify-between items-center">
+              <h2 class="text-lg font-semibold">Prospects ({{ campaign.prospect_count }})</h2>
+              <UButton
+                v-if="campaign.prospect_count > 0"
+                variant="ghost"
+                color="primary"
+                size="sm"
+                icon="i-heroicons-arrow-right"
+                trailing
+                @click="router.push(`/campaigns/${campaignId}/prospects`)"
+              >
+                Voir tous les prospects
+              </UButton>
+            </div>
           </template>
 
-          <div class="text-center py-8 text-gray-500">
-            <p>Aperçu des prospects - À implémenter</p>
+          <div v-if="campaign.prospect_count === 0" class="text-center py-8 text-gray-500">
+            <UIcon name="i-heroicons-users" class="text-4xl mb-2" />
+            <p>Aucun prospect dans cette campagne</p>
+          </div>
+          <div v-else class="text-center py-8 text-gray-500">
+            <p>Aperçu des 5 premiers prospects - À implémenter</p>
           </div>
         </UCard>
       </div>
 
       <!-- Archive Confirmation Modal -->
-      <UModal v-model="showArchiveModal" :ui="{ width: 'sm:max-w-md' }">
+      <UModal
+        v-model="showArchiveModal"
+        :ui="{ width: 'sm:max-w-md' }"
+        :aria="{ labelledby: 'archive-modal-title' }"
+      >
         <UCard>
           <template #header>
-            <h3 id="modal-title" class="text-lg font-semibold">Archiver la campagne</h3>
+            <h3 id="archive-modal-title" class="text-lg font-semibold">Archiver la campagne</h3>
           </template>
 
           <div class="space-y-4">
