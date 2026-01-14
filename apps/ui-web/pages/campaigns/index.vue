@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { Campaign } from '~/composables/useCampaigns';
+  import type { CampaignListItem } from '~/composables/useCampaigns';
 
   definePageMeta({
     middleware: 'auth',
@@ -57,13 +57,17 @@
 
     // Apply status filter (client-side for better UX)
     if (selectedStatus.value) {
-      result = result.filter((campaign: Campaign) => campaign.status === selectedStatus.value);
+      result = result.filter(
+        (campaign: CampaignListItem) => campaign.status === selectedStatus.value
+      );
     }
 
     // Apply search filter
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase();
-      result = result.filter((campaign: Campaign) => campaign.name.toLowerCase().includes(query));
+      result = result.filter((campaign: CampaignListItem) =>
+        campaign.name.toLowerCase().includes(query)
+      );
     }
 
     return result;

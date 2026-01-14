@@ -1,6 +1,6 @@
 import type { Ref } from 'vue';
 
-export interface Campaign {
+export interface CampaignListItem {
   id: string;
   name: string;
   description: string | null;
@@ -11,7 +11,7 @@ export interface Campaign {
 }
 
 export interface CampaignListResponse {
-  campaigns: Campaign[];
+  campaigns: CampaignListItem[];
   pagination: {
     page: number;
     limit: number;

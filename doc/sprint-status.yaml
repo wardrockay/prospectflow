@@ -86,7 +86,7 @@ development_status:
   epic-ui-1: in-progress
   ui-1-1-campaign-list-view: done
   ui-1-2-campaign-creation-form: done
-  ui-1-3-campaign-details-page: backlog
+  ui-1-3-campaign-details-page: review
   ui-1-4-campaign-editing: backlog
   epic-ui-1-retrospective: optional
 

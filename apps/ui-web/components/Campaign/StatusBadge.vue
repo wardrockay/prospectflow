@@ -1,6 +1,6 @@
 <script setup lang="ts">
   const props = defineProps<{
-    status: 'draft' | 'active' | 'paused' | 'completed';
+    status: 'draft' | 'active' | 'paused' | 'completed' | 'archived';
   }>();
 
   const statusConfig = {
@@ -19,6 +19,10 @@
     completed: {
       label: 'Terminé',
       color: 'blue' as const,
+    },
+    archived: {
+      label: 'Archivé',
+      color: 'gray' as const,
     },
   };
 
