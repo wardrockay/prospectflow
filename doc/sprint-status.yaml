@@ -91,8 +91,8 @@ development_status:
   epic-ui-1-retrospective: optional
 
   # Epic E2: Prospect Import & Validation Pipeline
-  epic-2: backlog
-  2-1-csv-file-upload-interface: backlog
+  epic-2: in-progress
+  2-1-csv-file-upload-interface: review
   2-2-csv-parsing-and-column-validation: backlog
   2-3-email-format-and-data-validation: backlog
   2-4-duplicate-detection-within-upload: backlog

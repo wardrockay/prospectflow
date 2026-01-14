@@ -120,7 +120,7 @@ export abstract class QueueConsumer {
    */
   private async handleMessage(msg: ConsumeMessage): Promise<void> {
     let job: QueueJob | undefined;
-    let isParseError = false;
+    const isParseError = false;
 
     try {
       // Parse message content

@@ -20,6 +20,20 @@
   const showArchiveModal = ref(false);
   const isArchiving = ref(false);
 
+  // Import modal state
+  const showImportModal = ref(false);
+
+  // Handle successful upload
+  const handleUploadSuccess = (uploadId: string) => {
+    console.log('Upload successful:', uploadId);
+    // TODO: Navigate to validation step in next story
+    useToast().add({
+      title: 'Import en cours',
+      description: 'Les prospects seront validés dans la prochaine étape',
+      color: 'blue',
+    });
+  };
+
   // Compute error message based on status
   const errorMessage = computed(() => {
     if (!error.value) return null;
@@ -238,29 +252,47 @@
           <template #header>
             <div class="flex justify-between items-center">
               <h2 class="text-lg font-semibold">Prospects ({{ campaign.prospect_count }})</h2>
-              <UButton
-                v-if="campaign.prospect_count > 0"
-                variant="ghost"
-                color="primary"
-                size="sm"
-                icon="i-heroicons-arrow-right"
-                trailing
-                @click="router.push(`/campaigns/${campaignId}/prospects`)"
-              >
-                Voir tous les prospects
-              </UButton>
+              <div class="flex gap-2">
+                <UButton
+                  color="primary"
+                  icon="i-heroicons-arrow-up-tray"
+                  @click="showImportModal = true"
+                >
+                  Importer des Prospects
+                </UButton>
+                <UButton
+                  v-if="campaign.prospect_count > 0"
+                  variant="ghost"
+                  color="primary"
+                  size="sm"
+                  icon="i-heroicons-arrow-right"
+                  trailing
+                  @click="router.push(`/campaigns/${campaignId}/prospects`)"
+                >
+                  Voir tous les prospects
+                </UButton>
+              </div>
             </div>
           </template>
 
           <div v-if="campaign.prospect_count === 0" class="text-center py-8 text-gray-500">
             <UIcon name="i-heroicons-users" class="text-4xl mb-2" />
             <p>Aucun prospect dans cette campagne</p>
+            <p class="text-sm mt-2">Cliquez sur "Importer des Prospects" pour commencer</p>
           </div>
           <div v-else class="text-center py-8 text-gray-500">
             <p>Aperçu des 5 premiers prospects - À implémenter</p>
           </div>
         </UCard>
       </div>
+
+      <!-- Import Prospects Modal -->
+      <ProspectImportModal
+        v-model="showImportModal"
+        :campaign-id="campaignId"
+        @close="showImportModal = false"
+        @uploaded="handleUploadSuccess"
+      />
 
       <!-- Archive Confirmation Modal -->
       <UModal
