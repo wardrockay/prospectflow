@@ -22,9 +22,10 @@ CREATE TABLE IF NOT EXISTS outreach.import_uploads (
         REFERENCES iam.organisations(id) 
         ON DELETE CASCADE,
     
+    -- Campaigns table has composite PK (organisation_id, id)
     CONSTRAINT fk_import_uploads_campaign 
-        FOREIGN KEY (campaign_id) 
-        REFERENCES outreach.campaigns(id) 
+        FOREIGN KEY (organisation_id, campaign_id) 
+        REFERENCES outreach.campaigns(organisation_id, id) 
         ON DELETE CASCADE,
     
     -- Constraints
