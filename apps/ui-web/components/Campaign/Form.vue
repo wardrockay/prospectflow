@@ -4,6 +4,7 @@
   interface Props {
     mode: 'create' | 'edit';
     initialData?: Partial<CampaignFormData>;
+    campaignId?: string; // Required when mode is 'edit'
   }
 
   const props = defineProps<Props>();
@@ -15,7 +16,9 @@
 
   // Initialize form with composable
   const { form, errors, isSubmitting, isValid, validateField, submitForm } = useCampaignForm(
-    props.initialData
+    props.initialData,
+    props.mode,
+    props.campaignId
   );
 
   // Character count computed properties
@@ -58,10 +61,13 @@
     try {
       const response = await submitForm();
 
-      // Show success toast
+      // Show success toast with dynamic message based on mode
       toast.add({
         title: 'Succès',
-        description: 'Campagne créée avec succès',
+        description:
+          props.mode === 'create'
+            ? 'Campagne créée avec succès'
+            : 'Campagne mise à jour avec succès',
         color: 'green',
         icon: 'i-heroicons-check-circle',
       });

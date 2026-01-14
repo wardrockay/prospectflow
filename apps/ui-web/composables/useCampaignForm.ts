@@ -33,10 +33,17 @@ const validationRules = {
 };
 
 /**
- * Composable for managing campaign creation form
+ * Composable for managing campaign creation and editing form
  * Handles validation, submission, and error states
+ * @param initialData - Initial form data (for pre-filling in edit mode)
+ * @param mode - Form mode: 'create' or 'edit'
+ * @param campaignId - Campaign ID (required when mode is 'edit')
  */
-export const useCampaignForm = (initialData?: Partial<CampaignFormData>) => {
+export const useCampaignForm = (
+  initialData?: Partial<CampaignFormData>,
+  mode: 'create' | 'edit' = 'create',
+  campaignId?: string
+) => {
   // Form reactive state
   const form = ref<CampaignFormData>({
     name: initialData?.name || '',
@@ -98,8 +105,8 @@ export const useCampaignForm = (initialData?: Partial<CampaignFormData>) => {
   };
 
   /**
-   * Submit form to create campaign
-   * Returns the created campaign data or throws error
+   * Submit form to create or update campaign
+   * Returns the created/updated campaign data or throws error
    */
   const submitForm = async () => {
     // Clear any previous form-level errors
@@ -113,13 +120,27 @@ export const useCampaignForm = (initialData?: Partial<CampaignFormData>) => {
     isSubmitting.value = true;
 
     try {
-      const response = await $fetch('/api/campaigns', {
-        method: 'POST',
-        body: {
-          name: form.value.name.trim(),
-          valueProp: form.value.valueProp.trim(),
-        },
-      });
+      let response;
+
+      if (mode === 'edit' && campaignId) {
+        // PATCH request for edit mode
+        response = await $fetch(`/api/campaigns/${campaignId}`, {
+          method: 'PATCH',
+          body: {
+            name: form.value.name.trim(),
+            valueProp: form.value.valueProp.trim() || null,
+          },
+        });
+      } else {
+        // POST request for create mode
+        response = await $fetch('/api/campaigns', {
+          method: 'POST',
+          body: {
+            name: form.value.name.trim(),
+            valueProp: form.value.valueProp.trim(),
+          },
+        });
+      }
 
       return response;
     } catch (error: any) {
@@ -130,10 +151,16 @@ export const useCampaignForm = (initialData?: Partial<CampaignFormData>) => {
         errors.value.form = 'Session expirée. Veuillez vous reconnecter.';
       } else if (error.statusCode === 403) {
         errors.value.form = "Accès refusé. Vous n'avez pas les permissions nécessaires.";
+      } else if (error.statusCode === 404 && mode === 'edit') {
+        errors.value.form = 'Campagne introuvable';
       } else if (error.statusCode === 500) {
         errors.value.form = 'Erreur serveur. Veuillez réessayer.';
       } else {
-        errors.value.form = error.data?.message || 'Erreur lors de la création de la campagne';
+        const defaultMsg =
+          mode === 'edit'
+            ? 'Erreur lors de la mise à jour de la campagne'
+            : 'Erreur lors de la création de la campagne';
+        errors.value.form = error.data?.message || defaultMsg;
       }
       throw error;
     } finally {
