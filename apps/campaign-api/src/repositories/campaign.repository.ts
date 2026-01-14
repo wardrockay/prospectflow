@@ -91,6 +91,7 @@ export class CampaignRepository {
 
     // Fetch campaigns with aggregated metrics via LEFT JOINs
     // LEFT JOIN used (not INNER) to include campaigns with 0 prospects/messages
+    // Prospects counted via campaign_enrollments -> positions (not tasks)
     const result = await trackDatabaseQuery('SELECT', 'outreach', async () => {
       return this.pool.query<CampaignListItem>(
         `SELECT
@@ -102,7 +103,7 @@ export class CampaignRepository {
            c.status,
            c.created_at AS "createdAt",
            c.updated_at AS "updatedAt",
-           COALESCE(COUNT(DISTINCT p.id), 0)::int AS "totalProspects",
+           COALESCE(COUNT(DISTINCT e.id), 0)::int AS "totalProspects",
            COALESCE(COUNT(DISTINCT CASE WHEN m.sent_at IS NOT NULL THEN m.id END), 0)::int AS "emailsSent",
            COALESCE(COUNT(DISTINCT CASE WHEN m.replied_at IS NOT NULL THEN m.id END), 0)::int AS "responseCount",
            -- Calculate response rate as percentage: (replies / sent_emails) * 100
@@ -117,8 +118,7 @@ export class CampaignRepository {
              ELSE 0
            END AS "responseRate"
          FROM outreach.campaigns c
-         LEFT JOIN outreach.tasks t ON t.organisation_id = c.organisation_id AND t.campaign_id = c.id
-         LEFT JOIN crm.people p ON p.organisation_id = t.organisation_id AND p.id = t.person_id
+         LEFT JOIN outreach.campaign_enrollments e ON e.organisation_id = c.organisation_id AND e.campaign_id = c.id
          LEFT JOIN outreach.messages m ON m.organisation_id = c.organisation_id AND m.campaign_id = c.id
          WHERE c.organisation_id = $1 ${statusFilter}
          GROUP BY c.id, c.organisation_id, c.name, c.value_prop, c.template_id, c.status, c.created_at, c.updated_at
@@ -161,7 +161,7 @@ export class CampaignRepository {
            c.updated_at AS "updatedAt",
 
            -- Aggregated metrics (same as list query for consistency)
-           COALESCE(COUNT(DISTINCT p.id), 0)::int AS "totalProspects",
+           COALESCE(COUNT(DISTINCT e.id), 0)::int AS "totalProspects",
            COALESCE(COUNT(DISTINCT CASE WHEN m.sent_at IS NOT NULL THEN m.id END), 0)::int AS "emailsSent",
            COALESCE(COUNT(DISTINCT CASE WHEN m.replied_at IS NOT NULL THEN m.id END), 0)::int AS "responseCount",
            CASE
@@ -176,12 +176,9 @@ export class CampaignRepository {
 
          FROM outreach.campaigns c
          -- LEFT JOINs to include campaigns with 0 prospects/messages
-         LEFT JOIN outreach.tasks t
-           ON t.organisation_id = c.organisation_id
-           AND t.campaign_id = c.id
-         LEFT JOIN crm.people p
-           ON p.organisation_id = t.organisation_id
-           AND p.id = t.person_id
+         LEFT JOIN outreach.campaign_enrollments e
+           ON e.organisation_id = c.organisation_id
+           AND e.campaign_id = c.id
          LEFT JOIN outreach.messages m
            ON m.organisation_id = c.organisation_id
            AND m.campaign_id = c.id
