@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { RouteLocationNormalized } from 'vue-router';
 
 // Mock Nuxt composables
 const mockNavigateTo = vi.fn();
@@ -14,10 +15,13 @@ const mockUseAuth = vi.fn(() => ({
 // Set up global mocks before importing the middleware
 vi.stubGlobal('navigateTo', mockNavigateTo);
 vi.stubGlobal('useAuth', mockUseAuth);
-vi.stubGlobal('defineNuxtRouteMiddleware', (fn: any) => fn);
+vi.stubGlobal('defineNuxtRouteMiddleware', (fn: (to: RouteLocationNormalized) => unknown) => fn);
 
 // Import after mocking
 import authMiddleware from './auth';
+
+// Type the middleware function
+const middleware = authMiddleware as (to: RouteLocationNormalized) => unknown;
 
 describe('Auth Middleware', () => {
   beforeEach(() => {
@@ -28,7 +32,7 @@ describe('Auth Middleware', () => {
 
   describe('Protected routes', () => {
     it('should allow access when authenticated', () => {
-      const result = authMiddleware({ path: '/dashboard' } as any, {} as any);
+      const result = middleware({ path: '/dashboard' } as RouteLocationNormalized);
       expect(result).toBeUndefined();
       expect(mockNavigateTo).not.toHaveBeenCalled();
     });
@@ -36,7 +40,7 @@ describe('Auth Middleware', () => {
     it('should redirect to login when not authenticated', () => {
       mockIsAuthenticated.value = false;
 
-      authMiddleware({ path: '/dashboard' } as any, {} as any);
+      middleware({ path: '/dashboard' } as RouteLocationNormalized);
 
       expect(mockNavigateTo).toHaveBeenCalledWith('/login');
     });
@@ -44,7 +48,7 @@ describe('Auth Middleware', () => {
     it('should redirect to login with expired param when token expired', () => {
       mockIsTokenExpired.mockReturnValue(true);
 
-      authMiddleware({ path: '/dashboard' } as any, {} as any);
+      middleware({ path: '/dashboard' } as RouteLocationNormalized);
 
       expect(mockNavigateTo).toHaveBeenCalledWith({
         path: '/login',
@@ -57,7 +61,7 @@ describe('Auth Middleware', () => {
     it('should allow access to login page when not authenticated', () => {
       mockIsAuthenticated.value = false;
 
-      const result = authMiddleware({ path: '/login' } as any, {} as any);
+      const result = middleware({ path: '/login' } as RouteLocationNormalized);
 
       expect(result).toBeUndefined();
       expect(mockNavigateTo).not.toHaveBeenCalled();
@@ -66,7 +70,7 @@ describe('Auth Middleware', () => {
     it('should redirect to home when accessing login while authenticated', () => {
       mockIsAuthenticated.value = true;
 
-      authMiddleware({ path: '/login' } as any, {} as any);
+      middleware({ path: '/login' } as RouteLocationNormalized);
 
       expect(mockNavigateTo).toHaveBeenCalledWith('/');
     });
@@ -74,7 +78,7 @@ describe('Auth Middleware', () => {
     it('should allow access to callback page', () => {
       mockIsAuthenticated.value = false;
 
-      const result = authMiddleware({ path: '/auth/callback' } as any, {} as any);
+      const result = middleware({ path: '/auth/callback' } as RouteLocationNormalized);
 
       expect(result).toBeUndefined();
       expect(mockNavigateTo).not.toHaveBeenCalled();
@@ -87,7 +91,7 @@ describe('Auth Middleware', () => {
         throw new Error('Test error');
       });
 
-      authMiddleware({ path: '/dashboard' } as any, {} as any);
+      middleware({ path: '/dashboard' } as RouteLocationNormalized);
 
       expect(mockNavigateTo).toHaveBeenCalledWith('/login');
     });

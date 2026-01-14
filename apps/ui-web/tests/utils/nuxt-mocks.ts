@@ -42,13 +42,11 @@ export const mockUseAuth = () => ({
 
 // Setup global mocks for Nuxt auto-imports
 export function setupNuxtMocks() {
-  // @ts-expect-error - global mock
+  // @ts-expect-error - assigning function to global
   globalThis.useRuntimeConfig = () => mockRuntimeConfig;
 
-  // @ts-expect-error - global mock
   globalThis.navigateTo = mockNavigateTo;
 
-  // @ts-expect-error - global mock
   globalThis.$fetch = mockFetch;
 
   // @ts-expect-error - global mock
@@ -59,10 +57,8 @@ export function setupNuxtMocks() {
     value: mockCookieValues[name] ?? null,
   });
 
-  // @ts-expect-error - global mock
   globalThis.ref = ref;
 
-  // @ts-expect-error - global mock
   globalThis.computed = computed;
 
   // @ts-expect-error - global mock
@@ -71,8 +67,7 @@ export function setupNuxtMocks() {
   // @ts-expect-error - global mock
   globalThis.definePageMeta = vi.fn();
 
-  // @ts-expect-error - global mock
-  globalThis.defineNuxtRouteMiddleware = (fn: any) => fn;
+  globalThis.defineNuxtRouteMiddleware = (fn: unknown) => fn;
 
   // @ts-expect-error - global mock for useAuth composable
   globalThis.useAuth = mockUseAuth;

@@ -4,7 +4,6 @@
   });
 
   const route = useRoute();
-  const config = useRuntimeConfig();
 
   // Manage authentication state and error display
   const isLoading = ref(true);

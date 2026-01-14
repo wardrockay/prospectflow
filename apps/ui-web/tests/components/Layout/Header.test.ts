@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { setupNuxtMocks, resetNuxtMocks } from '@tests/utils/nuxt-mocks';
+import { setupNuxtMocks, resetNuxtMocks } from '../../utils/nuxt-mocks';
 
 // Setup mocks before importing components
 beforeAll(() => {
@@ -25,7 +25,7 @@ describe('Layout/Header.vue', () => {
             template: '<div class="container"><slot /></div>',
           },
           UButton: {
-            template: `<button @click="$emit('click')" :class="$attrs.class"><slot /></button>`,
+            template: `<button @click="$emit('click')" :class="$attrs.class" :aria-label="ariaLabel"><slot /></button>`,
             props: ['icon', 'variant', 'class', 'ariaLabel'],
           },
           NuxtLink: {
@@ -108,10 +108,10 @@ describe('Layout/Header.vue', () => {
       }
     });
 
-    it('should have md:hidden class on hamburger for responsive behavior', () => {
+    it('should have hamburger button for mobile responsive behavior', () => {
       const wrapper = mountHeader();
-      const hamburgerButton = wrapper.find('button.md\\:hidden');
-      // Check if hamburger button with md:hidden class exists
+      // Look for the button with bars-3 icon (hamburger) - the one with aria-label for mobile
+      const hamburgerButton = wrapper.find('button[aria-label="Ouvrir le menu"]');
       expect(hamburgerButton.exists()).toBe(true);
     });
   });

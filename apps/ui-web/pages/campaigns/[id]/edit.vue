@@ -27,20 +27,12 @@
     };
   });
 
-  // Toast for notifications
-  const toast = useToast();
-
   /**
    * Handle successful form submission
    * Navigate back to campaign details page
+   * Note: Toast is handled by CampaignForm component
    */
   const handleSuccess = () => {
-    toast.add({
-      title: 'Succès',
-      description: 'Campagne mise à jour avec succès',
-      color: 'green',
-      icon: 'i-heroicons-check-circle',
-    });
     router.push(`/campaigns/${campaignId}`);
   };
 

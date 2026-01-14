@@ -1,25 +1,11 @@
-import { vi, type Mock } from 'vitest';
-import { ref, computed, type Ref, type ComputedRef } from 'vue';
+import { vi } from 'vitest';
+import { ref as vueRef, computed as vueComputed } from 'vue';
 
-// Type declarations for Nuxt auto-imports on globalThis
-declare global {
-  // eslint-disable-next-line no-var
-  var useRuntimeConfig: Mock;
-  // eslint-disable-next-line no-var
-  var navigateTo: Mock;
-  // eslint-disable-next-line no-var
-  var $fetch: Mock;
-  // eslint-disable-next-line no-var
-  var useFetch: Mock;
-  // eslint-disable-next-line no-var
-  var useCookie: Mock;
-  // eslint-disable-next-line no-var
-  var defineNuxtRouteMiddleware: (fn: unknown) => unknown;
-  // eslint-disable-next-line no-var
-  var ref: (typeof import('vue'))['ref'];
-  // eslint-disable-next-line no-var
-  var computed: (typeof import('vue'))['computed'];
-}
+// Ensure this is treated as a module
+export {};
+
+// Note: Type declarations for Nuxt auto-imports are already provided by .nuxt/types
+// We only need to assign the mock implementations to globalThis
 
 // Mock Nuxt auto-imports globally for all tests
 globalThis.useRuntimeConfig = vi.fn(() => ({
@@ -30,24 +16,24 @@ globalThis.useRuntimeConfig = vi.fn(() => ({
     logoutUri: 'http://localhost:4000/login',
     apiBase: 'http://localhost:3001',
   },
-}));
+})) as typeof useRuntimeConfig;
 
-globalThis.navigateTo = vi.fn();
-globalThis.$fetch = vi.fn();
+globalThis.navigateTo = vi.fn() as typeof navigateTo;
+globalThis.$fetch = vi.fn() as typeof $fetch;
 
 globalThis.useFetch = vi.fn(() => ({
-  data: ref(null),
-  pending: ref(false),
-  error: ref(null),
+  data: vueRef(null),
+  pending: vueRef(false),
+  error: vueRef(null),
   refresh: vi.fn(),
-}));
+})) as typeof useFetch;
 
 globalThis.useCookie = vi.fn((name: string) => ({
   value: name === 'token_expires_at' ? String(Date.now() + 3600000) : null,
-}));
+})) as typeof useCookie;
 
-globalThis.defineNuxtRouteMiddleware = (fn: unknown) => fn;
+globalThis.defineNuxtRouteMiddleware = ((fn: unknown) => fn) as typeof defineNuxtRouteMiddleware;
 
 // Mock Vue composables
-globalThis.ref = ref;
-globalThis.computed = computed;
+globalThis.ref = vueRef;
+globalThis.computed = vueComputed;

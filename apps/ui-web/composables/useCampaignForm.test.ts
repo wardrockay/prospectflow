@@ -197,7 +197,7 @@ describe('useCampaignForm', () => {
 
   describe('isValid computed', () => {
     it('should be true when form has valid data', () => {
-      const { form, isValid } = useCampaignForm({
+      const { isValid } = useCampaignForm({
         name: 'Valid Name',
         valueProp: 'Valid prop',
       });
@@ -379,6 +379,107 @@ describe('useCampaignForm', () => {
       }
 
       expect(isSubmitting.value).toBe(false);
+    });
+  });
+
+  describe('edit mode', () => {
+    it('should call PATCH endpoint when mode is edit', async () => {
+      const mockResponse = {
+        id: 'campaign-123',
+        name: 'Updated Campaign',
+        valueProp: 'Updated prop',
+        status: 'draft',
+      };
+      mockFetch.mockResolvedValueOnce(mockResponse);
+
+      const { form, submitForm } = useCampaignForm(
+        { name: 'Original', valueProp: 'Original prop' },
+        'edit',
+        'campaign-123'
+      );
+      form.value.name = 'Updated Campaign';
+      form.value.valueProp = 'Updated prop';
+
+      const result = await submitForm();
+
+      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/campaign-123', {
+        method: 'PATCH',
+        body: {
+          name: 'Updated Campaign',
+          valueProp: 'Updated prop',
+        },
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should call POST endpoint when mode is create (default)', async () => {
+      const mockResponse = { id: 'new-123', name: 'New', valueProp: '', status: 'draft' };
+      mockFetch.mockResolvedValueOnce(mockResponse);
+
+      const { form, submitForm } = useCampaignForm();
+      form.value.name = 'New Campaign';
+      form.value.valueProp = '';
+
+      await submitForm();
+
+      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns', {
+        method: 'POST',
+        body: {
+          name: 'New Campaign',
+          valueProp: '',
+        },
+      });
+    });
+
+    it('should set 404 error message in edit mode', async () => {
+      const error = { statusCode: 404 };
+      mockFetch.mockRejectedValueOnce(error);
+
+      const { form, errors, submitForm } = useCampaignForm(
+        { name: 'Test', valueProp: '' },
+        'edit',
+        'missing-id'
+      );
+      form.value.name = 'Test';
+      form.value.valueProp = '';
+
+      await expect(submitForm()).rejects.toEqual(error);
+      expect(errors.value.form).toBe('Campagne introuvable');
+    });
+
+    it('should initialize form with initial data in edit mode', () => {
+      const initialData = {
+        name: 'Existing Campaign',
+        valueProp: 'Existing value prop',
+      };
+
+      const { form } = useCampaignForm(initialData, 'edit', 'campaign-123');
+
+      expect(form.value.name).toBe('Existing Campaign');
+      expect(form.value.valueProp).toBe('Existing value prop');
+    });
+
+    it('should handle empty valueProp in PATCH by sending null', async () => {
+      const mockResponse = { id: 'campaign-123', name: 'Test', valueProp: null, status: 'draft' };
+      mockFetch.mockResolvedValueOnce(mockResponse);
+
+      const { form, submitForm } = useCampaignForm(
+        { name: 'Test', valueProp: '' },
+        'edit',
+        'campaign-123'
+      );
+      form.value.name = 'Test';
+      form.value.valueProp = '';
+
+      await submitForm();
+
+      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/campaign-123', {
+        method: 'PATCH',
+        body: {
+          name: 'Test',
+          valueProp: null,
+        },
+      });
     });
   });
 });

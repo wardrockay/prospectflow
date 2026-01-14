@@ -22,7 +22,7 @@
     },
     archived: {
       label: 'Archivé',
-      color: 'neutral' as const,
+      color: 'gray' as const,
     },
   };
 

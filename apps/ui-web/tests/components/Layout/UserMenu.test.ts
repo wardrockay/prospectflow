@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { setupNuxtMocks, resetNuxtMocks, mockLogout } from '@tests/utils/nuxt-mocks';
+import { setupNuxtMocks, resetNuxtMocks } from '../../utils/nuxt-mocks';
 
 // Setup mocks before importing components
 beforeAll(() => {

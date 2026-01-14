@@ -1,68 +1,61 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ref, computed } from 'vue';
 
-// Mock Nuxt composables
+// Shared mock state - declared before vi.mock so hoisting works
+const mockTokenValue = { value: String(Date.now() + 3600000) as string | null };
 const mockNavigateTo = vi.fn();
-const mockUseRuntimeConfig = vi.fn(() => ({
+const mockFetch = vi.fn();
+const mockConfig = {
   public: {
     cognitoHostedUI: 'https://test.auth.cognito.com',
     cognitoClientId: 'test-client-id',
     cognitoRedirectUri: 'http://localhost:4000/auth/callback',
     logoutUri: 'http://localhost:4000/login',
   },
+};
+
+// Mock Vue reactivity functions that will use our mockTokenValue
+vi.stubGlobal('ref', ref);
+vi.stubGlobal('computed', computed);
+vi.stubGlobal('navigateTo', mockNavigateTo);
+vi.stubGlobal('$fetch', mockFetch);
+vi.stubGlobal('useRuntimeConfig', () => mockConfig);
+
+// useCookie mock returns an object with a getter/setter .value that proxies to mockTokenValue
+vi.stubGlobal('useCookie', () => ({
+  get value() {
+    return mockTokenValue.value;
+  },
+  set value(v: string | null) {
+    mockTokenValue.value = v;
+  },
 }));
 
-const mockUseCookie = vi.fn((name: string) => ({
-  value: name === 'token_expires_at' ? String(Date.now() + 3600000) : null,
-}));
-
-const mockFetch = vi.fn();
-
-vi.mock('#app', () => ({
-  navigateTo: mockNavigateTo,
-  useRuntimeConfig: mockUseRuntimeConfig,
-  useCookie: mockUseCookie,
-  $fetch: mockFetch,
-}));
-
-vi.mock('#imports', () => ({
-  useRuntimeConfig: mockUseRuntimeConfig,
-  useCookie: mockUseCookie,
-  navigateTo: mockNavigateTo,
-  $fetch: mockFetch,
-}));
-
-// Import after mocking
+// Import after all mocks are set up
 import { useAuth } from '~/composables/useAuth';
 
 describe('useAuth Composable', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset token to valid state before each test
+    mockTokenValue.value = String(Date.now() + 3600000);
   });
 
   describe('isAuthenticated', () => {
     it('should return true when token exists and not expired', () => {
-      mockUseCookie.mockReturnValue({
-        value: String(Date.now() + 3600000), // Expires in 1 hour
-      });
-
+      mockTokenValue.value = String(Date.now() + 3600000); // Expires in 1 hour
       const { isAuthenticated } = useAuth();
       expect(isAuthenticated.value).toBe(true);
     });
 
     it('should return false when token is expired', () => {
-      mockUseCookie.mockReturnValue({
-        value: String(Date.now() - 1000), // Expired 1 second ago
-      });
-
+      mockTokenValue.value = String(Date.now() - 1000); // Expired 1 second ago
       const { isAuthenticated } = useAuth();
       expect(isAuthenticated.value).toBe(false);
     });
 
     it('should return false when no token exists', () => {
-      mockUseCookie.mockReturnValue({
-        value: null,
-      });
-
+      mockTokenValue.value = null;
       const { isAuthenticated } = useAuth();
       expect(isAuthenticated.value).toBe(false);
     });
@@ -126,28 +119,19 @@ describe('useAuth Composable', () => {
 
   describe('isTokenExpired', () => {
     it('should return true when token is expired', () => {
-      mockUseCookie.mockReturnValue({
-        value: String(Date.now() - 1000),
-      });
-
+      mockTokenValue.value = String(Date.now() - 1000);
       const { isTokenExpired } = useAuth();
       expect(isTokenExpired()).toBe(true);
     });
 
     it('should return false when token is not expired', () => {
-      mockUseCookie.mockReturnValue({
-        value: String(Date.now() + 3600000),
-      });
-
+      mockTokenValue.value = String(Date.now() + 3600000);
       const { isTokenExpired } = useAuth();
       expect(isTokenExpired()).toBe(false);
     });
 
     it('should return true when no token exists', () => {
-      mockUseCookie.mockReturnValue({
-        value: null,
-      });
-
+      mockTokenValue.value = null;
       const { isTokenExpired } = useAuth();
       expect(isTokenExpired()).toBe(true);
     });

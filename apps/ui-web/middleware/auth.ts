@@ -1,4 +1,6 @@
-export default defineNuxtRouteMiddleware((to) => {
+import type { RouteLocationNormalized } from 'vue-router';
+
+export default defineNuxtRouteMiddleware((to: RouteLocationNormalized) => {
   try {
     const { isAuthenticated, isTokenExpired } = useAuth();
 
