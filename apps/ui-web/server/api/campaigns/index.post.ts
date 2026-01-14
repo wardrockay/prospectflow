@@ -58,8 +58,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const data = await response.json();
-    return data;
+    const responseData = await response.json();
+    // Backend returns { success: true, data: { id, name, ... } }
+    // Extract data for frontend consumption
+    return responseData.data || responseData;
   } catch (error: unknown) {
     // Re-throw if already a createError
     if (error && typeof error === 'object' && 'statusCode' in error) {

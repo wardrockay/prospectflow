@@ -67,18 +67,9 @@
       });
 
       // Emit success event with campaign ID
-      // Backend returns { success: true, data: { id, ... }, message: ... }
-      if (response && typeof response === 'object') {
-        const campaignId =
-          'data' in response && response.data?.id
-            ? response.data.id
-            : 'id' in response
-              ? response.id
-              : null;
-
-        if (campaignId) {
-          emit('success', campaignId as string);
-        }
+      // Proxy now extracts data, so response is directly { id, name, ... }
+      if (response && typeof response === 'object' && 'id' in response) {
+        emit('success', response.id as string);
       }
     } catch (error: any) {
       // Focus on first invalid field if validation error
