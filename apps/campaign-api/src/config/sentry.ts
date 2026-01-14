@@ -22,10 +22,10 @@ const getRelease = (): string => {
       stdio: ['ignore', 'pipe', 'ignore'],
       timeout: 1000, // 1 second max to prevent startup hang
     }).trim();
-    return `ingest-api@${gitSha}`;
+    return `campaign-api@${gitSha}`;
   } catch {
     // Fallback si Git n'est pas disponible (ex: dans un container)
-    return `ingest-api@${process.env.npm_package_version ?? 'unknown'}`;
+    return `campaign-api@${process.env.npm_package_version ?? 'unknown'}`;
   }
 };
 
