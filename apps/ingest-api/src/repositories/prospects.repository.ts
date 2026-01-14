@@ -44,7 +44,7 @@ class ProspectsRepository {
       const result = await timeOperation(logger, 'db.prospects.findCampaign', async () => {
         return pool.query<Campaign>(
           `SELECT id, name, organisation_id as "organisationId" 
-           FROM crm.campaigns 
+           FROM outreach.campaigns 
            WHERE id = $1 AND organisation_id = $2`,
           [campaignId, organisationId],
         );
@@ -78,7 +78,7 @@ class ProspectsRepository {
                   filename, file_size as "fileSize", file_buffer as "fileBuffer",
                   detected_columns as "detectedColumns", column_mappings as "columnMappings",
                   row_count as "rowCount", uploaded_at as "uploadedAt"
-           FROM crm.import_uploads 
+           FROM outreach.import_uploads 
            WHERE id = $1 AND organisation_id = $2`,
           [uploadId, organisationId],
         );
@@ -113,7 +113,7 @@ class ProspectsRepository {
     try {
       const result = await timeOperation(logger, 'db.prospects.createUpload', async () => {
         return pool.query<ImportUpload>(
-          `INSERT INTO crm.import_uploads 
+          `INSERT INTO outreach.import_uploads 
              (id, campaign_id, organisation_id, filename, file_size, file_buffer, row_count, uploaded_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
            RETURNING id, campaign_id as "campaignId", organisation_id as "organisationId",
@@ -145,7 +145,7 @@ class ProspectsRepository {
     try {
       await timeOperation(logger, 'db.prospects.updateColumns', async () => {
         return pool.query(
-          `UPDATE crm.import_uploads
+          `UPDATE outreach.import_uploads
            SET detected_columns = $1,
                updated_at = NOW()
            WHERE id = $2`,
@@ -173,7 +173,7 @@ class ProspectsRepository {
     try {
       await timeOperation(logger, 'db.prospects.updateMappings', async () => {
         return pool.query(
-          `UPDATE crm.import_uploads
+          `UPDATE outreach.import_uploads
            SET column_mappings = $1,
                row_count = $2,
                updated_at = NOW()

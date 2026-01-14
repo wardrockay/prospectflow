@@ -37,8 +37,8 @@ describe('CSV Parsing Integration Tests', () => {
 
     // Create test campaign
     const campaignResult = await pool.query(
-      `INSERT INTO crm.campaigns (id, organisation_id, name, status) 
-       VALUES (gen_random_uuid(), $1, 'Test Campaign CSV', 'active') 
+      `INSERT INTO outreach.campaigns (id, organisation_id, name, status) 
+       VALUES (gen_random_uuid(), $1, 'Test Campaign CSV', 'draft') 
        RETURNING id`,
       [testOrgId],
     );
@@ -47,8 +47,8 @@ describe('CSV Parsing Integration Tests', () => {
 
   afterAll(async () => {
     // Cleanup
-    await pool.query('DELETE FROM crm.import_uploads WHERE organisation_id = $1', [testOrgId]);
-    await pool.query('DELETE FROM crm.campaigns WHERE organisation_id = $1', [testOrgId]);
+    await pool.query('DELETE FROM outreach.import_uploads WHERE organisation_id = $1', [testOrgId]);
+    await pool.query('DELETE FROM outreach.campaigns WHERE organisation_id = $1', [testOrgId]);
     await pool.query('DELETE FROM iam.organisations WHERE id = $1', [testOrgId]);
   });
 
@@ -77,7 +77,7 @@ Tech Inc,john@tech.com,https://tech.com`;
 
       // Verify file was stored in database
       const dbResult = await pool.query(
-        'SELECT file_buffer FROM crm.import_uploads WHERE id = $1',
+        'SELECT file_buffer FROM outreach.import_uploads WHERE id = $1',
         [testUploadId],
       );
       expect(dbResult.rows[0].file_buffer).toBeInstanceOf(Buffer);

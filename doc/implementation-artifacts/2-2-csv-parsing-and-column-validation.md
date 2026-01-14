@@ -447,19 +447,27 @@ Parse CSV with user-confirmed column mappings.
 
 #### Database Schema
 
-**Update to `import_uploads` table** (if not already present from Story 2.1):
+**Table `import_uploads`** created in migration V20260114_160000:
 
 ```sql
--- Add column mapping metadata
-ALTER TABLE crm.import_uploads
-ADD COLUMN IF NOT EXISTS column_mappings JSONB,
-ADD COLUMN IF NOT EXISTS detected_columns TEXT[],
-ADD COLUMN IF NOT EXISTS row_count INTEGER,
-ADD COLUMN IF NOT EXISTS parse_errors JSONB;
+-- Table created in outreach schema (campaigns are in outreach.campaigns)
+CREATE TABLE outreach.import_uploads (
+  id UUID PRIMARY KEY,
+  organisation_id UUID NOT NULL,
+  campaign_id UUID NOT NULL REFERENCES outreach.campaigns(id),
+  filename TEXT NOT NULL,
+  file_size INTEGER NOT NULL,
+  file_buffer BYTEA NOT NULL,
+  detected_columns TEXT[],
+  column_mappings JSONB,
+  row_count INTEGER,
+  parse_errors JSONB,
+  uploaded_at TIMESTAMPTZ DEFAULT NOW()
+);
 
--- Index for faster lookup
-CREATE INDEX IF NOT EXISTS idx_import_uploads_org_campaign
-ON crm.import_uploads(organisation_id, campaign_id);
+-- Indexes
+CREATE INDEX idx_import_uploads_org_campaign
+ON outreach.import_uploads(organisation_id, campaign_id);
 ```
 
 **Sample `column_mappings` JSONB:**
