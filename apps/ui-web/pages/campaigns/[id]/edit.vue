@@ -27,6 +27,22 @@
     };
   });
 
+  // Debug logging
+  watch(
+    [campaign, pending, error, initialData],
+    () => {
+      console.log('[EditPage] State:', {
+        hasCampaign: !!campaign.value,
+        campaign: campaign.value,
+        pending: pending.value,
+        error: error.value,
+        hasInitialData: !!initialData.value,
+        initialData: initialData.value,
+      });
+    },
+    { immediate: true }
+  );
+
   /**
    * Handle successful form submission
    * Navigate back to campaign details page
