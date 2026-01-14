@@ -33,6 +33,22 @@ router.get('/campaigns/prospects/template', (req, res, next) =>
   prospectsController.downloadTemplate(req, res, next),
 );
 
+/**
+ * GET /api/v1/imports/:uploadId/columns
+ * Get detected columns and suggested mappings
+ */
+router.get('/imports/:uploadId/columns', (req, res, next) =>
+  prospectsController.getColumns(req, res, next),
+);
+
+/**
+ * POST /api/v1/imports/:uploadId/parse
+ * Parse CSV with user-confirmed column mappings
+ */
+router.post('/imports/:uploadId/parse', (req, res, next) =>
+  prospectsController.parseCsv(req, res, next),
+);
+
 logger.info('Prospects routes configured');
 
 export default router;

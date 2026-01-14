@@ -93,7 +93,7 @@ development_status:
   # Epic E2: Prospect Import & Validation Pipeline
   epic-2: in-progress
   2-1-csv-file-upload-interface: done
-  2-2-csv-parsing-and-column-validation: backlog
+  2-2-csv-parsing-and-column-validation: review
   2-3-email-format-and-data-validation: backlog
   2-4-duplicate-detection-within-upload: backlog
   2-5-duplicate-detection-against-existing-prospects: backlog

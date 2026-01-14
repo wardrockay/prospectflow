@@ -3,9 +3,14 @@
  */
 import { Request, Response, NextFunction } from 'express';
 import { prospectsService } from '../services/prospects.service.js';
+import { CsvParserService } from '../services/csv-parser.service.js';
+import { ColumnValidatorService } from '../services/column-validator.service.js';
 import { createChildLogger } from '../utils/logger.js';
+import type { ColumnMappingsInput } from '../types/csv.types.js';
 
 const logger = createChildLogger('ProspectsController');
+const csvParser = new CsvParserService();
+const columnValidator = new ColumnValidatorService();
 
 /**
  * Controller for prospect CSV upload endpoints
@@ -67,6 +72,85 @@ export class ProspectsController {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename="prospect_import_template.csv"');
       res.send(template);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/v1/imports/:uploadId/columns
+   * Get detected columns and suggested mappings for uploaded CSV
+   */
+  async getColumns(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { uploadId } = req.params;
+      const organisationId = req.organisationId;
+
+      if (!organisationId) {
+        logger.error({ uploadId }, 'Organisation ID missing from request');
+        res.status(401).json({
+          success: false,
+          error: 'Unauthorized - Organisation ID missing',
+        });
+        return;
+      }
+
+      logger.info({ uploadId, organisationId }, 'Fetching column mappings');
+
+      const result = await prospectsService.getColumnMappings(uploadId, organisationId);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/v1/imports/:uploadId/parse
+   * Parse CSV with user-confirmed column mappings
+   */
+  async parseCsv(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { uploadId } = req.params;
+      const organisationId = req.organisationId;
+      const { columnMappings } = req.body as ColumnMappingsInput;
+
+      if (!organisationId) {
+        logger.error({ uploadId }, 'Organisation ID missing from request');
+        res.status(401).json({
+          success: false,
+          error: 'Unauthorized - Organisation ID missing',
+        });
+        return;
+      }
+
+      if (!columnMappings) {
+        logger.warn({ uploadId }, 'Column mappings missing from request');
+        res.status(400).json({
+          success: false,
+          error: 'Column mappings required',
+        });
+        return;
+      }
+
+      logger.info(
+        { uploadId, organisationId, mappingsCount: Object.keys(columnMappings).length },
+        'Parsing CSV with mappings',
+      );
+
+      const result = await prospectsService.parseWithMappings(
+        uploadId,
+        organisationId,
+        columnMappings,
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
     } catch (error) {
       next(error);
     }
