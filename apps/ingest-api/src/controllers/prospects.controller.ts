@@ -82,10 +82,10 @@ export class ProspectsController {
    * Get detected columns and suggested mappings for uploaded CSV
    */
   async getColumns(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { uploadId } = req.params;
-      const organisationId = req.organisationId;
+    const { uploadId } = req.params;
+    const organisationId = req.organisationId;
 
+    try {
       if (!organisationId) {
         logger.error({ uploadId }, 'Organisation ID missing from request');
         res.status(401).json({
@@ -114,9 +114,10 @@ export class ProspectsController {
    * Parse CSV with user-confirmed column mappings
    */
   async parseCsv(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { uploadId } = req.params;
+    const organisationId = req.organisationId;
+
     try {
-      const { uploadId } = req.params;
-      const organisationId = req.organisationId;
       const { columnMappings } = req.body as ColumnMappingsInput;
 
       if (!organisationId) {
