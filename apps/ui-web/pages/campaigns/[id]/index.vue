@@ -24,7 +24,7 @@
   const showImportModal = ref(false);
 
   // Handle successful upload
-  const handleUploadSuccess = (uploadId: string) => {
+  const handleUploadSuccess = () => {
     // TODO: Navigate to validation step in next story
     useToast().add({
       title: 'Import en cours',

@@ -53,7 +53,12 @@ export default defineEventHandler(async (event) => {
   try {
     // Create FormData for backend request
     const backendFormData = new FormData();
-    const blob = new Blob([fileField.data], { type: fileField.type || 'text/csv' });
+    // Convert Buffer to ArrayBuffer for Blob compatibility
+    const arrayBuffer = fileField.data.buffer.slice(
+      fileField.data.byteOffset,
+      fileField.data.byteOffset + fileField.data.byteLength
+    );
+    const blob = new Blob([arrayBuffer], { type: fileField.type || 'text/csv' });
     backendFormData.append('file', blob, fileField.filename || 'upload.csv');
 
     const response = await fetch(url, {

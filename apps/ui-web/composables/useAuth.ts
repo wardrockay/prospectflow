@@ -19,11 +19,44 @@ export const useAuth = () => {
   };
 
   /**
+   * Check if token will expire soon (within 15 minutes)
+   */
+  const isTokenExpiringSoon = (): boolean => {
+    if (!tokenExpiresAt.value) return true;
+    const expiresAt = parseInt(tokenExpiresAt.value, 10);
+    const fifteenMinutes = 15 * 60 * 1000;
+    return Date.now() >= expiresAt - fifteenMinutes;
+  };
+
+  /**
    * Check if user is authenticated with valid (non-expired) token
    */
   const isAuthenticated = computed(() => {
     return !!tokenExpiresAt.value && !isTokenExpired();
   });
+
+  /**
+   * Refresh authentication token using refresh_token
+   * @returns Promise<boolean> - true if refresh successful
+   */
+  const refreshToken = async (): Promise<boolean> => {
+    try {
+      const response = await $fetch<{ success: boolean; expiresAt: number }>('/api/auth/refresh', {
+        method: 'POST',
+      });
+
+      if (response.success) {
+        // Token cookie will be updated by server
+        // Update local expiration time
+        tokenExpiresAt.value = response.expiresAt.toString();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
+    }
+  };
 
   /**
    * Redirect to Cognito Hosted UI for login
@@ -66,5 +99,7 @@ export const useAuth = () => {
     logout,
     isAuthenticated,
     isTokenExpired,
+    isTokenExpiringSoon,
+    refreshToken,
   };
 };
