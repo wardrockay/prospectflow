@@ -5,14 +5,17 @@ import { createChildLogger } from '../utils/logger.js';
 import { prospectsRepository } from '../repositories/prospects.repository.js';
 import { CsvParserService } from './csv-parser.service.js';
 import { ColumnValidatorService } from './column-validator.service.js';
+import { DataValidatorService } from './data-validator.service.js';
 import { v4 as uuidv4 } from 'uuid';
 import { AppError } from '../errors/AppError.js';
 import { ValidationError } from '../errors/ValidationError.js';
 import type { ColumnDetectionResponse, ParsedCsvData } from '../types/csv.types.js';
+import type { ValidationResult } from '../types/validation.types.js';
 
 const logger = createChildLogger('ProspectsService');
 const csvParser = new CsvParserService();
 const columnValidator = new ColumnValidatorService();
+const dataValidator = new DataValidatorService();
 
 interface UploadResult {
   uploadId: string;
@@ -241,6 +244,61 @@ export class ProspectsService {
       preview: remappedData.slice(0, 3), // Return first 3 rows as preview
       parseErrors: [],
     };
+  }
+
+  /**
+   * Validate prospect data in uploaded CSV
+   * Validates email format, company name, URL, contact name
+   */
+  async validateData(uploadId: string, organisationId: string): Promise<ValidationResult> {
+    logger.info({ uploadId, organisationId }, 'Validating prospect data');
+
+    // Get upload record (multi-tenant check)
+    const upload = await prospectsRepository.findUploadByIdAndOrg(uploadId, organisationId);
+
+    if (!upload) {
+      logger.warn({ uploadId, organisationId }, 'Upload not found or access denied');
+      throw new AppError('Upload not found', 404);
+    }
+
+    // Check if column mappings exist
+    if (!upload.columnMappings || Object.keys(upload.columnMappings).length === 0) {
+      logger.warn({ uploadId }, 'Column mappings not set - cannot validate data');
+      throw new ValidationError(
+        'Column mappings must be set before validating data. Please complete the column mapping step first.',
+      );
+    }
+
+    // Parse CSV
+    const parseResult = await csvParser.parse(upload.fileBuffer);
+
+    if (parseResult.errors.length > 0) {
+      logger.warn({ uploadId, errorCount: parseResult.errors.length }, 'CSV parsing errors');
+      throw new ValidationError('CSV file contains parsing errors');
+    }
+
+    // Remap data using stored column mappings
+    const remappedData = parseResult.data.map((row) => {
+      const newRow: Record<string, string> = {};
+      for (const [detectedCol, targetCol] of Object.entries(upload.columnMappings!)) {
+        newRow[targetCol] = row[detectedCol.toLowerCase()] || '';
+      }
+      return newRow;
+    });
+
+    // Validate data
+    const validationResult = await dataValidator.validateData(remappedData, organisationId);
+
+    logger.info(
+      {
+        uploadId,
+        validCount: validationResult.validCount,
+        invalidCount: validationResult.invalidCount,
+      },
+      'Data validation complete',
+    );
+
+    return validationResult;
   }
 }
 

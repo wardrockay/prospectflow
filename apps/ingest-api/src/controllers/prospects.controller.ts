@@ -158,6 +158,38 @@ export class ProspectsController {
       next(error);
     }
   }
+
+  /**
+   * POST /api/v1/imports/:uploadId/validate-data
+   * Validate prospect data fields (email, company, URL, etc.)
+   */
+  async validateData(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { uploadId } = req.params;
+    const organisationId = req.organisationId;
+
+    try {
+      if (!organisationId) {
+        logger.error({ uploadId }, 'Organisation ID missing from request');
+        res.status(401).json({
+          success: false,
+          error: 'Unauthorized - Organisation ID missing',
+        });
+        return;
+      }
+
+      logger.info({ uploadId, organisationId }, 'Validating prospect data');
+
+      const result = await prospectsService.validateData(uploadId, organisationId);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      logger.error({ err: error, uploadId, organisationId }, 'Failed to validate prospect data');
+      next(error);
+    }
+  }
 }
 
 export const prospectsController = new ProspectsController();

@@ -49,6 +49,14 @@ router.post('/imports/:uploadId/parse', (req, res, next) =>
   prospectsController.parseCsv(req, res, next),
 );
 
+/**
+ * POST /api/v1/imports/:uploadId/validate-data
+ * Validate prospect data fields (email, company, URL, etc.)
+ */
+router.post('/imports/:uploadId/validate-data', (req, res, next) =>
+  prospectsController.validateData(req, res, next),
+);
+
 logger.info('Prospects routes configured');
 
 export default router;

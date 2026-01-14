@@ -2,6 +2,7 @@
  * Prospect import composable
  * Handles CSV file upload logic and validation
  */
+import type { ValidationResult } from '~/types/validation.types';
 
 interface UploadResult {
   uploadId: string;
@@ -129,6 +130,29 @@ export const useProspectImport = (campaignId: string) => {
     }
   };
 
+  /**
+   * Validate prospect data
+   */
+  const validateData = async (uploadId: string): Promise<ValidationResult> => {
+    try {
+      const response = await $fetch<{ success: boolean; data: ValidationResult }>(
+        `/api/imports/${uploadId}/validate-data`,
+        {
+          method: 'POST',
+        }
+      );
+
+      if (!response.success) {
+        throw new Error('Validation failed');
+      }
+
+      return response.data;
+    } catch (err: any) {
+      error.value = err.data?.message || err.message || 'Validation error';
+      throw err;
+    }
+  };
+
   return {
     file,
     uploading,
@@ -139,5 +163,6 @@ export const useProspectImport = (campaignId: string) => {
     clearFile,
     uploadFile,
     downloadTemplate,
+    validateData,
   };
 };
