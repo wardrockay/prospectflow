@@ -66,9 +66,7 @@
     <!-- Page Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Modifier la campagne</h1>
-      <p class="mt-2 text-sm text-gray-600">
-        Mettez à jour les informations de votre campagne
-      </p>
+      <p class="mt-2 text-sm text-gray-600">Mettez à jour les informations de votre campagne</p>
     </div>
 
     <!-- Loading State -->
@@ -106,9 +104,7 @@
       <p class="text-gray-600 mb-6">
         La campagne que vous recherchez n'existe pas ou a été supprimée.
       </p>
-      <UButton color="primary" size="lg" @click="goToCampaignsList">
-        Retour aux campagnes
-      </UButton>
+      <UButton color="primary" size="lg" @click="goToCampaignsList"> Retour aux campagnes </UButton>
     </div>
 
     <!-- Error State: Other Errors -->

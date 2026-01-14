@@ -255,8 +255,12 @@ d8755cd - Latest commit includes:
 2. **Form Component Reuse:**
    ```vue
    <!-- In pages/campaigns/[id]/edit.vue -->
-   <CampaignForm mode="edit" :initialData="campaignData" @success="handleSuccess"
-   @cancel="handleCancel" />
+   <CampaignForm
+     mode="edit"
+     :initialData="campaignData"
+     @success="handleSuccess"
+     @cancel="handleCancel"
+   />
    ```
 
 ---
@@ -518,7 +522,7 @@ interface Props {
 export function useCampaignForm(
   initialData?: Partial<CampaignFormData>,
   mode?: 'create' | 'edit', // NEW
-  campaignId?: string // NEW: Required when mode is "edit"
+  campaignId?: string, // NEW: Required when mode is "edit"
 ) {
   // ...
 }
@@ -762,8 +766,13 @@ const submitForm = async () => {
 
    ```vue
    <!-- Reuse existing CampaignForm.vue component -->
-   <CampaignForm mode="edit" :campaignId="campaignId" :initialData="campaignData" @success="..."
-   @cancel="..." />
+   <CampaignForm
+     mode="edit"
+     :campaignId="campaignId"
+     :initialData="campaignData"
+     @success="..."
+     @cancel="..."
+   />
    ```
 
 3. **Composable Update Pattern:**
@@ -842,6 +851,7 @@ No blocking issues encountered during implementation.
 **Implementation Summary:**
 
 ✅ **Task 1 - Edit Page Created:**
+
 - Created `apps/ui-web/pages/campaigns/[id]/edit.vue` with full functionality
 - Integrated authentication middleware and default layout
 - Implemented loading skeleton with `<USkeleton>` components
@@ -849,17 +859,20 @@ No blocking issues encountered during implementation.
 - Form pre-fills automatically with campaign data via `useCampaign()` composable
 
 ✅ **Task 2 - Form Integration:**
+
 - Reused existing `<CampaignForm>` component in edit mode
 - All form validation and character counting works with pre-filled values
 - `mode="edit"` prop changes button text to "Enregistrer"
 
 ✅ **Task 3 - Navigation & Toasts:**
+
 - Success handler navigates to `/campaigns/:id` after save
 - Success toast: "Campagne mise à jour avec succès"
 - Cancel button navigates back without API call
 - Error alert displays above form with preserved data
 
 ✅ **Task 4 - Composable Updated:**
+
 - Modified `useCampaignForm()` to accept `mode` ('create' | 'edit') parameter
 - Added `campaignId` parameter for edit mode
 - Updated `submitForm()` with conditional logic: POST for create, PATCH for edit
@@ -867,6 +880,7 @@ No blocking issues encountered during implementation.
 - Added edit-specific error handling (404 for missing campaign)
 
 ✅ **Task 5 - Validation:**
+
 - TypeScript compilation verified (no errors in new files)
 - Server starts successfully on port 4000
 - All French language labels in place
@@ -884,18 +898,22 @@ No blocking issues encountered during implementation.
 **Files Modified/Created:**
 
 New:
+
 - `apps/ui-web/pages/campaigns/[id]/edit.vue` (140 lines)
 
 Modified:
+
 - `apps/ui-web/composables/useCampaignForm.ts` (added mode/campaignId params, updated submitForm logic)
 - `apps/ui-web/components/Campaign/Form.vue` (added campaignId prop, dynamic toast message)
 
 Reused (no changes):
+
 - `apps/ui-web/server/api/campaigns/[id].patch.ts` (PATCH proxy)
 - `apps/ui-web/composables/useCampaign.ts` (data fetching)
 - All NuxtUI components (`<UButton>`, `<UAlert>`, `<USkeleton>`)
 
 **Code Quality:**
+
 - Follows project coding standards
 - TypeScript strict mode compliance
 - French language for all user-facing text
@@ -905,9 +923,11 @@ Reused (no changes):
 ### File List
 
 **Created:**
+
 - `apps/ui-web/pages/campaigns/[id]/edit.vue`
 
 **Modified:**
+
 - `apps/ui-web/composables/useCampaignForm.ts`
 - `apps/ui-web/components/Campaign/Form.vue`
 - `doc/implementation-artifacts/ui-1-4-campaign-editing.md` (this file)
