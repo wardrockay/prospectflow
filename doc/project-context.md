@@ -209,6 +209,16 @@ Key variables:
 
 ## Deployment & Infrastructure
 
+### Infrastructure Overview
+
+**All services and infrastructure run in Docker containers on a VPS accessible via:**
+
+```bash
+ssh vps
+```
+
+All production services (APIs, workers, databases, monitoring) are containerized and managed through Docker Compose on this VPS.
+
 ### Quick Reference Commands
 
 All deployment operations are managed via the root `Makefile`. Use `make help` for the full list.
