@@ -67,8 +67,18 @@
       });
 
       // Emit success event with campaign ID
-      if (response && typeof response === 'object' && 'id' in response) {
-        emit('success', response.id as string);
+      // Backend returns { success: true, data: { id, ... }, message: ... }
+      if (response && typeof response === 'object') {
+        const campaignId =
+          'data' in response && response.data?.id
+            ? response.data.id
+            : 'id' in response
+              ? response.id
+              : null;
+
+        if (campaignId) {
+          emit('success', campaignId as string);
+        }
       }
     } catch (error: any) {
       // Focus on first invalid field if validation error
