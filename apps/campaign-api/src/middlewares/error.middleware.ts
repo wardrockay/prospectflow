@@ -89,7 +89,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   });
 
   if (err instanceof Error) {
-    log.error(`❌ Unexpected Error: ${err.message}`, { stack: err.stack });
+    log.error(`❌ Unexpected Error: ${err.message}`);
     return res.status(500).json({
       status: 'error',
       message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
