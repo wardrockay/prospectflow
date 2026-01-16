@@ -104,11 +104,4 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     message: 'Internal server error',
     ...(process.env.NODE_ENV === 'development' && { detail: String(err) }),
   });
-      organisationId: req.user?.['custom:organisation_id'],
-    },
-  });
-  res.status(500).json({
-    status: 'error',
-    message: 'Unhandled server error',
-  });
 }
