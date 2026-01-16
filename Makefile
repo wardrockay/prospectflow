@@ -1,4 +1,4 @@
-.PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard
+.PHONY: help dev-up dev-wait dev-ready dev-down dev-logs dev-status dev-restart test-ready test-unit test-integration clean dashboard clear-docker
 .PHONY: infra-only apps-only full-stack infra-restart apps-restart
 .PHONY: prod-up prod-down prod-restart prod-logs service-restart service-stop service-logs health db-migrate
 .PHONY: sync-env vps-connect deploy-ui deploy-api deploy-campaign-api network-create
@@ -74,6 +74,7 @@ help:
 	@echo "🛠️  OTHER:"
 	@echo "  make dashboard         - Launch Sprint Dashboard UI"
 	@echo "  make clean             - Remove all containers, volumes, and networks"
+	@echo "  make clear-docker      - Clean Docker build cache, unused images, volumes"
 	@echo ""
 
 # Start all infrastructure services
@@ -264,7 +265,11 @@ clean:
 	@cd infra/postgres && docker compose down -v
 	@cd infra/rabbitmq && docker compose down -v
 	@cd infra/redis && docker compose down -v
-	@cd infra/clickhouse && docker compose down -v
+	@cd infra/clickhouse && do
+
+# Clean Docker build cache and unused resources
+clear-docker:
+	@./tools/clear-docker.shcker compose down -v
 	@echo "✅ Cleanup complete"
 
 # ============================================
