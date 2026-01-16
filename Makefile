@@ -269,7 +269,7 @@ clean:
 
 # Clean Docker build cache and unused resources
 clear-docker:
-	@./tools/clear-docker.shcker compose down -v
+	@./tools/clear-docker.sh compose down -v
 	@echo "✅ Cleanup complete"
 
 # ============================================
