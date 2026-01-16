@@ -19,13 +19,14 @@ export const useAuth = () => {
   };
 
   /**
-   * Check if token will expire soon (within 15 minutes)
+   * Check if token will expire soon (within 30 minutes)
+   * Refresh proactively to avoid any disconnection
    */
   const isTokenExpiringSoon = (): boolean => {
     if (!tokenExpiresAt.value) return true;
     const expiresAt = parseInt(tokenExpiresAt.value, 10);
-    const fifteenMinutes = 15 * 60 * 1000;
-    return Date.now() >= expiresAt - fifteenMinutes;
+    const thirtyMinutes = 30 * 60 * 1000;
+    return Date.now() >= expiresAt - thirtyMinutes;
   };
 
   /**

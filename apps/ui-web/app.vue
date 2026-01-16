@@ -7,15 +7,15 @@
   const { isAuthenticated, isTokenExpiringSoon, refreshToken } = useAuth();
 
   // Background token refresh check
-  // Runs every 5 minutes to check if token needs refresh
+  // Runs every 2 minutes to check if token needs refresh
   onMounted(() => {
-    const CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
+    const CHECK_INTERVAL = 2 * 60 * 1000; // 2 minutes
 
     const checkTokenExpiration = async () => {
       // Only check if user is authenticated
       if (!isAuthenticated.value) return;
 
-      // If token is expiring soon (< 15 min), refresh it
+      // If token is expiring soon (< 30 min), refresh it proactively
       if (isTokenExpiringSoon()) {
         try {
           const refreshed = await refreshToken();
