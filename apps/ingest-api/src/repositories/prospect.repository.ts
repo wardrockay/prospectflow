@@ -1,7 +1,7 @@
 import { Pool, PoolClient } from 'pg';
 import { createChildLogger } from '../utils/logger.js';
 import { DatabaseError } from '../errors/DatabaseError.js';
-import type { ProspectData, InsertedProspect } from '../types/index.js';
+import type { ProspectData, InsertedProspect } from '../types/validation.types.js';
 
 export class ProspectRepository {
   private readonly logger = createChildLogger('ProspectRepository');
@@ -100,7 +100,7 @@ export class ProspectRepository {
         'Error inserting prospects - transaction rolled back',
       );
 
-      throw new DatabaseError('Failed to insert prospects', { cause: error });
+      throw new DatabaseError('Failed to insert prospects');
     } finally {
       client.release();
     }
@@ -176,7 +176,7 @@ export class ProspectRepository {
         { err: error, organisationId, campaignId },
         'Error finding existing prospects',
       );
-      throw new DatabaseError('Failed to find existing prospects', { cause: error });
+      throw new DatabaseError('Failed to find existing prospects');
     }
   }
 }

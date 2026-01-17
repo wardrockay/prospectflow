@@ -15,6 +15,7 @@ interface UploadResult {
 export const useProspectImport = (campaignId: string) => {
   const file = ref<File | null>(null);
   const uploading = ref(false);
+  const uploadProgress = ref(0);
   const error = ref<string | null>(null);
 
   /**
@@ -74,10 +75,13 @@ export const useProspectImport = (campaignId: string) => {
   const clearFile = () => {
     file.value = null;
     error.value = null;
+    uploadProgress.value = 0;
   };
 
   /**
-   * Upload file to backend
+   * Upload file to backend with progress tracking (AC3)
+   * Uses XMLHttpRequest for progress events when in real browser,
+   * falls back to $fetch for SSR/testing environments
    */
   const uploadFile = async (): Promise<UploadResult> => {
     if (!file.value) {
@@ -85,25 +89,94 @@ export const useProspectImport = (campaignId: string) => {
     }
 
     uploading.value = true;
+    uploadProgress.value = 0;
     error.value = null;
 
+    const formData = new FormData();
+    formData.append('file', file.value);
+
+    // Check if we're in a real browser (not happy-dom/jsdom/SSR)
+    // happy-dom sets navigator.userAgent to 'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36...'
+    // but doesn't properly support FormData with XMLHttpRequest
+    const isRealBrowser = typeof window !== 'undefined' && 
+                          typeof XMLHttpRequest !== 'undefined' && 
+                          typeof window.FormData !== 'undefined' &&
+                          !import.meta.env.TEST &&
+                          !import.meta.env.SSR;
+
     try {
-      const formData = new FormData();
-      formData.append('file', file.value);
+      if (isRealBrowser) {
+        // Use XMLHttpRequest for progress tracking in browser
+        return await new Promise<UploadResult>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
 
-      const response = await $fetch<{ success: boolean; data: UploadResult }>(
-        `/api/campaigns/${campaignId}/prospects/upload`,
-        {
-          method: 'POST',
-          body: formData,
+          xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+              uploadProgress.value = Math.round((event.loaded / event.total) * 100);
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            uploading.value = false;
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                  uploadProgress.value = 100;
+                  resolve(response.data);
+                } else {
+                  error.value = "Échec de l'upload";
+                  reject(new Error("Échec de l'upload"));
+                }
+              } catch {
+                error.value = 'Réponse invalide du serveur';
+                reject(new Error('Réponse invalide du serveur'));
+              }
+            } else {
+              try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                const errMsg = errorResponse.message || `Erreur ${xhr.status}`;
+                error.value = errMsg;
+                reject(new Error(errMsg));
+              } catch {
+                error.value = `Erreur ${xhr.status}`;
+                reject(new Error(`Erreur ${xhr.status}`));
+              }
+            }
+          });
+
+          xhr.addEventListener('error', () => {
+            uploading.value = false;
+            error.value = 'Erreur réseau';
+            reject(new Error('Erreur réseau'));
+          });
+
+          xhr.addEventListener('abort', () => {
+            uploading.value = false;
+            error.value = 'Upload annulé';
+            reject(new Error('Upload annulé'));
+          });
+
+          xhr.open('POST', `/api/campaigns/${campaignId}/prospects/upload`);
+          xhr.send(formData);
+        });
+      } else {
+        // Fallback to $fetch for SSR/testing
+        const response = await $fetch<{ success: boolean; data: UploadResult }>(
+          `/api/campaigns/${campaignId}/prospects/upload`,
+          {
+            method: 'POST',
+            body: formData,
+          }
+        );
+
+        if (!response.success) {
+          throw new Error("Échec de l'upload");
         }
-      );
 
-      if (!response.success) {
-        throw new Error("Échec de l'upload");
+        uploadProgress.value = 100;
+        return response.data;
       }
-
-      return response.data;
     } catch (err: any) {
       error.value = err.data?.message || err.message || "Erreur lors de l'upload";
       throw err;
@@ -156,6 +229,7 @@ export const useProspectImport = (campaignId: string) => {
   return {
     file,
     uploading,
+    uploadProgress,
     error,
     fileSize,
     canContinue,

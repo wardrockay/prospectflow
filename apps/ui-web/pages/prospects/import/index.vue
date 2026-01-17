@@ -15,19 +15,21 @@
   // Get campaignId from query params (required)
   const campaignId = computed(() => route.query.campaignId as string);
 
-  // Validate campaignId exists
-  if (!campaignId.value) {
-    toast.add({
-      title: 'Erreur',
-      description: 'ID de campagne manquant. Veuillez sélectionner une campagne.',
-      color: 'red',
-      icon: 'i-heroicons-exclamation-triangle',
-    });
-    router.push('/campaigns');
-  }
-
   // Modal state - open by default when page loads
   const isModalOpen = ref(true);
+
+  // Validate campaignId exists - client-side only to avoid SSR issues (M1 fix)
+  onMounted(() => {
+    if (!campaignId.value) {
+      toast.add({
+        title: 'Erreur',
+        description: 'ID de campagne manquant. Veuillez sélectionner une campagne.',
+        color: 'red',
+        icon: 'i-heroicons-exclamation-triangle',
+      });
+      navigateTo('/campaigns');
+    }
+  });
 
   /**
    * Handle successful upload

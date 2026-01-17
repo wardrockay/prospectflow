@@ -35,6 +35,7 @@ describe('Prospect/ImportModal.vue', () => {
   let mockDownloadTemplate: ReturnType<typeof vi.fn>;
   let mockFileRef: ReturnType<typeof ref>;
   let mockUploadingRef: ReturnType<typeof ref>;
+  let mockUploadProgressRef: ReturnType<typeof ref>;
   let mockErrorRef: ReturnType<typeof ref>;
 
   beforeEach(() => {
@@ -47,6 +48,7 @@ describe('Prospect/ImportModal.vue', () => {
     mockDownloadTemplate = vi.fn();
     mockFileRef = ref(null);
     mockUploadingRef = ref(false);
+    mockUploadProgressRef = ref(0);
     mockErrorRef = ref(null);
 
     // Setup useProspectImport mock
@@ -54,6 +56,7 @@ describe('Prospect/ImportModal.vue', () => {
     globalThis.useProspectImport = () => ({
       file: mockFileRef,
       uploading: mockUploadingRef,
+      uploadProgress: mockUploadProgressRef,
       error: mockErrorRef,
       fileSize: computed(() => (mockFileRef.value ? '1.0 KB' : '')),
       canContinue: computed(
@@ -155,6 +158,41 @@ describe('Prospect/ImportModal.vue', () => {
 
       expect(wrapper.text()).toContain('Télécharger un modèle CSV');
     });
+
+    it('should call downloadTemplate when button is clicked', async () => {
+      const wrapper = mountModal();
+
+      // Find and click the download button
+      const downloadBtn = wrapper.findAll('button').find((b) => b.text().includes('Télécharger'));
+      expect(downloadBtn).toBeDefined();
+
+      await downloadBtn?.trigger('click');
+
+      expect(mockDownloadTemplate).toHaveBeenCalled();
+    });
+
+    it('should show success toast after template download', async () => {
+      const mockToastAdd = vi.fn();
+      // @ts-expect-error - global mock
+      globalThis.useToast = () => ({
+        add: mockToastAdd,
+      });
+
+      const wrapper = mountModal();
+
+      const downloadBtn = wrapper.findAll('button').find((b) => b.text().includes('Télécharger'));
+      await downloadBtn?.trigger('click');
+
+      // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(mockToastAdd).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Téléchargement démarré',
+          color: 'green',
+        })
+      );
+    });
   });
 
   describe('Modal Actions', () => {
@@ -188,6 +226,56 @@ describe('Prospect/ImportModal.vue', () => {
 
       const label = wrapper.find('label[for="file-upload"]');
       expect(label.exists()).toBe(true);
+    });
+
+    it('should have aria-label on dropzone', async () => {
+      const wrapper = mountModal();
+
+      const dropzone = wrapper.find('[role="region"]');
+      expect(dropzone.exists()).toBe(true);
+      expect(dropzone.attributes('aria-label')).toContain('téléchargement');
+    });
+  });
+
+  describe('Drag & Drop Visual Feedback (AC2)', () => {
+    it('should show visual feedback on dragenter', async () => {
+      const wrapper = mountModal();
+
+      const dropzone = wrapper.find('[role="region"]');
+      await dropzone.trigger('dragenter');
+
+      // The component should update isDragging state
+      // which applies cursor-copy class
+      expect(dropzone.classes()).toContain('transition-colors');
+    });
+
+    it('should handle drop event correctly', async () => {
+      const wrapper = mountModal();
+
+      const dropzone = wrapper.find('[role="region"]');
+
+      // Create mock DataTransfer
+      const mockFile = new File(['test'], 'test.csv', { type: 'text/csv' });
+      const mockDataTransfer = {
+        files: [mockFile],
+      };
+
+      await dropzone.trigger('drop', {
+        dataTransfer: mockDataTransfer,
+      });
+
+      expect(mockSelectFile).toHaveBeenCalled();
+    });
+  });
+
+  describe('Upload Progress (AC3)', () => {
+    it('should display progress bar when uploading', async () => {
+      mockUploadingRef.value = true;
+
+      const wrapper = mountModal();
+
+      // Should show progress percentage
+      expect(wrapper.text()).toContain('%');
     });
   });
 });

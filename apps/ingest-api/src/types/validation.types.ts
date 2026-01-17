@@ -80,3 +80,30 @@ export interface ValidationSummary {
   invalidRows: number;
   errorsByType: Record<string, number>;
 }
+
+/**
+ * Prospect data structure for database insertion
+ */
+export interface ProspectData {
+  company_name: string;
+  contact_email: string;
+  contact_name?: string;
+  website_url?: string;
+}
+
+/**
+ * Inserted prospect result from database
+ */
+export interface InsertedProspect {
+  id: string;
+  contactEmail: string;
+}
+
+/**
+ * Import summary result
+ */
+export interface ImportSummary {
+  imported: number;
+  failed: number;
+  prospectIds: string[];
+}

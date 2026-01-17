@@ -1,6 +1,6 @@
 # Story UI-2.1: CSV Upload Interface
 
-Status: review
+Status: done
 
 ## Story
 
@@ -652,23 +652,26 @@ Story marked as `review` on January 17, 2026
 **Created:**
 - ✅ `apps/ui-web/pages/prospects/import/index.vue` - Standalone upload page with auth
 - ✅ `apps/ui-web/pages/prospects/import/map.vue` - Mapping page stub
+- ✅ `apps/ui-web/tests/pages/prospects/import.test.ts` - Integration tests for upload page (Task 7.3/7.4)
 
 **Modified:**
 - ✅ `apps/ingest-api/src/middlewares/upload.middleware.ts` - Updated to 50MB + XLSX support
 - ✅ `apps/ingest-api/src/services/csv-parser.service.ts` - Added XLSX parsing logic
 - ✅ `apps/ingest-api/src/services/prospects.service.ts` - Updated parse calls with filename
-- ✅ `apps/ui-web/composables/useProspectImport.ts` - Updated validation for XLSX + 50MB
-- ✅ `apps/ui-web/components/Prospect/ImportModal.vue` - Updated UI messages for 50MB + XLSX
+- ✅ `apps/ui-web/composables/useProspectImport.ts` - Updated validation for XLSX + 50MB + progress tracking
+- ✅ `apps/ui-web/components/Prospect/ImportModal.vue` - Updated UI: 50MB + XLSX + drag feedback (AC2) + progress bar (AC3) + a11y
+- ✅ `apps/ui-web/server/api/campaigns/prospects/template.get.ts` - Fixed backend URL config (L1)
 
 **Tests Modified/Created:**
-- ✅ `apps/ui-web/tests/composables/useProspectImport.test.ts` - Updated for XLSX + 50MB (22 tests passing)
+- ✅ `apps/ui-web/tests/composables/useProspectImport.test.ts` - Updated for XLSX + 50MB + progress (23 tests)
+- ✅ `apps/ui-web/tests/components/Prospect/ImportModal.test.ts` - Added drag/drop, template download, progress tests
+- ✅ `apps/ui-web/tests/pages/prospects/import.test.ts` - Integration tests for navigation (Task 7.3/7.4)
 - ✅ `apps/ingest-api/tests/unit/services/csv-parser.service.test.ts` - Added XLSX tests (20 tests passing)
 
 **Dependencies Added:**
 - ✅ `xlsx@^0.18.5` - Excel file parsing (apps/ingest-api)
 
 **Existing (No Changes):**
-- `apps/ui-web/components/Prospect/ImportModal.vue` - Used as-is by new page
 - `apps/ui-web/server/api/campaigns/[id]/prospects/upload.post.ts`
 - `apps/ingest-api/src/controllers/prospects.controller.ts`
 - `apps/ingest-api/src/routes/prospects.routes.ts`

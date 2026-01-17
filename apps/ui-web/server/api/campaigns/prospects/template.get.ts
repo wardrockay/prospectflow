@@ -18,8 +18,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Determine backend URL
-  const backendUrl = config.campaignApiUrl || 'http://localhost:3001';
+  // Determine backend URL - use ingestApiUrl for prospects endpoints (L1 fix)
+  const backendUrl = config.ingestApiUrl || config.campaignApiUrl || 'http://localhost:3002';
   const url = `${backendUrl}/api/v1/campaigns/prospects/template`;
 
   try {

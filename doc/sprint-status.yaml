@@ -102,7 +102,7 @@ development_status:
 
   # Epic UI-2: Prospect Management UI
   epic-ui-2: in-progress
-  ui-2-1-csv-upload-interface: review
+  ui-2-1-csv-upload-interface: done
   ui-2-2-column-mapping-interface: backlog
   ui-2-3-validation-results-import: backlog
   epic-ui-2-retrospective: optional

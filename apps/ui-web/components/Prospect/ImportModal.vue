@@ -14,6 +14,7 @@
   const {
     file,
     uploading,
+    uploadProgress,
     error,
     fileSize,
     canContinue,
@@ -26,6 +27,9 @@
   // Modal state
   const isOpen = defineModel<boolean>({ default: false });
 
+  // Drag & drop visual feedback state (AC2)
+  const isDragging = ref(false);
+
   // Toast notifications
   const toast = useToast();
 
@@ -34,9 +38,32 @@
    */
   const handleDrop = (event: DragEvent) => {
     event.preventDefault();
+    isDragging.value = false;
     const droppedFiles = event.dataTransfer?.files;
     if (droppedFiles && droppedFiles.length > 0) {
       selectFile({ target: { files: droppedFiles } } as any);
+    }
+  };
+
+  /**
+   * Handle drag enter - show visual feedback (AC2)
+   */
+  const handleDragEnter = (event: DragEvent) => {
+    event.preventDefault();
+    isDragging.value = true;
+  };
+
+  /**
+   * Handle drag leave - hide visual feedback (AC2)
+   */
+  const handleDragLeave = (event: DragEvent) => {
+    event.preventDefault();
+    // Only set to false if leaving the dropzone entirely
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = event.clientX;
+    const y = event.clientY;
+    if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+      isDragging.value = false;
     }
   };
 
@@ -156,11 +183,16 @@
         <!-- File Upload Area -->
         <div
           class="relative rounded-lg border-2 border-dashed border-gray-300 p-8 text-center transition-colors hover:border-primary-500"
-          :class="{ 'border-primary-500 bg-primary-50': file }"
+          :class="{
+            'border-primary-500 bg-primary-50': file,
+            'border-primary-500 bg-primary-50 cursor-copy': isDragging
+          }"
           role="region"
           aria-label="Zone de téléchargement de fichier CSV"
           @drop="handleDrop"
           @dragover.prevent
+          @dragenter="handleDragEnter"
+          @dragleave="handleDragLeave"
         >
           <!-- No file selected -->
           <div v-if="!file" class="space-y-3">
@@ -201,6 +233,24 @@
           </div>
         </div>
 
+        <!-- Upload Progress (AC3) -->
+        <div v-if="uploading" class="space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Téléchargement en cours...</span>
+            <span class="font-medium text-primary-600">{{ uploadProgress }}%</span>
+          </div>
+          <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+            <div
+              class="h-full rounded-full bg-primary-500 transition-all duration-300"
+              :style="{ width: `${uploadProgress}%` }"
+            />
+          </div>
+          <!-- Screen reader progress announcement (A11y) -->
+          <div aria-live="polite" aria-atomic="true" class="sr-only">
+            Téléchargement en cours : {{ uploadProgress }}%
+          </div>
+        </div>
+
         <!-- Error Display -->
         <UAlert
           v-if="error"
@@ -209,7 +259,7 @@
           icon="i-heroicons-exclamation-triangle"
           :title="error"
           role="alert"
-          aria-live="polite"
+          aria-live="assertive"
         />
       </div>
 

@@ -27,6 +27,11 @@ describe('useProspectImport', () => {
       expect(uploading.value).toBe(false);
     });
 
+    it('should have upload progress at 0 initially', () => {
+      const { uploadProgress } = useProspectImport(campaignId);
+      expect(uploadProgress.value).toBe(0);
+    });
+
     it('should have no error initially', () => {
       const { error } = useProspectImport(campaignId);
       expect(error.value).toBeNull();
@@ -157,8 +162,8 @@ describe('useProspectImport', () => {
   });
 
   describe('Clear File', () => {
-    it('should clear selected file and error', () => {
-      const { file, error, selectFile, clearFile } = useProspectImport(campaignId);
+    it('should clear selected file, error, and reset progress', () => {
+      const { file, error, uploadProgress, selectFile, clearFile } = useProspectImport(campaignId);
 
       // First select a file
       const csvFile = new File(['data'], 'test.csv', { type: 'text/csv' });
@@ -172,6 +177,7 @@ describe('useProspectImport', () => {
 
       expect(file.value).toBeNull();
       expect(error.value).toBeNull();
+      expect(uploadProgress.value).toBe(0);
     });
   });
 
