@@ -7,6 +7,10 @@ import { prospectsRepository } from '../../../src/repositories/prospects.reposit
 vi.mock('../../../src/repositories/prospects.repository.js', () => ({
   prospectsRepository: {
     findCampaignByIdAndOrg: vi.fn(),
+    createUpload: vi.fn(),
+    findUploadByIdAndOrg: vi.fn(),
+    updateUploadColumns: vi.fn(),
+    updateUploadColumnMappings: vi.fn(),
   },
 }));
 
@@ -34,6 +38,11 @@ describe('ProspectsService', () => {
         id: campaignId,
         name: 'Test Campaign',
         organisationId,
+      } as any);
+
+      vi.mocked(prospectsRepository.createUpload).mockResolvedValue({
+        uploadId: 'upload-123',
+        uploadedAt: new Date(),
       } as any);
 
       // Act
@@ -84,6 +93,11 @@ describe('ProspectsService', () => {
         organisationId: 'org-123',
       } as any);
 
+      vi.mocked(prospectsRepository.createUpload).mockResolvedValue({
+        uploadId: 'upload-123',
+        uploadedAt: new Date(),
+      } as any);
+
       // Act
       const result = await prospectsService.handleUpload('campaign-123', 'org-123', mockFile);
 
@@ -102,6 +116,52 @@ describe('ProspectsService', () => {
       expect(template).toContain('Acme Corp,sarah@acmecorp.com,Sarah Johnson,https://acmecorp.com');
       const lines = template.split('\n');
       expect(lines.length).toBe(2); // Header + 1 example row
+    });
+  });
+
+  describe('validateData', () => {
+    it('should validate prospect data and return results', async () => {
+      const uploadId = 'upload-123';
+      const organisationId = 'org-123';
+      const csvData = 'company_name,contact_email\nAcme Corp,test@acme.com\n,invalid@example.com';
+      
+      vi.mocked(prospectsRepository.findUploadByIdAndOrg).mockResolvedValue({
+        uploadId,
+        organisationId,
+        fileBuffer: Buffer.from(csvData),
+        columnMappings: {
+          company_name: 'company_name',
+          contact_email: 'contact_email',
+        },
+      } as any);
+
+      const result = await prospectsService.validateData(uploadId, organisationId);
+
+      expect(result).toHaveProperty('validCount');
+      expect(result).toHaveProperty('invalidCount');
+      expect(result).toHaveProperty('errors');
+      expect(result.validCount).toBeGreaterThanOrEqual(0);
+      expect(result.invalidCount).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should throw error if upload not found', async () => {
+      vi.mocked(prospectsRepository.findUploadByIdAndOrg).mockResolvedValue(null);
+
+      await expect(
+        prospectsService.validateData('invalid-id', 'org-123')
+      ).rejects.toThrow('Upload not found');
+    });
+
+    it('should throw error if column mappings not set', async () => {
+      vi.mocked(prospectsRepository.findUploadByIdAndOrg).mockResolvedValue({
+        uploadId: 'upload-123',
+        fileBuffer: Buffer.from('test'),
+        columnMappings: null,
+      } as any);
+
+      await expect(
+        prospectsService.validateData('upload-123', 'org-123')
+      ).rejects.toThrow('Column mappings must be set');
     });
   });
 });

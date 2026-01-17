@@ -46,6 +46,13 @@ describe('URL Normalizer', () => {
       expect(normalizeUrl('HTTPS://EXAMPLE.COM')).toBe('https://example.com');
       expect(normalizeUrl('Example.COM')).toBe('https://example.com');
     });
+
+    it('should preserve path case sensitivity', () => {
+      expect(normalizeUrl('https://example.com/MyPath/Document.pdf')).toBe(
+        'https://example.com/MyPath/Document.pdf',
+      );
+      expect(normalizeUrl('Example.COM/API/Users')).toBe('https://example.com/API/Users');
+    });
   });
 
   describe('Invalid URLs', () => {

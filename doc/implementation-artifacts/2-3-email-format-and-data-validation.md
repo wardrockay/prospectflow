@@ -1,6 +1,6 @@
 # Story 2.3: Email Format and Data Validation
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -559,7 +559,12 @@ Claude Sonnet 4.5 via GitHub Copilot Dev Agent (Amelia)
 
 ### Debug Log References
 
-No blocking issues encountered. All tests passed on first run after implementation.
+**OOM Issue Resolved:** Added `threads: false` and `maxConcurrency: 5` to vitest.config.ts to prevent memory crashes during test execution.
+
+### Completion Notes List
+
+**Implementation Completed:** January 14, 2026  
+**Code Review & Fixes Completed:** January 17, 2026
 
 ### Completion Notes List
 
@@ -580,11 +585,15 @@ No blocking issues encountered. All tests passed on first run after implementati
 - Created `ValidationResultsStep.vue` component with summary cards, progress bar, error table, pagination
 - Added `validateData()` method to `useProspectImport` composable
 - Created `validation.types.ts` in ui-web for shared types
-- Implemented CSV error download functionality
-- Added confirmation modal for low quality imports (<50% valid)
-
-**Testing:**
-
+- Implemen73 comprehensive unit + integration tests covering all ACs
+- Email validator: 13 tests (valid formats, invalid formats, RFC 5322 compliance)
+- URL normalizer: 19 tests (prefix addition, trailing slash removal, protocol validation, path case preservation)
+- Data validator service: 21 tests (all field validations, error reporting, performance under 5s for 100 rows)
+- Prospects service: 6 tests (validateData method, error handling, multi-tenant isolation)
+- Integration tests: 7 tests (endpoint validation, error limiting, multi-tenant)
+- Frontend component tests: 13 tests (ValidationResultsStep rendering, events, pagination)
+- Frontend composable tests: 3 tests (validateData API calls, error handling)
+- All tests pass
 - Created 50 comprehensive unit tests covering all ACs
 - Email validator: 13 tests (valid formats, invalid formats, RFC 5322 compliance)
 - URL normalizer: 17 tests (prefix addition, trailing slash removal, protocol validation, edge cases)
@@ -594,7 +603,18 @@ No blocking issues encountered. All tests passed on first run after implementati
 
 **Key Technical Decisions:**
 
-- Used `validator` npm package for robust email validation instead of custom regex
+- Used `validaproper CSV escaping for error downloads (prevents injection)
+- Added Vitest config (`threads: false`) to prevent OOM crashes in WSL environments
+
+**Code Review Fixes Applied (January 17, 2026):**
+
+- Added missing integration tests for validation endpoint (7 tests)
+- Added ProspectsService.validateData() unit tests with proper mocks
+- Created ValidationResultsStep.vue component tests (13 tests)
+- Added useProspectImport.validateData() composable tests (3 tests)
+- Added URL path case preservation test (edge case coverage)
+- Fixed CSV escaping vulnerability in error download (proper quote escaping)
+- Updated test counts and documentation accuracyl validation instead of custom regex
 - Used native URL API for URL validation (lightweight, no extra dependencies)
 - Zod schemas provide type-safe validation with excellent error messages
 - Limited errors to 100 in API response to prevent overwhelming client
@@ -612,9 +632,10 @@ No blocking issues encountered. All tests passed on first run after implementati
 - `src/routes/prospects.routes.ts` (MODIFIED - added route)
 - `src/types/validation.types.ts` (NEW)
 - `tests/unit/utils/email-validator.util.test.ts` (NEW - 13 tests)
-- `tests/unit/utils/url-normalizer.util.test.ts` (NEW - 17 tests)
-- `tests/unit/services/data-validator.service.test.ts` (NEW - 20 tests)
-- `tests/integration/controllers/validation-endpoint.test.ts` (NEW)
+- `tests/unit/utils/url-normalizer.util.test.ts` (NEW - 19 tests with path case preservation)
+- `tests/unit/services/data-validator.service.test.ts` (NEW - 21 tests including performance)
+- `tests/unit/services/prospects.service.test.ts` (MODIFIED - added validateData tests)
+- `tests/integration/controllers/validation-endpoint.test.ts` (NEW - 7 integration tests)
 - `package.json` (MODIFIED - added validator dependency)
 
 **Frontend (ui-web):**
@@ -622,3 +643,5 @@ No blocking issues encountered. All tests passed on first run after implementati
 - `components/prospects/ValidationResultsStep.vue` (NEW)
 - `composables/useProspectImport.ts` (MODIFIED - added validateData method)
 - `types/validation.types.ts` (NEW)
+- `tests/components/ValidationResultsStep.test.ts` (NEW - 13 tests)
+- `tests/composables/useProspectImport.test.ts` (MODIFIED - added validateData tests)

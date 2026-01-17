@@ -155,6 +155,80 @@ vi.mock('../../../src/utils/logger', () => ({
 
 ---
 
+### WSL Memory Management (CRITICAL for Windows Development)
+
+#### 🚨 OOM-Kill Prevention
+
+Vitest parallel execution can trigger WSL OOM-kills. **All test configurations MUST:**
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    threads: false,           // Disable parallel threads
+    maxConcurrency: 5,        // Limit concurrent tests
+  },
+});
+```
+
+#### WSL Configuration
+
+Create/edit `C:\Users\<username>\.wslconfig`:
+
+```ini
+[wsl2]
+memory=8GB              # Adjust based on your RAM (50-75% of total)
+swap=8GB                # Equal to memory allocation
+processors=4            # Limit CPU cores
+```
+
+Apply changes:
+
+```powershell
+# PowerShell (Admin)
+wsl --shutdown
+```
+
+#### Test Execution Best Practices
+
+```bash
+# ✅ Safe: Write to file, then tail
+pnpm test:unit > /tmp/unit.log 2>&1 || true
+tail -50 /tmp/unit.log
+
+# ❌ Dangerous: Pipe to head/tail (can trigger OOM faster)
+pnpm test:unit | tail -50
+
+# ✅ Limit Node memory
+NODE_OPTIONS="--max-old-space-size=2048" pnpm test:unit
+
+# ✅ Monitor memory during tests
+watch -n 0.5 "free -h; ps -eo pid,cmd,rss --sort=-rss | head -n 12"
+```
+
+#### Symptoms of OOM Issues
+
+- Tests crash mid-execution
+- WSL becomes unresponsive
+- `dmesg` shows: `Out of memory: Killed process ... (node)`
+- VS Code Remote extension disconnects
+- `journald corrupted` errors after reboot
+
+#### Troubleshooting
+
+```bash
+# Check WSL memory usage
+free -h
+
+# View OOM-kill logs
+dmesg | grep -i "killed process"
+
+# Check current WSL config
+wsl --status
+```
+
+---
+
 ### File Structure
 
 ```

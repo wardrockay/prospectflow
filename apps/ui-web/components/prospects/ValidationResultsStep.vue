@@ -179,7 +179,7 @@
   };
 
   const downloadErrors = () => {
-    // Convert errors to CSV format
+    // Convert errors to CSV format with proper escaping
     const headers = ['Row #', 'Field', 'Error Type', 'Error Message', 'Original Value'];
     const rows = props.validationResult.errors.map((error) => [
       error.rowNumber,
@@ -189,9 +189,18 @@
       error.originalValue || '',
     ]);
 
+    // Proper CSV escaping: wrap in quotes and escape internal quotes
+    const escapeCsvCell = (cell: string | number): string => {
+      const str = String(cell);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
     const csv = [
-      headers.join(','),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+      headers.map(escapeCsvCell).join(','),
+      ...rows.map((row) => row.map(escapeCsvCell).join(',')),
     ].join('\n');
 
     // Create download link

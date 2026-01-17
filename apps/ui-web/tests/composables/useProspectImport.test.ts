@@ -260,4 +260,59 @@ describe('useProspectImport', () => {
       expect(uploading.value).toBe(false);
     });
   });
+
+  describe('validateData', () => {
+    it('should call validation endpoint with correct params', async () => {
+      const mockResult = {
+        validCount: 85,
+        invalidCount: 15,
+        totalErrorCount: 15,
+        errors: [],
+      };
+
+      mockFetch.mockResolvedValue(mockResult);
+
+      const { validateData } = useProspectImport(campaignId);
+      const result = await validateData('upload-123');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/v1/imports/upload-123/validate-data',
+        { method: 'POST' }
+      );
+      expect(result).toEqual(mockResult);
+    });
+
+    it('should handle validation errors', async () => {
+      mockFetch.mockRejectedValue(new Error('Validation failed'));
+
+      const { validateData } = useProspectImport(campaignId);
+
+      await expect(validateData('upload-123')).rejects.toThrow('Validation failed');
+    });
+
+    it('should return validation result with errors', async () => {
+      const mockResult = {
+        validCount: 50,
+        invalidCount: 50,
+        totalErrorCount: 75,
+        errors: [
+          {
+            rowNumber: 1,
+            field: 'contact_email',
+            errorType: 'INVALID_EMAIL_FORMAT',
+            message: 'Invalid email',
+            originalValue: 'bad@',
+          },
+        ],
+      };
+
+      mockFetch.mockResolvedValue(mockResult);
+
+      const { validateData } = useProspectImport(campaignId);
+      const result = await validateData('upload-456');
+
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].field).toBe('contact_email');
+    });
+  });
 });

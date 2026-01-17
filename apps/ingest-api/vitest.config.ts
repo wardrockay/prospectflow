@@ -7,6 +7,10 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.test.ts'],
     exclude: ['node_modules', 'dist'],
+    // Prevent OOM: disable parallel execution
+    threads: false,
+    // Limit concurrent tests to reduce memory usage
+    maxConcurrency: 5,
   },
   resolve: {
     alias: {

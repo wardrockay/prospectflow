@@ -6,6 +6,8 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "remote.autoForwardPortsFallback": 0,
   "chat.tools.terminal.autoApprove": {
-    "npx nuxi": true
-  }
+    "npx nuxi": true,
+    "npm list": true
+  },
+  "makefile.configureOnOpen": false
 }
