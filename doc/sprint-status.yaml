@@ -101,8 +101,8 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic UI-2: Prospect Management UI
-  epic-ui-2: backlog
-  ui-2-1-csv-upload-interface: backlog
+  epic-ui-2: in-progress
+  ui-2-1-csv-upload-interface: ready-for-dev
   ui-2-2-column-mapping-interface: backlog
   ui-2-3-validation-results-import: backlog
   epic-ui-2-retrospective: optional
