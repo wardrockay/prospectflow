@@ -3,11 +3,14 @@ import type { Ref } from 'vue';
 export interface CampaignListItem {
   id: string;
   name: string;
-  description: string | null;
-  status: 'draft' | 'active' | 'paused' | 'completed';
-  created_at: string;
-  updated_at: string;
-  prospect_count: number;
+  valueProp: string | null;
+  status: 'draft' | 'running' | 'paused' | 'archived';
+  createdAt: string;
+  updatedAt: string;
+  totalProspects: number;
+  emailsSent: number;
+  responseCount: number;
+  responseRate: number;
 }
 
 export interface CampaignListResponse {

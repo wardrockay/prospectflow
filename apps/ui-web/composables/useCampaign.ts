@@ -2,14 +2,16 @@ import type { Ref } from 'vue';
 
 export interface Campaign {
   id: string;
-  organisation_id: string;
+  organisationId: string;
   name: string;
   valueProp: string | null;
-  status: 'draft' | 'active' | 'paused' | 'completed' | 'archived';
-  created_at: string;
-  updated_at: string;
-  prospect_count: number;
-  emails_sent?: number; // Optional field
+  status: 'draft' | 'running' | 'paused' | 'archived';
+  createdAt: string;
+  updatedAt: string;
+  totalProspects: number;
+  emailsSent: number;
+  responseCount: number;
+  responseRate: number;
 }
 
 export interface UseCampaignReturn {

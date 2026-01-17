@@ -50,8 +50,11 @@
   });
 
   // Format date helper
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Date inconnue';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Date invalide';
+    return date.toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -220,7 +223,7 @@
             <!-- Created Date -->
             <div>
               <div class="text-sm font-medium text-gray-600">Date de création</div>
-              <p class="text-gray-700">{{ formatDate(campaign.created_at) }}</p>
+              <p class="text-gray-700">{{ formatDate(campaign.createdAt) }}</p>
             </div>
           </div>
         </UCard>
@@ -235,13 +238,25 @@
             <!-- Prospect Count -->
             <div>
               <div class="text-sm font-medium text-gray-600">Prospects</div>
-              <p class="text-2xl font-bold text-primary">{{ campaign.prospect_count }}</p>
+              <p class="text-2xl font-bold text-primary">{{ campaign.totalProspects }}</p>
             </div>
 
-            <!-- Emails Sent (if available) -->
-            <div v-if="campaign.emails_sent !== undefined">
+            <!-- Emails Sent -->
+            <div>
               <div class="text-sm font-medium text-gray-600">Emails envoyés</div>
-              <p class="text-2xl font-bold text-primary">{{ campaign.emails_sent }}</p>
+              <p class="text-2xl font-bold text-primary">{{ campaign.emailsSent }}</p>
+            </div>
+
+            <!-- Response Count -->
+            <div>
+              <div class="text-sm font-medium text-gray-600">Réponses</div>
+              <p class="text-2xl font-bold text-primary">{{ campaign.responseCount }}</p>
+            </div>
+
+            <!-- Response Rate -->
+            <div>
+              <div class="text-sm font-medium text-gray-600">Taux de réponse</div>
+              <p class="text-2xl font-bold text-primary">{{ campaign.responseRate }}%</p>
             </div>
           </div>
         </UCard>

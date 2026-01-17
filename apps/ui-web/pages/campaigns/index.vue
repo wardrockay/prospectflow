@@ -88,8 +88,11 @@
   });
 
   // Format date helper
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Date inconnue';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Date invalide';
+    return date.toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -105,8 +108,8 @@
   const columns = [
     { key: 'name', label: 'Nom' },
     { key: 'status', label: 'Statut' },
-    { key: 'prospect_count', label: 'Prospects' },
-    { key: 'created_at', label: 'Date de création' },
+    { key: 'totalProspects', label: 'Prospects' },
+    { key: 'createdAt', label: 'Date de création' },
   ];
 </script>
 
@@ -180,8 +183,8 @@
           <template #name-data="{ row }">
             <div>
               <div class="font-medium">{{ row.name }}</div>
-              <div v-if="row.description" class="text-sm text-gray-500 truncate max-w-md">
-                {{ row.description }}
+              <div v-if="row.valueProp" class="text-sm text-gray-500 truncate max-w-md">
+                {{ row.valueProp }}
               </div>
             </div>
           </template>
@@ -190,12 +193,12 @@
             <CampaignStatusBadge :status="row.status" />
           </template>
 
-          <template #prospect_count-data="{ row }">
-            <span class="text-gray-700">{{ row.prospect_count }}</span>
+          <template #totalProspects-data="{ row }">
+            <span class="text-gray-700">{{ row.totalProspects }}</span>
           </template>
 
-          <template #created_at-data="{ row }">
-            <span class="text-sm text-gray-500">{{ formatDate(row.created_at) }}</span>
+          <template #createdAt-data="{ row }">
+            <span class="text-sm text-gray-500">{{ formatDate(row.createdAt) }}</span>
           </template>
         </UTable>
 
