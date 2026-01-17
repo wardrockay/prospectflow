@@ -74,18 +74,18 @@ dev-up: network-create
 	@echo "🚀 Starting Development Environment (APP_ENV=dev)..."
 	@echo ""
 	@echo "📦 Starting Infrastructure..."
-	@cd infra/postgres && docker compose up -d
-	@cd infra/rabbitmq && docker compose up -d
-	@cd infra/redis && docker compose up -d
-	@cd infra/clickhouse && docker compose up -d
+	@cd infra/postgres && docker compose -p prospectflow-postgres up -d
+	@cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq up -d
+	@cd infra/redis && docker compose -p prospectflow-redis up -d
+	@cd infra/clickhouse && docker compose -p prospectflow-clickhouse up -d
 	@echo "⏳ Waiting for infrastructure..."
 	@sleep 5
 	@./scripts/wait-for-services.sh
 	@echo ""
 	@echo "🌐 Starting Applications (dev mode)..."
-	@cd apps/ingest-api && APP_ENV=dev docker compose up -d
-	@cd apps/campaign-api && APP_ENV=dev docker compose up -d
-	@cd apps/ui-web && docker compose up -d
+	@cd apps/ingest-api && APP_ENV=dev docker compose -p prospectflow-ingest-api up -d
+	@cd apps/campaign-api && APP_ENV=dev docker compose -p prospectflow-campaign-api up -d
+	@cd apps/ui-web && APP_ENV=dev docker compose -p prospectflow-ui-web up -d
 	@echo ""
 	@echo "⏳ Waiting for applications..."
 	@sleep 5
@@ -98,13 +98,13 @@ dev-up: network-create
 # Stop all development services
 dev-down:
 	@echo "🛑 Stopping Development Environment..."
-	@-cd apps/ui-web && docker compose down
-	@-cd apps/campaign-api && docker compose down
-	@-cd apps/ingest-api && docker compose down
-	@-cd infra/clickhouse && docker compose down
-	@-cd infra/redis && docker compose down
-	@-cd infra/rabbitmq && docker compose down
-	@-cd infra/postgres && docker compose down
+	@-cd apps/ui-web && docker compose -p prospectflow-ui-web down
+	@-cd apps/campaign-api && docker compose -p prospectflow-campaign-api down
+	@-cd apps/ingest-api && docker compose -p prospectflow-ingest-api down
+	@-cd infra/clickhouse && docker compose -p prospectflow-clickhouse down
+	@-cd infra/redis && docker compose -p prospectflow-redis down
+	@-cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq down
+	@-cd infra/postgres && docker compose -p prospectflow-postgres down
 	@echo "✅ Development environment stopped"
 
 # Restart all dev services
@@ -128,10 +128,10 @@ dev-logs:
 # Start infrastructure tier only
 infra-only: network-create
 	@echo "🚀 Starting Infrastructure Tier..."
-	@cd infra/postgres && docker compose up -d
-	@cd infra/rabbitmq && docker compose up -d
-	@cd infra/redis && docker compose up -d
-	@cd infra/clickhouse && docker compose up -d
+	@cd infra/postgres && docker compose -p prospectflow-postgres up -d
+	@cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq up -d
+	@cd infra/redis && docker compose -p prospectflow-redis up -d
+	@cd infra/clickhouse && docker compose -p prospectflow-clickhouse up -d
 	@echo "⏳ Waiting for infrastructure..."
 	@./scripts/wait-for-services.sh
 	@echo "✅ Infrastructure tier ready!"
@@ -140,9 +140,9 @@ infra-only: network-create
 # Usage: make apps-only [APP_ENV=dev|production]
 apps-only:
 	@echo "🚀 Starting Application Tier (APP_ENV=$${APP_ENV:-dev})..."
-	@cd apps/ingest-api && APP_ENV=$${APP_ENV:-dev} docker compose up -d
-	@cd apps/campaign-api && APP_ENV=$${APP_ENV:-dev} docker compose up -d
-	@cd apps/ui-web && docker compose up -d
+	@cd apps/ingest-api && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-ingest-api up -d
+	@cd apps/campaign-api && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-campaign-api up -d
+	@cd apps/ui-web && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-ui-web up -d
 	@echo "⏳ Waiting for applications..."
 	@sleep 5
 	@docker exec prospectflow-ingest-api curl -sf http://localhost:3000/health > /dev/null 2>&1 || echo "⚠️  ingest-api not ready yet"
@@ -168,22 +168,22 @@ full-stack: infra-only apps-only monitoring-up
 # Restart infrastructure tier
 infra-restart:
 	@echo "🔄 Restarting Infrastructure..."
-	@-cd apps/ui-web && docker compose down
-	@-cd apps/campaign-api && docker compose down
-	@-cd apps/ingest-api && docker compose down
-	@-cd infra/clickhouse && docker compose down
-	@-cd infra/redis && docker compose down
-	@-cd infra/rabbitmq && docker compose down
-	@-cd infra/postgres && docker compose down
+	@-cd apps/ui-web && docker compose -p prospectflow-ui-web down
+	@-cd apps/campaign-api && docker compose -p prospectflow-campaign-api down
+	@-cd apps/ingest-api && docker compose -p prospectflow-ingest-api down
+	@-cd infra/clickhouse && docker compose -p prospectflow-clickhouse down
+	@-cd infra/redis && docker compose -p prospectflow-redis down
+	@-cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq down
+	@-cd infra/postgres && docker compose -p prospectflow-postgres down
 	@$(MAKE) infra-only
 	@echo "✅ Infrastructure restarted! Run 'make apps-only' to restart apps"
 
 # Restart application tier
 apps-restart:
 	@echo "🔄 Restarting Applications..."
-	@-cd apps/ui-web && docker compose down
-	@-cd apps/campaign-api && docker compose down
-	@-cd apps/ingest-api && docker compose down
+	@-cd apps/ui-web && docker compose -p prospectflow-ui-web down
+	@-cd apps/campaign-api && docker compose -p prospectflow-campaign-api down
+	@-cd apps/ingest-api && docker compose -p prospectflow-ingest-api down
 	@$(MAKE) apps-only
 	@echo "✅ Applications restarted!"
 
@@ -203,20 +203,20 @@ prod-up: network-create
 	@./scripts/sync-env-to-vps.sh || true
 	@echo ""
 	@echo "📦 Starting Infrastructure..."
-	@cd infra/postgres && docker compose up -d
-	@cd infra/rabbitmq && docker compose up -d
-	@cd infra/redis && docker compose up -d
-	@cd infra/clickhouse && docker compose up -d
+	@cd infra/postgres && docker compose -p prospectflow-postgres up -d
+	@cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq up -d
+	@cd infra/redis && docker compose -p prospectflow-redis up -d
+	@cd infra/clickhouse && docker compose -p prospectflow-clickhouse up -d
 	@echo "⏳ Waiting for infrastructure..."
 	@sleep 10
 	@echo ""
 	@echo "🌐 Starting Applications (production mode)..."
-	@cd apps/ingest-api && APP_ENV=production docker compose up -d
-	@cd apps/campaign-api && APP_ENV=production docker compose up -d
-	@cd apps/ui-web && docker compose up -d
+	@cd apps/ingest-api && APP_ENV=production docker compose -p prospectflow-ingest-api up -d
+	@cd apps/campaign-api && APP_ENV=production docker compose -p prospectflow-campaign-api up -d
+	@cd apps/ui-web && APP_ENV=production docker compose -p prospectflow-ui-web up -d
 	@echo ""
 	@echo "🔒 Starting Reverse Proxy..."
-	@cd infra/nginx && docker compose up -d
+	@cd infra/nginx && docker compose -p prospectflow-nginx up -d
 	@echo ""
 	@echo "✅ Production environment started!"
 	@echo "🔗 Access at: https://app.lightandshutter.fr"
@@ -225,14 +225,14 @@ prod-up: network-create
 # Stop production environment
 prod-down:
 	@echo "🛑 Stopping Production Environment..."
-	@-cd infra/nginx && docker compose down
-	@-cd apps/ui-web && docker compose down
-	@-cd apps/campaign-api && docker compose down
-	@-cd apps/ingest-api && docker compose down
-	@-cd infra/clickhouse && docker compose down
-	@-cd infra/redis && docker compose down
-	@-cd infra/rabbitmq && docker compose down
-	@-cd infra/postgres && docker compose down
+	@-cd infra/nginx && docker compose -p prospectflow-nginx down
+	@-cd apps/ui-web && docker compose -p prospectflow-ui-web down
+	@-cd apps/campaign-api && docker compose -p prospectflow-campaign-api down
+	@-cd apps/ingest-api && docker compose -p prospectflow-ingest-api down
+	@-cd infra/clickhouse && docker compose -p prospectflow-clickhouse down
+	@-cd infra/redis && docker compose -p prospectflow-redis down
+	@-cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq down
+	@-cd infra/postgres && docker compose -p prospectflow-postgres down
 	@echo "✅ Production environment stopped"
 
 # Restart production environment
@@ -284,7 +284,7 @@ else ifeq ($(SERVICE),campaign-api)
 else ifeq ($(SERVICE),ui-web)
 	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
 else
-	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose down && docker compose up -d --build
+	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose -p prospectflow-$(SERVICE) down && docker compose -p prospectflow-$(SERVICE) up -d --build
 endif
 	@echo "✅ $(SERVICE) restarted"
 else
@@ -295,7 +295,7 @@ endif
 service-stop:
 ifdef SERVICE
 	@echo "🛑 Stopping $(SERVICE)..."
-	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose down
+	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose -p prospectflow-$(SERVICE) down
 	@echo "✅ $(SERVICE) stopped"
 else
 	@./scripts/service-selector.sh stop
@@ -305,7 +305,7 @@ endif
 service-logs:
 ifdef SERVICE
 	@echo "📜 Logs for $(SERVICE) (Ctrl+C to exit)..."
-	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose logs -f --tail=100
+	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose -p prospectflow-$(SERVICE) logs -f --tail=100
 else
 	@echo ""
 	@echo "📋 Available services:"
@@ -397,12 +397,12 @@ vps-connect:
 
 nginx-up: network-create
 	@echo "🚀 Starting NGINX..."
-	@cd infra/nginx && docker compose up -d
+	@cd infra/nginx && docker compose -p prospectflow-nginx up -d
 	@echo "✅ NGINX started"
 
 nginx-down:
 	@echo "🛑 Stopping NGINX..."
-	@-cd infra/nginx && docker compose down
+	@-cd infra/nginx && docker compose -p prospectflow-nginx down
 	@echo "✅ NGINX stopped"
 
 nginx-logs:
@@ -438,19 +438,19 @@ monitoring-down: grafana-down prometheus-down
 
 prometheus-up: network-create
 	@echo "🚀 Starting Prometheus..."
-	@cd infra/prometheus && docker compose up -d
+	@cd infra/prometheus && docker compose -p prospectflow-prometheus up -d
 	@echo "✅ Prometheus: http://localhost:9090"
 
 prometheus-down:
-	@-cd infra/prometheus && docker compose down
+	@-cd infra/prometheus && docker compose -p prospectflow-prometheus down
 
 grafana-up: network-create
 	@echo "🚀 Starting Grafana..."
-	@cd infra/grafana && docker compose up -d
+	@cd infra/grafana && docker compose -p prospectflow-grafana up -d
 	@echo "✅ Grafana: http://localhost:3002 (admin/admin)"
 
 grafana-down:
-	@-cd infra/grafana && docker compose down
+	@-cd infra/grafana && docker compose -p prospectflow-grafana down
 
 monitoring-logs:
 	@echo "📜 Monitoring Logs (Ctrl+C to exit)..."
@@ -470,13 +470,13 @@ monitoring-logs:
 
 clean:
 	@echo "🧹 Cleaning up..."
-	@-cd infra/postgres && docker compose down -v
-	@-cd infra/rabbitmq && docker compose down -v
-	@-cd infra/redis && docker compose down -v
-	@-cd infra/clickhouse && docker compose down -v
-	@-cd apps/ingest-api && docker compose down -v
-	@-cd apps/campaign-api && docker compose down -v
-	@-cd apps/ui-web && docker compose down -v
+	@-cd infra/postgres && docker compose -p prospectflow-postgres down -v
+	@-cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq down -v
+	@-cd infra/redis && docker compose -p prospectflow-redis down -v
+	@-cd infra/clickhouse && docker compose -p prospectflow-clickhouse down -v
+	@-cd apps/ingest-api && docker compose -p prospectflow-ingest-api down -v
+	@-cd apps/campaign-api && docker compose -p prospectflow-campaign-api down -v
+	@-cd apps/ui-web && docker compose -p prospectflow-ui-web down -v
 	@echo "✅ Cleanup complete"
 
 clear-docker:

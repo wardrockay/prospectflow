@@ -6,20 +6,8 @@ services:
     container_name: prospectflow-ui-web
     ports:
       - '4000:3000'
-    environment:
-      - NODE_ENV=production
-      - NUXT_HOST=0.0.0.0
-      - NUXT_PORT=3000
-      # Nuxt runtimeConfig variables (must be prefixed with NUXT_)
-      # Private (server-side only)
-      - NUXT_CAMPAIGN_API_URL=http://prospectflow-campaign-api:3001
-      - NUXT_COGNITO_CLIENT_SECRET=${COGNITO_CLIENT_SECRET}
-      # Public (exposed to client) - use NUXT_PUBLIC_ prefix
-      - NUXT_PUBLIC_API_BASE=${API_BASE_URL:-http://localhost:3001}
-      - NUXT_PUBLIC_COGNITO_HOSTED_UI=${COGNITO_HOSTED_UI}
-      - NUXT_PUBLIC_COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
-      - NUXT_PUBLIC_COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI:-https://app.lightandshutter.fr/auth/callback}
-      - NUXT_PUBLIC_LOGOUT_URI=${LOGOUT_URI:-https://app.lightandshutter.fr/login}
+    env_file:
+      - ./env/.env.${APP_ENV:-production}
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/']
       interval: 10s
