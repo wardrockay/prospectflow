@@ -9,15 +9,17 @@ export type ValidationErrorType =
   | 'COMPANY_NAME_TOO_LONG'
   | 'COMPANY_NAME_INVALID'
   | 'CONTACT_NAME_TOO_LONG'
+  | 'CONTACT_NAME_INVALID'
   | 'DUPLICATE_EMAIL' // Within-upload duplicate
-  | 'DUPLICATE_EMAIL_CAMPAIGN'; // Campaign-level duplicate
+  | 'DUPLICATE_EMAIL_CAMPAIGN' // Campaign-level duplicate
+  | 'VALIDATION_ERROR'; // Generic validation error
 
 export type ValidationWarningType = 'DUPLICATE_EMAIL_ORGANIZATION'; // Organization-level duplicate (90-day window)
 
 export interface ValidationError {
   rowNumber: number;
   field: string;
-  errorType: string;
+  errorType: ValidationErrorType;
   message: string;
   originalValue: string | undefined;
   metadata?: {
@@ -50,6 +52,7 @@ export interface ValidationResult {
   validCount: number;
   invalidCount: number;
   totalErrorCount: number;
+  warningCount: number; // Organization-level duplicate warnings count
   duplicateCount: number; // Within-upload duplicates
   campaignDuplicateCount: number; // Campaign-level duplicates (errors)
   organizationDuplicateCount: number; // Organization-level duplicates (warnings)

@@ -8,11 +8,23 @@ import { validateEmail } from '../utils/email-validator.util.js';
 import { normalizeUrl } from '../utils/url-normalizer.util.js';
 import { normalizeEmail } from '../utils/email-normalizer.util.js';
 import { prospectsRepository } from '../repositories/prospects.repository.js';
-import type { ValidationResult, ValidationError, ValidationWarning } from '../types/validation.types.js';
+import {
+  duplicateChecksTotal,
+  duplicatesDetectedTotal,
+  duplicateOverridesTotal,
+  duplicateCheckDuration,
+} from '../config/metrics.js';
+import type { ValidationResult, ValidationError, ValidationWarning, ValidationErrorType } from '../types/validation.types.js';
 
 const logger = createChildLogger('DataValidatorService');
 
 const MAX_ERRORS_IN_RESPONSE = 100;
+
+/**
+ * Organization-level duplicate detection window in days
+ * Configurable via environment variable
+ */
+const ORG_DUPLICATE_WINDOW_DAYS = parseInt(process.env.ORG_DUPLICATE_WINDOW_DAYS || '90', 10);
 
 /**
  * Zod schema for prospect row validation
@@ -155,34 +167,88 @@ export class DataValidatorService {
     const duplicateErrors = this.detectDuplicates(rows);
     allErrors.push(...duplicateErrors);
 
+    // Track within-upload duplicates metric
+    if (duplicateErrors.length > 0) {
+      duplicatesDetectedTotal.inc(
+        { organisation_id: organisationId, duplicate_type: 'within_upload' },
+        duplicateErrors.length,
+      );
+    }
+
     // Step 3: Cross-campaign duplicate detection (NEW - this story)
-    if (campaignId && !options?.overrideDuplicates) {
+    if (!campaignId) {
+      logger.warn(
+        { organisationId, rowCount: rows.length },
+        'Cross-campaign duplicate detection skipped: no campaignId provided',
+      );
+    } else if (options?.overrideDuplicates) {
+      // Log override action for audit (info level with audit flag)
+      logger.info(
+        { organisationId, campaignId, rowCount: rows.length, audit: true },
+        'Duplicate detection overridden by user',
+      );
+      duplicateOverridesTotal.inc({ organisation_id: organisationId });
+    } else {
       // Extract emails for batch lookup
       const emails = rows
         .map((r) => normalizeEmail(r.contact_email))
         .filter((email): email is string => !!email);
 
       if (emails.length > 0) {
-        // Batch query existing prospects
+        // Track duplicate check
+        duplicateChecksTotal.inc({ organisation_id: organisationId, check_type: 'campaign' });
+        duplicateChecksTotal.inc({ organisation_id: organisationId, check_type: 'organization' });
+
+        // Determine email count bucket for metrics
+        const emailCountBucket =
+          emails.length <= 10 ? '1-10' : emails.length <= 50 ? '11-50' : emails.length <= 100 ? '51-100' : '100+';
+
+        // Batch query existing prospects with timing
+        const queryStartTime = Date.now();
         const existingProspects = await prospectsRepository.findExistingProspectsByEmails(
           organisationId,
           emails,
         );
+        const queryDuration = (Date.now() - queryStartTime) / 1000;
+
+        // Track query duration
+        duplicateCheckDuration.observe(
+          { organisation_id: organisationId, email_count_bucket: emailCountBucket },
+          queryDuration,
+        );
+
+        // Log warning if query is slow (> 1 second)
+        if (queryDuration > 1) {
+          logger.warn(
+            { organisationId, emailCount: emails.length, queryDuration, threshold: 1 },
+            'Duplicate detection query exceeded performance threshold - check database indexes',
+          );
+        }
 
         // Detect campaign-level duplicates (ERRORS)
         const campaignDuplicates = this.detectCampaignDuplicates(rows, existingProspects, campaignId);
         allErrors.push(...campaignDuplicates);
 
+        // Track campaign duplicates metric
+        if (campaignDuplicates.length > 0) {
+          duplicatesDetectedTotal.inc(
+            { organisation_id: organisationId, duplicate_type: 'campaign' },
+            campaignDuplicates.length,
+          );
+        }
+
         // Detect organization-level duplicates (WARNINGS)
         const orgDuplicates = this.detectOrganizationDuplicates(rows, existingProspects, campaignId);
         allWarnings.push(...orgDuplicates);
+
+        // Track org duplicates metric
+        if (orgDuplicates.length > 0) {
+          duplicatesDetectedTotal.inc(
+            { organisation_id: organisationId, duplicate_type: 'organization' },
+            orgDuplicates.length,
+          );
+        }
       }
-    } else if (options?.overrideDuplicates) {
-      // Log override action for audit
-      logger.warn(
-        { organisationId, campaignId, rowCount: rows.length },
-        'Duplicate detection overridden by user',
-      );
     }
 
     const duration = Date.now() - startTime;
@@ -216,6 +282,7 @@ export class DataValidatorService {
       validCount: validRows.length,
       invalidCount: invalidRows.length,
       totalErrorCount: allErrors.length,
+      warningCount: allWarnings.length,
       duplicateCount: duplicateErrors.length,
       campaignDuplicateCount: allErrors.filter((e) => e.errorType === 'DUPLICATE_EMAIL_CAMPAIGN')
         .length,
@@ -374,8 +441,6 @@ export class DataValidatorService {
     }>,
     currentCampaignId: string,
   ): ValidationWarning[] {
-    const NINETY_DAYS = 90;
-
     const orgProspectsMap = new Map<
       string,
       {
@@ -389,9 +454,9 @@ export class DataValidatorService {
       }
     >();
 
-    // Build map of existing prospects in OTHER campaigns within 90 days
+    // Build map of existing prospects in OTHER campaigns within configured window
     existingProspects
-      .filter((p) => p.campaignId !== currentCampaignId && p.daysSinceCreated <= NINETY_DAYS)
+      .filter((p) => p.campaignId !== currentCampaignId && p.daysSinceCreated <= ORG_DUPLICATE_WINDOW_DAYS)
       .forEach((p) => {
         const email = normalizeEmail(p.contactEmail);
         if (!email) return;
@@ -442,7 +507,7 @@ export class DataValidatorService {
    * @param message - Zod error message
    * @returns Standardized error type constant
    */
-  private getErrorType(field: string, message: string): string {
+  private getErrorType(field: string, message: string): ValidationErrorType {
     if (field === 'company_name') {
       if (message.includes('required')) return 'COMPANY_NAME_REQUIRED';
       if (message.includes('exceed') || message.includes('200')) return 'COMPANY_NAME_TOO_LONG';

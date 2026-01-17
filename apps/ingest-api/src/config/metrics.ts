@@ -138,3 +138,48 @@ export const prospectsProcessedTotal = new promClient.Counter({
   labelNames: ['organisation_id', 'action'], // action: 'imported', 'validated', 'researched'
   registers: [register],
 });
+
+/**
+ * Duplicate detection metrics (Story 2-5)
+ */
+
+/**
+ * Total number of duplicate checks performed
+ */
+export const duplicateChecksTotal = new promClient.Counter({
+  name: 'duplicate_checks_total',
+  help: 'Total number of duplicate checks performed',
+  labelNames: ['organisation_id', 'check_type'], // check_type: 'campaign' | 'organization'
+  registers: [register],
+});
+
+/**
+ * Total number of duplicates detected
+ */
+export const duplicatesDetectedTotal = new promClient.Counter({
+  name: 'duplicates_detected_total',
+  help: 'Total number of duplicates detected',
+  labelNames: ['organisation_id', 'duplicate_type'], // duplicate_type: 'campaign' | 'organization' | 'within_upload'
+  registers: [register],
+});
+
+/**
+ * Total number of duplicate overrides by users
+ */
+export const duplicateOverridesTotal = new promClient.Counter({
+  name: 'duplicate_overrides_total',
+  help: 'Total number of duplicate overrides by users',
+  labelNames: ['organisation_id'],
+  registers: [register],
+});
+
+/**
+ * Duplicate check query duration histogram
+ */
+export const duplicateCheckDuration = new promClient.Histogram({
+  name: 'duplicate_check_duration_seconds',
+  help: 'Duration of duplicate check queries in seconds',
+  labelNames: ['organisation_id', 'email_count_bucket'], // email_count_bucket: '1-10', '11-50', '51-100', '100+'
+  buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5],
+  registers: [register],
+});
