@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Determine backend URL - use ingestApiUrl for prospects endpoints (L1 fix)
-  const backendUrl = config.ingestApiUrl || config.campaignApiUrl || 'http://localhost:3002';
+  const backendUrl = config.ingestApiUrl || 'http://localhost:4000';
   const url = `${backendUrl}/api/v1/campaigns/prospects/template`;
 
   try {

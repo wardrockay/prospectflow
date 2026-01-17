@@ -88,6 +88,7 @@
         icon: 'i-heroicons-check-circle',
       });
 
+      console.log('Emitting uploaded event with uploadId:', result.uploadId);
       emit('uploaded', result.uploadId);
       isOpen.value = false;
     } catch (err: any) {

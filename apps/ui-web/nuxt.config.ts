@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     cognitoClientSecret: process.env.COGNITO_CLIENT_SECRET || '',
     // Backend service URLs (server-side only - uses Docker container names in production)
     campaignApiUrl: process.env.CAMPAIGN_API_URL || 'http://localhost:3001',
+    ingestApiUrl: process.env.INGEST_API_URL || 'http://localhost:4000',
 
     // Public keys (exposed to client)
     public: {

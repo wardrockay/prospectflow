@@ -46,8 +46,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Determine backend URL
-  const backendUrl = config.campaignApiUrl || 'http://localhost:3001';
+  // Determine backend URL - use ingest-api for prospect imports
+  const backendUrl = config.ingestApiUrl || 'http://localhost:4000';
   const url = `${backendUrl}/api/v1/campaigns/${campaignId}/prospects/upload`;
 
   try {

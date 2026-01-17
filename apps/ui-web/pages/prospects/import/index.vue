@@ -36,7 +36,8 @@
    * Navigate to mapping page with uploadId
    */
   const handleUploaded = (uploadId: string) => {
-    router.push(`/prospects/import/map?upload_id=${uploadId}`);
+    console.log('Upload success, navigating to map page with uploadId:', uploadId);
+    navigateTo(`/prospects/import/map?upload_id=${uploadId}`);
   };
 
   /**

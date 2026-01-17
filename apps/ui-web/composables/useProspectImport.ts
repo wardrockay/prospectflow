@@ -175,6 +175,7 @@ export const useProspectImport = (campaignId: string) => {
         }
 
         uploadProgress.value = 100;
+        console.log('Upload completed successfully:', response.data);
         return response.data;
       }
     } catch (err: any) {
