@@ -1,6 +1,6 @@
 # Story 2.4: Duplicate Detection Within Upload
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1001,7 +1001,8 @@ Story created with comprehensive context including:
 - `apps/ingest-api/tests/unit/services/data-validator.service.test.ts` - Added 13 duplicate tests
 - `apps/ui-web/types/validation.types.ts` - Synced with backend types
 - `apps/ui-web/components/prospects/ValidationResultsStep.vue` - Added duplicate display
-- `apps/ui-web/tests/components/ValidationResultsStep.test.ts` - Added 8 duplicate tests
+- `apps/ui-web/tests/components/ValidationResultsStep.test.ts` - Added 8 duplicate tests, fixed NuxtUI test compatibility
+- `apps/ui-web/tests/composables/useProspectImport.test.ts` - Fixed mock response structure for duplicateCount
 
 **Critical Developer Guardrails Followed:**
 

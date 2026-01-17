@@ -267,16 +267,22 @@ describe('useProspectImport', () => {
         validCount: 85,
         invalidCount: 15,
         totalErrorCount: 15,
+        duplicateCount: 0,
         errors: [],
+        validRows: [],
+        invalidRows: [],
       };
 
-      mockFetch.mockResolvedValue(mockResult);
+      mockFetch.mockResolvedValue({
+        success: true,
+        data: mockResult,
+      });
 
       const { validateData } = useProspectImport(campaignId);
       const result = await validateData('upload-123');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        '/api/v1/imports/upload-123/validate-data',
+        '/api/imports/upload-123/validate-data',
         { method: 'POST' }
       );
       expect(result).toEqual(mockResult);
@@ -295,6 +301,7 @@ describe('useProspectImport', () => {
         validCount: 50,
         invalidCount: 50,
         totalErrorCount: 75,
+        duplicateCount: 0,
         errors: [
           {
             rowNumber: 1,
@@ -304,9 +311,14 @@ describe('useProspectImport', () => {
             originalValue: 'bad@',
           },
         ],
+        validRows: [],
+        invalidRows: [],
       };
 
-      mockFetch.mockResolvedValue(mockResult);
+      mockFetch.mockResolvedValue({
+        success: true,
+        data: mockResult,
+      });
 
       const { validateData } = useProspectImport(campaignId);
       const result = await validateData('upload-456');
