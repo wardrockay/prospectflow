@@ -23,7 +23,7 @@ describe('ExportErrorsService', () => {
   });
 
   describe('generateErrorCSV', () => {
-    it('should generate CSV with error rows', () => {
+    it('should generate CSV with error rows', async () => {
       // Arrange
       const validationResult: ValidationResult = {
         validCount: 0,
@@ -68,7 +68,7 @@ describe('ExportErrorsService', () => {
       };
 
       // Act
-      const csv = exportService.generateErrorCSV(validationResult);
+      const csv = await exportService.generateErrorCSV(validationResult);
 
       // Assert
       expect(csv).toContain('Row,Company_Name,Contact_Email,Contact_Name,Website_URL,Error_Type,Error_Reason');
@@ -76,7 +76,7 @@ describe('ExportErrorsService', () => {
       expect(csv).toContain('2,,jane@beta.com,Jane Smith,,COMPANY_NAME_REQUIRED,Company name is required');
     });
 
-    it('should return empty CSV with headers when no errors', () => {
+    it('should return empty CSV with headers when no errors', async () => {
       // Arrange
       const validationResult: ValidationResult = {
         validCount: 2,
@@ -95,14 +95,14 @@ describe('ExportErrorsService', () => {
       };
 
       // Act
-      const csv = exportService.generateErrorCSV(validationResult);
+      const csv = await exportService.generateErrorCSV(validationResult);
 
       // Assert
       expect(csv).toContain('Row,Company_Name,Contact_Email,Contact_Name,Website_URL,Error_Type,Error_Reason');
       expect(csv.split('\n').length).toBe(2); // Header + empty line
     });
 
-    it('should handle missing optional fields', () => {
+    it('should handle missing optional fields', async () => {
       // Arrange
       const validationResult: ValidationResult = {
         validCount: 0,
@@ -132,13 +132,13 @@ describe('ExportErrorsService', () => {
       };
 
       // Act
-      const csv = exportService.generateErrorCSV(validationResult);
+      const csv = await exportService.generateErrorCSV(validationResult);
 
       // Assert
       expect(csv).toContain('1,Acme,bad,,,INVALID_EMAIL_FORMAT,Invalid email');
     });
 
-    it('should handle special characters in data', () => {
+    it('should handle special characters in data', async () => {
       // Arrange
       const validationResult: ValidationResult = {
         validCount: 0,
@@ -170,7 +170,7 @@ describe('ExportErrorsService', () => {
       };
 
       // Act
-      const csv = exportService.generateErrorCSV(validationResult);
+      const csv = await exportService.generateErrorCSV(validationResult);
 
       // Assert
       expect(csv).toContain('"Acme, Inc."'); // CSV should quote fields with commas

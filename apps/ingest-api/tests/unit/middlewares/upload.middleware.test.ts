@@ -36,11 +36,11 @@ describe('Upload Middleware', () => {
       expect(typeof middleware).toBe('function');
     });
 
-    it('should have correct file size limit (5MB)', () => {
+    it('should have correct file size limit (50MB)', () => {
       // Access multer limits through the middleware configuration
       // @ts-expect-error - accessing internal multer property for testing
       const limits = uploadCsv.limits;
-      expect(limits.fileSize).toBe(5 * 1024 * 1024);
+      expect(limits.fileSize).toBe(50 * 1024 * 1024);
     });
 
     it('should use memory storage', () => {

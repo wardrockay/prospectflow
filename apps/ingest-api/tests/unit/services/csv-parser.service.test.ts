@@ -114,13 +114,13 @@ Acme Corp,sarah@acme.com,https://acme.com`;
       expect(result.data[0].company_name).toBe('Acme Corp');
     });
 
-    it('should reject files larger than 5MB', async () => {
-      // Create a buffer larger than 5MB
-      const largeContent = 'a'.repeat(6 * 1024 * 1024);
+    it('should reject files larger than 50MB', async () => {
+      // Create a buffer larger than 50MB
+      const largeContent = 'a'.repeat(51 * 1024 * 1024);
       const buffer = Buffer.from(largeContent, 'utf-8');
 
       await expect(service.parse(buffer)).rejects.toThrow(
-        'File size exceeds maximum allowed size of 5MB',
+        'File size exceeds maximum allowed size of 50MB',
       );
     });
 
@@ -178,6 +178,143 @@ Tech Inc,john@tech.com`;
 
       expect(result.rowCount).toBe(100);
       expect(duration).toBeLessThan(5000); // AC1: < 5 seconds for 100 rows
+    });
+  });
+
+  describe('XLSX parsing', () => {
+    it('should parse valid XLSX file', async () => {
+      // Import XLSX library
+      const XLSX = await import('xlsx');
+
+      // Create a simple workbook
+      const ws = XLSX.utils.aoa_to_sheet([
+        ['company_name', 'contact_email', 'website_url'],
+        ['Acme Corp', 'sarah@acme.com', 'https://acme.com'],
+        ['Tech Industries', 'john@tech.com', 'https://tech.com'],
+      ]);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+      // Write to buffer
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      const result = await service.parse(buffer, 'test.xlsx');
+
+      expect(result.headers).toEqual(['company_name', 'contact_email', 'website_url']);
+      expect(result.rowCount).toBe(2);
+      expect(result.data[0]).toEqual({
+        company_name: 'Acme Corp',
+        contact_email: 'sarah@acme.com',
+        website_url: 'https://acme.com',
+      });
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should handle XLSX with empty cells', async () => {
+      const XLSX = await import('xlsx');
+
+      const ws = XLSX.utils.aoa_to_sheet([
+        ['company_name', 'contact_email', 'website_url'],
+        ['Acme Corp', 'sarah@acme.com', ''], // Empty website
+        ['Tech Industries', '', 'https://tech.com'], // Empty email
+      ]);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      const result = await service.parse(buffer, 'test.xlsx');
+
+      expect(result.rowCount).toBe(2);
+      expect(result.data[0].website_url).toBe('');
+      expect(result.data[1].contact_email).toBe('');
+    });
+
+    it('should only process first worksheet in XLSX', async () => {
+      const XLSX = await import('xlsx');
+
+      // Create workbook with multiple sheets
+      const ws1 = XLSX.utils.aoa_to_sheet([
+        ['company_name', 'contact_email'],
+        ['Acme Corp', 'sarah@acme.com'],
+      ]);
+
+      const ws2 = XLSX.utils.aoa_to_sheet([
+        ['other_col1', 'other_col2'],
+        ['Data1', 'Data2'],
+      ]);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws1, 'FirstSheet');
+      XLSX.utils.book_append_sheet(wb, ws2, 'SecondSheet');
+
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      const result = await service.parse(buffer, 'test.xlsx');
+
+      // Should only parse first sheet
+      expect(result.headers).toEqual(['company_name', 'contact_email']);
+      expect(result.rowCount).toBe(1);
+    });
+
+    it('should normalize XLSX headers to lowercase', async () => {
+      const XLSX = await import('xlsx');
+
+      const ws = XLSX.utils.aoa_to_sheet([
+        ['Company Name', 'Contact Email', 'Website URL'],
+        ['Acme Corp', 'sarah@acme.com', 'https://acme.com'],
+      ]);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      const result = await service.parse(buffer, 'test.xlsx');
+
+      expect(result.headers).toEqual(['company name', 'contact email', 'website url']);
+    });
+
+    it('should handle XLSX with no data rows', async () => {
+      const XLSX = await import('xlsx');
+
+      const ws = XLSX.utils.aoa_to_sheet([['company_name', 'contact_email', 'website_url']]);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      const result = await service.parse(buffer, 'test.xlsx');
+
+      // XLSX sheet_to_json returns empty array when only headers exist
+      // This is expected behavior - headers would be empty, rowCount 0
+      expect(result.rowCount).toBe(0);
+      expect(result.data).toHaveLength(0);
+    });
+
+    it('should fallback to CSV parsing when no filename provided', async () => {
+      const csvContent = `company_name,contact_email
+Acme Corp,sarah@acme.com`;
+
+      const buffer = Buffer.from(csvContent, 'utf-8');
+      const result = await service.parse(buffer); // No filename
+
+      expect(result.headers).toEqual(['company_name', 'contact_email']);
+      expect(result.rowCount).toBe(1);
+    });
+
+    it('should parse CSV when filename has .csv extension', async () => {
+      const csvContent = `company_name,contact_email
+Acme Corp,sarah@acme.com`;
+
+      const buffer = Buffer.from(csvContent, 'utf-8');
+      const result = await service.parse(buffer, 'test.csv');
+
+      expect(result.headers).toEqual(['company_name', 'contact_email']);
+      expect(result.rowCount).toBe(1);
     });
   });
 });

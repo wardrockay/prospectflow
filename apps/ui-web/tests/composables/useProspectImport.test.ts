@@ -90,7 +90,7 @@ describe('useProspectImport', () => {
       expect(error.value).toBeNull();
     });
 
-    it('should reject Excel files (.xlsx)', () => {
+    it('should accept Excel files (.xlsx)', () => {
       const { file, error, selectFile } = useProspectImport(campaignId);
 
       const xlsxFile = new File(['data'], 'prospects.xlsx', {
@@ -99,8 +99,8 @@ describe('useProspectImport', () => {
       const event = { target: { files: [xlsxFile] } } as unknown as Event;
       selectFile(event);
 
-      expect(file.value).toBeNull();
-      expect(error.value).toContain('CSV');
+      expect(file.value).not.toBeNull();
+      expect(error.value).toBeNull();
     });
 
     it('should reject text files (.txt)', () => {
@@ -111,12 +111,12 @@ describe('useProspectImport', () => {
       selectFile(event);
 
       expect(file.value).toBeNull();
-      expect(error.value).toContain('CSV');
+      expect(error.value).toContain('.xlsx');
     });
   });
 
   describe('File Size Validation', () => {
-    it('should accept files under 5MB', () => {
+    it('should accept files under 50MB', () => {
       const { file, error, selectFile } = useProspectImport(campaignId);
 
       const smallFile = new File(['data'], 'prospects.csv', { type: 'text/csv' });
@@ -129,17 +129,30 @@ describe('useProspectImport', () => {
       expect(error.value).toBeNull();
     });
 
-    it('should reject files over 5MB', () => {
+    it('should accept files at exactly 50MB', () => {
+      const { file, error, selectFile } = useProspectImport(campaignId);
+
+      const maxFile = new File(['data'], 'max.csv', { type: 'text/csv' });
+      Object.defineProperty(maxFile, 'size', { value: 50 * 1024 * 1024 }); // 50MB
+
+      const event = { target: { files: [maxFile] } } as unknown as Event;
+      selectFile(event);
+
+      expect(file.value).not.toBeNull();
+      expect(error.value).toBeNull();
+    });
+
+    it('should reject files over 50MB', () => {
       const { file, error, selectFile } = useProspectImport(campaignId);
 
       const largeFile = new File(['data'], 'large.csv', { type: 'text/csv' });
-      Object.defineProperty(largeFile, 'size', { value: 6 * 1024 * 1024 }); // 6MB
+      Object.defineProperty(largeFile, 'size', { value: 51 * 1024 * 1024 }); // 51MB
 
       const event = { target: { files: [largeFile] } } as unknown as Event;
       selectFile(event);
 
       expect(file.value).toBeNull();
-      expect(error.value).toContain('5 MB');
+      expect(error.value).toContain('50 MB');
     });
   });
 
@@ -177,7 +190,7 @@ describe('useProspectImport', () => {
       const { canContinue, selectFile } = useProspectImport(campaignId);
 
       const largeFile = new File(['data'], 'large.csv', { type: 'text/csv' });
-      Object.defineProperty(largeFile, 'size', { value: 10 * 1024 * 1024 });
+      Object.defineProperty(largeFile, 'size', { value: 51 * 1024 * 1024 }); // 51MB (over limit)
 
       const event = { target: { files: [largeFile] } } as unknown as Event;
       selectFile(event);

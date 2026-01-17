@@ -5,12 +5,15 @@ import { Request, Response, NextFunction } from 'express';
 import { prospectsService } from '../services/prospects.service.js';
 import { ImportProspectsService } from '../services/import-prospects.service.js';
 import { ExportErrorsService } from '../services/export-errors.service.js';
+import { ProspectRepository } from '../repositories/prospect.repository.js';
+import { pool } from '../config/database.js';
 import { createChildLogger } from '../utils/logger.js';
 import type { ColumnMappingsInput } from '../types/csv.types.js';
-import type { ValidationResult } from '../types/validation.types.js';
+import type { ValidationResult } from '../types/index.js';
 
 const logger = createChildLogger('ProspectsController');
-const importProspectsService = new ImportProspectsService();
+const prospectRepository = new ProspectRepository(pool);
+const importProspectsService = new ImportProspectsService(prospectRepository);
 const exportErrorsService = new ExportErrorsService();
 
 /**
@@ -268,7 +271,7 @@ export class ProspectsController {
 
       logger.info('Generating error CSV');
 
-      const csv = exportErrorsService.generateErrorCSV(validationResult);
+      const csv = await exportErrorsService.generateErrorCSV(validationResult);
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `validation-errors-${timestamp}.csv`;

@@ -51,16 +51,16 @@ export const useProspectImport = (campaignId: string) => {
     error.value = null;
 
     // Validate file type
-    if (!selectedFile.name.endsWith('.csv') && selectedFile.type !== 'text/csv') {
-      error.value = 'Veuillez uploader un fichier CSV (.csv)';
+    if (!selectedFile.name.match(/\.(csv|xlsx)$/i)) {
+      error.value = 'Veuillez uploader un fichier CSV (.csv) ou Excel (.xlsx)';
       file.value = null;
       return;
     }
 
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024;
+    // Validate file size (50MB max)
+    const maxSize = 50 * 1024 * 1024;
     if (selectedFile.size > maxSize) {
-      error.value = 'Fichier trop volumineux. Taille maximale : 5 MB (environ 5000 prospects)';
+      error.value = 'Fichier trop volumineux (max 50 MB)';
       file.value = null;
       return;
     }

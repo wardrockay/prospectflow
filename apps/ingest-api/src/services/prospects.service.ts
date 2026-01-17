@@ -128,7 +128,7 @@ export class ProspectsService {
     }
 
     // Parse CSV to detect columns
-    const parseResult = await csvParser.parse(upload.fileBuffer);
+    const parseResult = await csvParser.parse(upload.fileBuffer, upload.filename);
 
     if (parseResult.errors.length > 0) {
       logger.warn(
@@ -197,7 +197,7 @@ export class ProspectsService {
     }
 
     // Parse CSV
-    const parseResult = await csvParser.parse(upload.fileBuffer);
+    const parseResult = await csvParser.parse(upload.fileBuffer, upload.filename);
 
     if (parseResult.errors.length > 0) {
       logger.warn({ uploadId, errorCount: parseResult.errors.length }, 'CSV parsing errors');
@@ -274,7 +274,7 @@ export class ProspectsService {
     }
 
     // Parse CSV
-    const parseResult = await csvParser.parse(upload.fileBuffer);
+    const parseResult = await csvParser.parse(upload.fileBuffer, upload.filename);
 
     if (parseResult.errors.length > 0) {
       logger.warn({ uploadId, errorCount: parseResult.errors.length }, 'CSV parsing errors');

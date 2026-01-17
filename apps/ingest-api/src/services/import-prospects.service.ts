@@ -1,21 +1,12 @@
 import { createChildLogger } from '../utils/logger.js';
-import { prospectsRepository } from '../repositories/prospects.repository.js';
-import type { ValidationResult, ValidationError } from '../types/validation.types.js';
-
-export interface ProspectData {
-  company_name: string;
-  contact_email: string;
-  contact_name?: string;
-  website_url?: string;
-}
-
-export interface ImportSummary {
-  imported: number;
-  failed: number;
-  prospectIds: string[];
-}
+import { ProspectRepository } from '../repositories/prospect.repository.js';
+import type { ValidationResult, ProspectData, ImportSummary } from '../types/index.js';
 
 export class ImportProspectsService {
+  private readonly logger = createChildLogger('ImportProspectsService');
+
+  constructor(private prospectRepository: ProspectRepository) {}
+
   /**
    * Import valid prospects from validation result
    * @param validationResult - Result from data validation
@@ -45,7 +36,7 @@ export class ImportProspectsService {
 
     try {
       // Batch insert with transaction
-      const inserted = await prospectsRepository.batchInsertProspects(
+      const inserted = await this.prospectRepository.batchInsertProspects(
         validProspects,
         campaignId,
         organisationId,
@@ -59,7 +50,7 @@ export class ImportProspectsService {
       return {
         imported: inserted.length,
         failed: 0,
-        prospectIds: inserted.map((p: { id: string }) => p.id),
+        prospectIds: inserted.map((p) => p.id),
       };
     } catch (error) {
       logger.error({ err: error, campaignId, organisationId }, 'Error importing prospects');
@@ -79,9 +70,9 @@ export class ImportProspectsService {
     }
 
     // Get row numbers with errors
-    const errorRowNumbers = new Set(result.errors.map((e: ValidationError) => e.rowNumber));
+    const errorRowNumbers = new Set(result.errors.map((e) => e.rowNumber));
 
     // Filter out rows that have errors
-    return result.validProspects.filter((_: ProspectData, index: number) => !errorRowNumbers.has(index + 1));
+    return result.validProspects.filter((_, index) => !errorRowNumbers.has(index + 1));
   }
 }

@@ -140,12 +140,12 @@ describe('Prospect/ImportModal.vue', () => {
       expect(label.text()).toContain('Choisir un fichier');
     });
 
-    it('should have file input that accepts only CSV files', async () => {
+    it('should have file input that accepts CSV and XLSX files', async () => {
       const wrapper = mountModal();
 
       const fileInput = wrapper.find('input#file-upload');
       expect(fileInput.exists()).toBe(true);
-      expect(fileInput.attributes('accept')).toBe('.csv');
+      expect(fileInput.attributes('accept')).toBe('.csv,.xlsx');
     });
   });
 

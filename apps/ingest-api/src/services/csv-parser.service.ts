@@ -1,9 +1,10 @@
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import { createChildLogger } from '../utils/logger.js';
 
 const logger = createChildLogger('CsvParserService');
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const PARSE_TIMEOUT = 30000; // 30 seconds
 
 export interface ParseResult {
@@ -15,11 +16,12 @@ export interface ParseResult {
 
 export class CsvParserService {
   /**
-   * Parse CSV file from buffer
-   * @param fileBuffer - Buffer containing CSV content
+   * Parse CSV or XLSX file from buffer
+   * @param fileBuffer - Buffer containing CSV or XLSX content
+   * @param filename - Original filename to determine file type
    * @returns ParseResult with headers, data, row count, and errors
    */
-  async parse(fileBuffer: Buffer): Promise<ParseResult> {
+  async parse(fileBuffer: Buffer, filename?: string): Promise<ParseResult> {
     const startTime = Date.now();
 
     // Check file size
@@ -28,10 +30,78 @@ export class CsvParserService {
         { fileSize: fileBuffer.length, maxSize: MAX_FILE_SIZE },
         'File size exceeds limit',
       );
-      throw new Error('File size exceeds maximum allowed size of 5MB');
+      throw new Error('File size exceeds maximum allowed size of 50MB');
     }
 
-    logger.debug({ fileSize: fileBuffer.length }, 'Starting CSV parse');
+    // Determine file type
+    const isXlsx = filename?.match(/\.xlsx$/i);
+
+    if (isXlsx) {
+      logger.debug({ fileSize: fileBuffer.length, type: 'xlsx' }, 'Starting XLSX parse');
+      return this.parseXlsx(fileBuffer, startTime);
+    } else {
+      logger.debug({ fileSize: fileBuffer.length, type: 'csv' }, 'Starting CSV parse');
+      return this.parseCsv(fileBuffer, startTime);
+    }
+  }
+
+  /**
+   * Parse XLSX file from buffer
+   */
+  private parseXlsx(fileBuffer: Buffer, startTime: number): ParseResult {
+    try {
+      // Read workbook from buffer
+      const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+
+      // Get first worksheet
+      const firstSheetName = workbook.SheetNames[0];
+      if (!firstSheetName) {
+        throw new Error('Excel file contains no worksheets');
+      }
+
+      const worksheet = workbook.Sheets[firstSheetName];
+
+      // Convert to JSON with headers
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+        defval: '', // Default value for empty cells
+        raw: false, // Format values as strings
+      });
+
+      // Extract headers from first row
+      const headers =
+        jsonData.length > 0
+          ? Object.keys(jsonData[0] as Record<string, unknown>).map((h) => h.trim().toLowerCase())
+          : [];
+
+      const duration = Date.now() - startTime;
+      const rowCount = jsonData.length;
+
+      logger.info(
+        {
+          rowCount,
+          columnCount: headers.length,
+          duration,
+          worksheet: firstSheetName,
+        },
+        'XLSX parsing complete',
+      );
+
+      return {
+        headers,
+        data: jsonData as Record<string, string>[],
+        rowCount,
+        errors: [],
+      };
+    } catch (error) {
+      logger.error({ err: error }, 'XLSX parsing failed');
+      throw new Error(`XLSX parsing failed: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Parse CSV file from buffer
+   */
+  private parseCsv(fileBuffer: Buffer, startTime: number): Promise<ParseResult> {
 
     return new Promise((resolve, reject) => {
       // Timeout handler

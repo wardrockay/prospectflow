@@ -1,21 +1,15 @@
 /**
  * Integration tests for Import Prospects Endpoint
  * Tests POST /api/v1/prospects/import
- * 
- * These tests require a running test database and auth setup.
- * Skip when test infrastructure is not available.
  */
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
-import app from '../../../src/app.js';
+import { app } from '../../../src/app.js';
 import { pool } from '../../../src/config/database.js';
 import { v4 as uuidv4 } from 'uuid';
 import type { ValidationResult } from '../../../src/types/index.js';
 
-// Skip integration tests if test database is not available
-const TEST_DB_AVAILABLE = process.env.TEST_DB_AVAILABLE === 'true';
-
-describe.skipIf(!TEST_DB_AVAILABLE)('POST /api/v1/prospects/import', () => {
+describe('POST /api/v1/prospects/import', () => {
   const orgId = `org-test-${uuidv4()}`;
   const campaignId = `campaign-test-${uuidv4()}`;
   let authToken: string;

@@ -176,11 +176,11 @@
               </label>
               <span class="text-gray-600"> ou glisser-déposer</span>
             </div>
-            <p class="text-sm text-gray-500">Fichiers CSV uniquement (.csv) - Max 5 MB</p>
+            <p class="text-sm text-gray-500">CSV (.csv) ou Excel (.xlsx) - Max 50 MB</p>
             <input
               id="file-upload"
               type="file"
-              accept=".csv"
+              accept=".csv,.xlsx"
               class="hidden"
               @change="handleFileChange"
             />
