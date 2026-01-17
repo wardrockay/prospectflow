@@ -278,6 +278,24 @@ export class DataValidatorService {
         ? allWarnings.slice(0, MAX_ERRORS_IN_RESPONSE)
         : allWarnings;
 
+    // Build summary for AC1
+    const summary = {
+      totalRows: rows.length,
+      validRows: validRows.length,
+      invalidRows: invalidRows.length,
+      duplicates:
+        duplicateErrors.length +
+        allErrors.filter((e) => e.errorType === 'DUPLICATE_EMAIL_CAMPAIGN').length,
+    };
+
+    // Build validProspects array for import
+    const validProspects = validRows.map((row) => ({
+      company_name: row.company_name,
+      contact_email: row.contact_email,
+      contact_name: row.contact_name,
+      website_url: row.website_url,
+    }));
+
     return {
       validCount: validRows.length,
       invalidCount: invalidRows.length,
@@ -291,6 +309,8 @@ export class DataValidatorService {
       warnings: warningsToReturn,
       validRows,
       invalidRows,
+      summary,
+      validProspects,
     };
   }
 

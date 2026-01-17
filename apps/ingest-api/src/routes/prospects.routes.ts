@@ -57,6 +57,18 @@ router.post('/imports/:uploadId/validate-data', (req, res, next) =>
   prospectsController.validateData(req, res, next),
 );
 
+/**
+ * POST /api/v1/prospects/import
+ * Import valid prospects from validation result
+ */
+router.post('/prospects/import', (req, res, next) => prospectsController.importProspects(req, res, next));
+
+/**
+ * POST /api/v1/prospects/export-errors
+ * Export validation errors as CSV
+ */
+router.post('/prospects/export-errors', (req, res, next) => prospectsController.exportErrors(req, res, next));
+
 logger.info('Prospects routes configured');
 
 export default router;

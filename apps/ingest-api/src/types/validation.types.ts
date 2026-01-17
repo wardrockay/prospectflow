@@ -60,6 +60,18 @@ export interface ValidationResult {
   warnings: ValidationWarning[]; // NEW - Organization-level duplicate warnings
   validRows: Record<string, string>[];
   invalidRows: Record<string, string>[];
+  summary?: {
+    totalRows: number;
+    validRows: number;
+    invalidRows: number;
+    duplicates: number;
+  };
+  validProspects?: Array<{
+    company_name: string;
+    contact_email: string;
+    contact_name?: string;
+    website_url?: string;
+  }>;
 }
 
 export interface ValidationSummary {

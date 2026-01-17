@@ -3,14 +3,18 @@
  */
 import { Request, Response, NextFunction } from 'express';
 import { prospectsService } from '../services/prospects.service.js';
-import { CsvParserService } from '../services/csv-parser.service.js';
-import { ColumnValidatorService } from '../services/column-validator.service.js';
+import { ImportProspectsService } from '../services/import-prospects.service.js';
+import { ExportErrorsService } from '../services/export-errors.service.js';
+import { ProspectRepository } from '../repositories/prospect.repository.js';
+import { pool } from '../config/database.js';
 import { createChildLogger } from '../utils/logger.js';
 import type { ColumnMappingsInput } from '../types/csv.types.js';
+import type { ValidationResult } from '../types/index.js';
 
 const logger = createChildLogger('ProspectsController');
-const csvParser = new CsvParserService();
-const columnValidator = new ColumnValidatorService();
+const prospectRepository = new ProspectRepository(pool);
+const importProspectsService = new ImportProspectsService(prospectRepository);
+const exportErrorsService = new ExportErrorsService();
 
 /**
  * Controller for prospect CSV upload endpoints
@@ -195,6 +199,88 @@ export class ProspectsController {
       });
     } catch (error) {
       logger.error({ err: error, uploadId, organisationId }, 'Failed to validate prospect data');
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/v1/prospects/import
+   * Import valid prospects from validation result
+   */
+  async importProspects(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const organisationId = req.organisationId;
+
+    try {
+      const { validationResult, campaignId } = req.body as {
+        validationResult: ValidationResult;
+        campaignId: string;
+      };
+
+      if (!organisationId) {
+        logger.error('Organisation ID missing from request');
+        res.status(401).json({
+          success: false,
+          error: 'Unauthorized - Organisation ID missing',
+        });
+        return;
+      }
+
+      if (!validationResult || !campaignId) {
+        logger.warn({ organisationId }, 'Missing validation result or campaign ID');
+        res.status(400).json({
+          success: false,
+          error: 'Validation result and campaign ID required',
+        });
+        return;
+      }
+
+      logger.info({ campaignId, organisationId }, 'Importing valid prospects');
+
+      const summary = await importProspectsService.importValidProspects(
+        validationResult,
+        campaignId,
+        organisationId,
+      );
+
+      res.status(200).json({
+        success: true,
+        data: summary,
+      });
+    } catch (error) {
+      logger.error({ err: error, organisationId }, 'Failed to import prospects');
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/v1/prospects/export-errors
+   * Export validation errors as CSV file
+   */
+  async exportErrors(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { validationResult } = req.body as { validationResult: ValidationResult };
+
+      if (!validationResult) {
+        logger.warn('Missing validation result');
+        res.status(400).json({
+          success: false,
+          error: 'Validation result required',
+        });
+        return;
+      }
+
+      logger.info('Generating error CSV');
+
+      const csv = await exportErrorsService.generateErrorCSV(validationResult);
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `validation-errors-${timestamp}.csv`;
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.status(200).send(csv);
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to export errors');
       next(error);
     }
   }
