@@ -177,9 +177,17 @@ export class ProspectsController {
         return;
       }
 
-      logger.info({ uploadId, organisationId }, 'Validating prospect data');
+      // Extract override duplicates flag from request body
+      const { overrideDuplicates } = req.body as { overrideDuplicates?: boolean };
 
-      const result = await prospectsService.validateData(uploadId, organisationId);
+      logger.info(
+        { uploadId, organisationId, overrideDuplicates },
+        'Validating prospect data',
+      );
+
+      const result = await prospectsService.validateData(uploadId, organisationId, {
+        overrideDuplicates,
+      });
 
       res.status(200).json({
         success: true,

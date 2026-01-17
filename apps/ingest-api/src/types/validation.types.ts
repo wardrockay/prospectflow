@@ -9,7 +9,10 @@ export type ValidationErrorType =
   | 'COMPANY_NAME_TOO_LONG'
   | 'COMPANY_NAME_INVALID'
   | 'CONTACT_NAME_TOO_LONG'
-  | 'DUPLICATE_EMAIL';
+  | 'DUPLICATE_EMAIL' // Within-upload duplicate
+  | 'DUPLICATE_EMAIL_CAMPAIGN'; // Campaign-level duplicate
+
+export type ValidationWarningType = 'DUPLICATE_EMAIL_ORGANIZATION'; // Organization-level duplicate (90-day window)
 
 export interface ValidationError {
   rowNumber: number;
@@ -18,8 +21,28 @@ export interface ValidationError {
   message: string;
   originalValue: string | undefined;
   metadata?: {
-    firstOccurrenceRow?: number; // For duplicate errors - indicates first row with this email
-    duplicateOf?: string; // For duplicate errors - normalized email that was duplicated
+    firstOccurrenceRow?: number; // For within-upload duplicates - indicates first row with this email
+    duplicateOf?: string; // For within-upload duplicates - normalized email that was duplicated
+    existingProspectId?: string; // For cross-campaign duplicates
+    campaignId?: string;
+    campaignName?: string;
+    existingStatus?: string;
+    daysSinceContact?: number;
+  };
+}
+
+export interface ValidationWarning {
+  rowNumber: number;
+  field: string;
+  warningType: ValidationWarningType;
+  message: string;
+  originalValue: string;
+  metadata?: {
+    existingProspectId: string;
+    campaignId: string;
+    campaignName: string;
+    existingStatus: string;
+    daysSinceContact: number;
   };
 }
 
@@ -27,8 +50,11 @@ export interface ValidationResult {
   validCount: number;
   invalidCount: number;
   totalErrorCount: number;
-  duplicateCount: number; // NEW - count of duplicate emails found
+  duplicateCount: number; // Within-upload duplicates
+  campaignDuplicateCount: number; // Campaign-level duplicates (errors)
+  organizationDuplicateCount: number; // Organization-level duplicates (warnings)
   errors: ValidationError[];
+  warnings: ValidationWarning[]; // NEW - Organization-level duplicate warnings
   validRows: Record<string, string>[];
   invalidRows: Record<string, string>[];
 }

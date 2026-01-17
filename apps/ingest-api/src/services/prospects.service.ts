@@ -248,10 +248,14 @@ export class ProspectsService {
 
   /**
    * Validate prospect data in uploaded CSV
-   * Validates email format, company name, URL, contact name
+   * Validates email format, company name, URL, contact name, and checks for duplicates
    */
-  async validateData(uploadId: string, organisationId: string): Promise<ValidationResult> {
-    logger.info({ uploadId, organisationId }, 'Validating prospect data');
+  async validateData(
+    uploadId: string,
+    organisationId: string,
+    options?: { overrideDuplicates?: boolean },
+  ): Promise<ValidationResult> {
+    logger.info({ uploadId, organisationId, overrideDuplicates: options?.overrideDuplicates }, 'Validating prospect data');
 
     // Get upload record (multi-tenant check)
     const upload = await prospectsRepository.findUploadByIdAndOrg(uploadId, organisationId);
@@ -286,14 +290,21 @@ export class ProspectsService {
       return newRow;
     });
 
-    // Validate data
-    const validationResult = await dataValidator.validateData(remappedData, organisationId);
+    // Validate data with cross-campaign duplicate detection
+    const validationResult = await dataValidator.validateData(
+      remappedData,
+      organisationId,
+      upload.campaignId, // Pass campaign ID for duplicate detection
+      options,
+    );
 
     logger.info(
       {
         uploadId,
         validCount: validationResult.validCount,
         invalidCount: validationResult.invalidCount,
+        campaignDuplicateCount: validationResult.campaignDuplicateCount,
+        organizationDuplicateCount: validationResult.organizationDuplicateCount,
       },
       'Data validation complete',
     );

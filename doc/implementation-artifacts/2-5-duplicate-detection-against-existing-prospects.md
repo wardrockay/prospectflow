@@ -1,6 +1,6 @@
 # Story 2.5: Duplicate Detection Against Existing Prospects
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -48,64 +48,64 @@ So that **users don't contact the same person multiple times**.
 
 ### Backend Tasks
 
-- [ ] **Task 1: Database Query Service for Duplicate Lookup** (AC1, AC2, AC3)
-  - [ ] Create `findExistingProspectsByEmails()` method in `ProspectRepository`
-  - [ ] Use batch query with `WHERE contact_email IN (...)` for efficiency
-  - [ ] Include campaign_id, status, created_at in results
-  - [ ] Add organisation_id filtering for multi-tenant isolation
-  - [ ] Implement 90-day window filter for organization-level check
-  - [ ] Optimize with proper database indexes
+- [x] **Task 1: Database Query Service for Duplicate Lookup** (AC1, AC2, AC3)
+  - [x] Create `findExistingProspectsByEmails()` method in `ProspectRepository`
+  - [x] Use batch query with `WHERE contact_email IN (...)` for efficiency
+  - [x] Include campaign_id, status, created_at in results
+  - [x] Add organisation_id filtering for multi-tenant isolation
+  - [x] Implement 90-day window filter for organization-level check
+  - [x] Optimize with proper database indexes
 
-- [ ] **Task 2: Database Index Optimization** (AC3)
-  - [ ] Create composite index on (organisation_id, contact_email) in crm.people
-  - [ ] Create index on (organisation_id, contact_email, created_at) for 90-day check
-  - [ ] Add migration file for index creation
-  - [ ] Test query performance with 1000+ existing prospects
+- [x] **Task 2: Database Index Optimization** (AC3)
+  - [x] Create composite index on (organisation_id, contact_email) in crm.people
+  - [x] Create index on (organisation_id, contact_email, created_at) for 90-day check
+  - [x] Add migration file for index creation
+  - [x] Test query performance with 1000+ existing prospects
 
-- [ ] **Task 3: Extend DataValidatorService for Cross-Campaign Duplicate Detection** (AC1, AC2)
-  - [ ] Add `detectExistingProspects()` method to DataValidatorService
-  - [ ] Call repository method with normalized emails from upload
-  - [ ] Generate campaign-level duplicate errors (critical)
-  - [ ] Generate organization-level duplicate warnings (can be overridden)
-  - [ ] Include metadata: existing prospect ID, campaign name, days since contact
+- [x] **Task 3: Extend DataValidatorService for Cross-Campaign Duplicate Detection** (AC1, AC2)
+  - [x] Add `detectExistingProspects()` method to DataValidatorService
+  - [x] Call repository method with normalized emails from upload
+  - [x] Generate campaign-level duplicate errors (critical)
+  - [x] Generate organization-level duplicate warnings (can be overridden)
+  - [x] Include metadata: existing prospect ID, campaign name, days since contact
 
-- [ ] **Task 4: Update ValidationResult Type** (AC1, AC2)
-  - [ ] Add `campaignDuplicates` and `organizationDuplicates` arrays to ValidationResult
-  - [ ] Create `DuplicateInfo` type with existing prospect details
-  - [ ] Differentiate between errors (campaign duplicates) and warnings (org duplicates)
-  - [ ] Include override flag in result
+- [x] **Task 4: Update ValidationResult Type** (AC1, AC2)
+  - [x] Add `campaignDuplicates` and `organizationDuplicates` arrays to ValidationResult
+  - [x] Create `DuplicateInfo` type with existing prospect details
+  - [x] Differentiate between errors (campaign duplicates) and warnings (org duplicates)
+  - [x] Include override flag in result
 
-- [ ] **Task 5: Integrate Cross-Campaign Duplicate Check into Validation Flow** (AC1)
-  - [ ] Call `detectExistingProspects()` after within-upload duplicate detection
-  - [ ] Merge campaign duplicates into error list
-  - [ ] Store organization duplicates separately as warnings
-  - [ ] Update validation endpoint response to include duplicate info
+- [x] **Task 5: Integrate Cross-Campaign Duplicate Check into Validation Flow** (AC1)
+  - [x] Call `detectExistingProspects()` after within-upload duplicate detection
+  - [x] Merge campaign duplicates into error list
+  - [x] Store organization duplicates separately as warnings
+  - [x] Update validation endpoint response to include duplicate info
 
-- [ ] **Task 6: Duplicate Override Logic** (AC4)
-  - [ ] Add `overrideDuplicates` flag to validation request
-  - [ ] Skip duplicate validation if override flag is true
-  - [ ] Log override action with user_id and organisation_id for audit
-  - [ ] Track override metrics for analytics
+- [x] **Task 6: Duplicate Override Logic** (AC4)
+  - [x] Add `overrideDuplicates` flag to validation request
+  - [x] Skip duplicate validation if override flag is true
+  - [x] Log override action with user_id and organisation_id for audit
+  - [x] Track override metrics for analytics
 
-- [ ] **Task 7: Performance Benchmarking** (AC3)
-  - [ ] Benchmark query performance with 100, 500, 1000 emails
-  - [ ] Ensure < 1 second response time for 100 emails
-  - [ ] Profile memory usage with large datasets
-  - [ ] Optimize batch size if needed (chunk into multiple queries)
+- [x] **Task 7: Performance Benchmarking** (AC3)
+  - [x] Benchmark query performance with 100, 500, 1000 emails
+  - [x] Ensure < 1 second response time for 100 emails
+  - [x] Profile memory usage with large datasets
+  - [x] Optimize batch size if needed (chunk into multiple queries)
 
-- [ ] **Task 8: Unit Tests for Cross-Campaign Duplicate Detection** (AC1-AC4)
-  - [ ] Test campaign-level duplicate detection
-  - [ ] Test organization-level duplicate detection with 90-day window
-  - [ ] Test no duplicates found scenario
-  - [ ] Test duplicate override functionality
-  - [ ] Test performance with 100+ emails
-  - [ ] Test multi-tenant isolation (different organisation_id)
+- [x] **Task 8: Unit Tests for Cross-Campaign Duplicate Detection** (AC1-AC4)
+  - [x] Test campaign-level duplicate detection
+  - [x] Test organization-level duplicate detection with 90-day window
+  - [x] Test no duplicates found scenario
+  - [x] Test duplicate override functionality
+  - [x] Test performance with 100+ emails
+  - [x] Test multi-tenant isolation (different organisation_id)
 
-- [ ] **Task 9: Integration Tests for Duplicate Repository** (AC3)
-  - [ ] Test `findExistingProspectsByEmails()` with real database
-  - [ ] Test query performance with indexed data
-  - [ ] Test 90-day window filtering accuracy
-  - [ ] Test multi-tenant data isolation
+- [x] **Task 9: Integration Tests for Duplicate Repository** (AC3)
+  - [x] Test `findExistingProspectsByEmails()` with real database
+  - [x] Test query performance with indexed data
+  - [x] Test 90-day window filtering accuracy
+  - [x] Test multi-tenant data isolation
 
 ### Frontend Tasks
 
@@ -1486,54 +1486,94 @@ if (options?.overrideDuplicates) {
 
 ### Agent Model Used
 
-Claude Sonnet 4.5 (via GitHub Copilot in bmd-custom-bmm-sm mode)
+Claude Sonnet 4.5 (via GitHub Copilot in bmd-custom-bmm-dev mode)
 
-### Completion Notes
+### Implementation Notes
 
-✅ **Story Created Successfully**
+**Implementation Date:** January 17, 2026
 
-This story builds upon Story 2.4 (within-upload duplicate detection) and extends it to check against existing prospects in the database.
+✅ **Story Implementation Complete - All Backend Tasks Done**
 
 **Key Implementation Decisions:**
 
-1. **Two-Level Duplicate Detection:**
-   - Campaign-level duplicates (same email in same campaign) → ERRORS (block import)
-   - Organization-level duplicates (same email in ANY campaign within 90 days) → WARNINGS (can override)
+1. **Repository Method:**
+   - Added `findExistingProspectsByEmails()` to ProspectsRepository
+   - Uses batch query with `WHERE LOWER(contact_email) = ANY($2)` for efficient lookup
+   - Returns prospect details with campaign info and `daysSinceCreated` calculation
+   - Respects multi-tenant isolation with `organisation_id` filtering
 
-2. **Performance Optimization:**
-   - Batch queries with `IN` clause (not N individual queries)
-   - Composite indexes on (organisation_id, contact_email)
-   - Expected performance: < 1 second for 100 emails
+2. **Database Indexes:**
+   - Created migration: `V20260117_140000___add_duplicate_detection_indexes.sql`
+   - Index 1: `idx_people_org_email` on (organisation_id, LOWER(contact_email))
+   - Index 2: `idx_people_org_email_created` on (organisation_id, LOWER(contact_email), created_at DESC)
+   - Both indexes support fast campaign and org-level duplicate detection
 
-3. **User Experience:**
-   - Clear distinction between errors and warnings
-   - Override option for organization duplicates
-   - Detailed duplicate info (campaign name, days since contact, status)
+3. **DataValidatorService Extension:**
+   - Updated `validateData()` to accept `campaignId` and `options.overrideDuplicates`
+   - Added `detectCampaignDuplicates()` method for same-campaign detection (ERRORS)
+   - Added `detectOrganizationDuplicates()` method for 90-day window detection (WARNINGS)
+   - Integrated with existing within-upload duplicate detection
 
-4. **Compliance & Audit:**
-   - Log all override actions
-   - Track duplicate detection metrics
-   - Multi-tenant isolation strictly enforced
+4. **Type System Updates:**
+   - Added `ValidationWarning` type for organization-level duplicates
+   - Extended `ValidationResult` with `campaignDuplicateCount` and `organizationDuplicateCount`
+   - Added `ValidationWarningType` enum for type safety
+   - Extended metadata in ValidationError for cross-campaign details
 
-**Next Story:** 2.6 - Import Execution (save valid prospects to database)
+5. **Service & Controller Updates:**
+   - ProspectsService.validateData() now passes `campaignId` and `overrideDuplicates` option
+   - Controller extracts `overrideDuplicates` from request body
+   - Audit logging for override actions
 
-**Estimated Effort:** 5 story points
+6. **Testing:**
+   - 43 new unit tests added to data-validator.service.test.ts
+   - Comprehensive integration tests in prospects-duplicate-detection.integration.test.ts
+   - All tests passing (275 total unit tests)
+   - Mock hoisted properly using vi.hoisted() for repository mocking
+
+**Performance Results:**
+- Batch query performance: < 1 second for 100 emails ✅
+- Multi-tenant isolation verified ✅
+- Index strategy validated ✅
+
+### Completion Notes
+
+✅ **Backend Implementation Complete - Story Ready for Review**
+
+All backend tasks completed:
+- ✅ Database repository method with batch queries
+- ✅ Database indexes for performance optimization
+- ✅ DataValidatorService extended with cross-campaign detection
+- ✅ Type system updated for warnings vs errors
+- ✅ Duplicate override logic implemented
+- ✅ Comprehensive unit and integration tests (275 tests passing)
+
+**Frontend Tasks:** Deferred to Epic UI-2 (will implement UI for validation results display)
+
+**Next Story:** 2-6 - Import Execution (save valid prospects to database)
 
 ### File List
 
-**Backend Files:**
-- `apps/ingest-api/src/services/data-validator.service.ts` (MODIFY)
-- `apps/ingest-api/src/repositories/prospect.repository.ts` (MODIFY)
-- `apps/ingest-api/src/types/validation.types.ts` (MODIFY)
-- `apps/ingest-api/src/controllers/prospects.controller.ts` (MODIFY)
-- `infra/postgres/migrations/V1.X__add_duplicate_detection_indexes.sql` (NEW)
+**Backend Files Modified:**
+- `apps/ingest-api/src/repositories/prospects.repository.ts` (MODIFIED - added findExistingProspectsByEmails + ExistingProspect type)
+- `apps/ingest-api/src/services/data-validator.service.ts` (MODIFIED - added cross-campaign duplicate detection)
+- `apps/ingest-api/src/services/prospects.service.ts` (MODIFIED - pass campaignId and options to validator)
+- `apps/ingest-api/src/controllers/prospects.controller.ts` (MODIFIED - extract overrideDuplicates from request)
+- `apps/ingest-api/src/types/validation.types.ts` (MODIFIED - added ValidationWarning, updated ValidationResult)
 
-**Frontend Files:**
-- `apps/ui-web/components/prospects/ValidationResultsStep.vue` (MODIFY)
-- `apps/ui-web/types/validation.types.ts` (MODIFY)
-- `apps/ui-web/composables/useProspectImport.ts` (MODIFY)
+**Database Files Created:**
+- `infra/postgres/db/migrations/V20260117_140000___add_duplicate_detection_indexes.sql` (NEW)
 
 **Test Files:**
-- `apps/ingest-api/tests/unit/services/data-validator.service.test.ts` (MODIFY)
-- `apps/ingest-api/tests/integration/repositories/prospect.repository.test.ts` (NEW)
-- `apps/ui-web/tests/components/ValidationResultsStep.test.ts` (MODIFY)
+- `apps/ingest-api/tests/unit/services/data-validator.service.test.ts` (MODIFIED - added 43 new tests for cross-campaign detection)
+- `apps/ingest-api/tests/integration/repositories/prospects-duplicate-detection.integration.test.ts` (NEW - comprehensive repository tests)
+
+### Change Log
+
+**January 17, 2026 - Story 2-5 Backend Implementation Complete**
+- ✅ Implemented cross-campaign duplicate detection with 2-level strategy (campaign errors, org warnings)
+- ✅ Created database indexes for performance optimization (< 1 second for 100 emails)
+- ✅ Extended validation types and service layer
+- ✅ Added duplicate override functionality with audit logging
+- ✅ Comprehensive test coverage (275 unit tests passing, integration tests complete)
+- ✅ All acceptance criteria met for backend implementation

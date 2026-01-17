@@ -7,7 +7,8 @@ import { createChildLogger } from '../utils/logger.js';
 import { validateEmail } from '../utils/email-validator.util.js';
 import { normalizeUrl } from '../utils/url-normalizer.util.js';
 import { normalizeEmail } from '../utils/email-normalizer.util.js';
-import type { ValidationResult, ValidationError } from '../types/validation.types.js';
+import { prospectsRepository } from '../repositories/prospects.repository.js';
+import type { ValidationResult, ValidationError, ValidationWarning } from '../types/validation.types.js';
 
 const logger = createChildLogger('DataValidatorService');
 
@@ -76,20 +77,33 @@ export class DataValidatorService {
   /**
    * Validate prospect data rows
    * @param rows - Array of prospect data rows
-   * @param organisationId - Organisation context for logging
+   * @param organisationId - Organisation context for multi-tenant isolation
+   * @param campaignId - Campaign context for duplicate detection
+   * @param options - Validation options (e.g., overrideDuplicates)
    * @returns Validation result with valid/invalid rows and errors
    */
   async validateData(
     rows: Record<string, string>[],
     organisationId: string,
+    campaignId?: string,
+    options?: { overrideDuplicates?: boolean },
   ): Promise<ValidationResult> {
     const startTime = Date.now();
 
-    logger.info({ rowCount: rows.length, organisationId }, 'Starting data validation');
+    logger.info(
+      {
+        rowCount: rows.length,
+        organisationId,
+        campaignId,
+        overrideDuplicates: options?.overrideDuplicates,
+      },
+      'Starting data validation with cross-campaign duplicate detection',
+    );
 
     const validRows: Record<string, string>[] = [];
     const invalidRows: Record<string, string>[] = [];
     const allErrors: ValidationError[] = [];
+    const allWarnings: ValidationWarning[] = [];
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
@@ -137,9 +151,39 @@ export class DataValidatorService {
       }
     }
 
-    // Step 2: Duplicate detection (NEW)
+    // Step 2: Within-upload duplicate detection (existing from Story 2.4)
     const duplicateErrors = this.detectDuplicates(rows);
     allErrors.push(...duplicateErrors);
+
+    // Step 3: Cross-campaign duplicate detection (NEW - this story)
+    if (campaignId && !options?.overrideDuplicates) {
+      // Extract emails for batch lookup
+      const emails = rows
+        .map((r) => normalizeEmail(r.contact_email))
+        .filter((email): email is string => !!email);
+
+      if (emails.length > 0) {
+        // Batch query existing prospects
+        const existingProspects = await prospectsRepository.findExistingProspectsByEmails(
+          organisationId,
+          emails,
+        );
+
+        // Detect campaign-level duplicates (ERRORS)
+        const campaignDuplicates = this.detectCampaignDuplicates(rows, existingProspects, campaignId);
+        allErrors.push(...campaignDuplicates);
+
+        // Detect organization-level duplicates (WARNINGS)
+        const orgDuplicates = this.detectOrganizationDuplicates(rows, existingProspects, campaignId);
+        allWarnings.push(...orgDuplicates);
+      }
+    } else if (options?.overrideDuplicates) {
+      // Log override action for audit
+      logger.warn(
+        { organisationId, campaignId, rowCount: rows.length },
+        'Duplicate detection overridden by user',
+      );
+    }
 
     const duration = Date.now() - startTime;
 
@@ -147,11 +191,14 @@ export class DataValidatorService {
       {
         validCount: validRows.length,
         invalidCount: invalidRows.length,
-        totalErrors: allErrors.length,
-        duplicateCount: duplicateErrors.length,
+        errorCount: allErrors.length,
+        warningCount: allWarnings.length,
+        campaignDuplicateCount: allErrors.filter((e) => e.errorType === 'DUPLICATE_EMAIL_CAMPAIGN')
+          .length,
+        organizationDuplicateCount: allWarnings.length,
         duration,
       },
-      'Data validation complete',
+      'Data validation complete with cross-campaign duplicate detection',
     );
 
     // Limit errors in response to prevent overwhelming client
@@ -160,12 +207,21 @@ export class DataValidatorService {
         ? allErrors.slice(0, MAX_ERRORS_IN_RESPONSE)
         : allErrors;
 
+    const warningsToReturn =
+      allWarnings.length > MAX_ERRORS_IN_RESPONSE
+        ? allWarnings.slice(0, MAX_ERRORS_IN_RESPONSE)
+        : allWarnings;
+
     return {
       validCount: validRows.length,
       invalidCount: invalidRows.length,
       totalErrorCount: allErrors.length,
       duplicateCount: duplicateErrors.length,
+      campaignDuplicateCount: allErrors.filter((e) => e.errorType === 'DUPLICATE_EMAIL_CAMPAIGN')
+        .length,
+      organizationDuplicateCount: allWarnings.length,
       errors: errorsToReturn,
+      warnings: warningsToReturn,
       validRows,
       invalidRows,
     };
@@ -223,6 +279,161 @@ export class DataValidatorService {
     );
 
     return duplicateErrors;
+  }
+
+  /**
+   * Detect campaign-level duplicates (same email in same campaign)
+   * These are ERRORS - must not import
+   * @param rows - Array of prospect data rows
+   * @param existingProspects - Existing prospects from database
+   * @param currentCampaignId - Current campaign ID
+   * @returns Array of validation errors for campaign duplicates
+   */
+  private detectCampaignDuplicates(
+    rows: Record<string, string>[],
+    existingProspects: Array<{
+      id: string;
+      contactEmail: string;
+      campaignId: string;
+      campaignName: string;
+      status: string;
+      createdAt: Date;
+      daysSinceCreated: number;
+    }>,
+    currentCampaignId: string,
+  ): ValidationError[] {
+    const campaignProspectsMap = new Map<
+      string,
+      {
+        id: string;
+        contactEmail: string;
+        campaignId: string;
+        campaignName: string;
+        status: string;
+        createdAt: Date;
+        daysSinceCreated: number;
+      }
+    >();
+
+    // Build map of existing prospects in current campaign
+    existingProspects
+      .filter((p) => p.campaignId === currentCampaignId)
+      .forEach((p) => {
+        campaignProspectsMap.set(normalizeEmail(p.contactEmail) || '', p);
+      });
+
+    const errors: ValidationError[] = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const email = normalizeEmail(rows[i].contact_email);
+      if (!email) continue;
+
+      const existing = campaignProspectsMap.get(email);
+      if (existing) {
+        const createdDate = new Date(existing.createdAt).toISOString().split('T')[0];
+        errors.push({
+          rowNumber: i + 1,
+          field: 'contact_email',
+          errorType: 'DUPLICATE_EMAIL_CAMPAIGN',
+          message: `Email already exists in this campaign (added on ${createdDate})`,
+          originalValue: rows[i].contact_email,
+          metadata: {
+            existingProspectId: existing.id,
+            campaignId: existing.campaignId,
+            campaignName: existing.campaignName,
+            existingStatus: existing.status,
+            daysSinceContact: existing.daysSinceCreated,
+          },
+        });
+      }
+    }
+
+    logger.info({ campaignDuplicateCount: errors.length }, 'Campaign-level duplicate detection complete');
+
+    return errors;
+  }
+
+  /**
+   * Detect organization-level duplicates (same email in ANY campaign within 90 days)
+   * These are WARNINGS - can be overridden
+   * @param rows - Array of prospect data rows
+   * @param existingProspects - Existing prospects from database
+   * @param currentCampaignId - Current campaign ID
+   * @returns Array of validation warnings for organization duplicates
+   */
+  private detectOrganizationDuplicates(
+    rows: Record<string, string>[],
+    existingProspects: Array<{
+      id: string;
+      contactEmail: string;
+      campaignId: string;
+      campaignName: string;
+      status: string;
+      createdAt: Date;
+      daysSinceCreated: number;
+    }>,
+    currentCampaignId: string,
+  ): ValidationWarning[] {
+    const NINETY_DAYS = 90;
+
+    const orgProspectsMap = new Map<
+      string,
+      {
+        id: string;
+        contactEmail: string;
+        campaignId: string;
+        campaignName: string;
+        status: string;
+        createdAt: Date;
+        daysSinceCreated: number;
+      }
+    >();
+
+    // Build map of existing prospects in OTHER campaigns within 90 days
+    existingProspects
+      .filter((p) => p.campaignId !== currentCampaignId && p.daysSinceCreated <= NINETY_DAYS)
+      .forEach((p) => {
+        const email = normalizeEmail(p.contactEmail);
+        if (!email) return;
+
+        // Keep the most recent contact for each email
+        const existing = orgProspectsMap.get(email);
+        if (!existing || p.daysSinceCreated < existing.daysSinceCreated) {
+          orgProspectsMap.set(email, p);
+        }
+      });
+
+    const warnings: ValidationWarning[] = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const email = normalizeEmail(rows[i].contact_email);
+      if (!email) continue;
+
+      const existing = orgProspectsMap.get(email);
+      if (existing) {
+        warnings.push({
+          rowNumber: i + 1,
+          field: 'contact_email',
+          warningType: 'DUPLICATE_EMAIL_ORGANIZATION',
+          message: `Email was contacted ${existing.daysSinceCreated} days ago in campaign "${existing.campaignName}". Continue?`,
+          originalValue: rows[i].contact_email,
+          metadata: {
+            existingProspectId: existing.id,
+            campaignId: existing.campaignId,
+            campaignName: existing.campaignName,
+            existingStatus: existing.status,
+            daysSinceContact: existing.daysSinceCreated,
+          },
+        });
+      }
+    }
+
+    logger.info(
+      { organizationDuplicateCount: warnings.length },
+      'Organization-level duplicate detection complete',
+    );
+
+    return warnings;
   }
 
   /**

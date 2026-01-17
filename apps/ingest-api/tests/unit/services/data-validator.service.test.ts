@@ -4,6 +4,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DataValidatorService } from '../../../src/services/data-validator.service.js';
+import type { ExistingProspect } from '../../../src/repositories/prospects.repository.js';
 
 // Mock logger
 vi.mock('../../../src/utils/logger', () => ({
@@ -16,11 +17,26 @@ vi.mock('../../../src/utils/logger', () => ({
   })),
 }));
 
+// Mock prospects repository - use vi.hoisted for proper hoisting
+const { mockFindExistingProspectsByEmails } = vi.hoisted(() => ({
+  mockFindExistingProspectsByEmails: vi.fn(),
+}));
+
+vi.mock('../../../src/repositories/prospects.repository.js', () => ({
+  prospectsRepository: {
+    findExistingProspectsByEmails: mockFindExistingProspectsByEmails,
+  },
+}));
+
 describe('DataValidatorService', () => {
   let service: DataValidatorService;
 
   beforeEach(() => {
     service = new DataValidatorService();
+    // Clear all mocks before each test
+    vi.clearAllMocks();
+    // Default mock return value (no existing prospects)
+    mockFindExistingProspectsByEmails.mockResolvedValue([]);
   });
 
   describe('Company Name Validation (AC2)', () => {
@@ -533,6 +549,290 @@ describe('DataValidatorService', () => {
         const errors = result.errors;
         expect(errors.some((e) => e.errorType === 'COMPANY_NAME_REQUIRED')).toBe(true);
         expect(errors.some((e) => e.errorType === 'DUPLICATE_EMAIL')).toBe(true);
+      });
+    });
+  });
+
+  describe('Cross-Campaign Duplicate Detection (Story 2.5)', () => {
+    describe('Campaign-level Duplicate Detection', () => {
+      it('should detect duplicates in same campaign as errors', async () => {
+        const rows = [
+          { company_name: 'Acme', contact_email: 'john@acme.com' },
+          { company_name: 'BetaCorp', contact_email: 'sarah@betacorp.com' },
+        ];
+
+        const existingProspects: ExistingProspect[] = [
+          {
+            id: 'prospect-1',
+            contactEmail: 'john@acme.com',
+            campaignId: 'campaign-123',
+            campaignName: 'Summer Outreach',
+            status: 'Sent',
+            createdAt: new Date('2026-01-01'),
+            daysSinceCreated: 16,
+          },
+        ];
+
+        mockFindExistingProspectsByEmails.mockResolvedValue(existingProspects);
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123');
+
+        expect(result.campaignDuplicateCount).toBe(1);
+        expect(result.errors).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              rowNumber: 1,
+              field: 'contact_email',
+              errorType: 'DUPLICATE_EMAIL_CAMPAIGN',
+              message: expect.stringContaining('already exists in this campaign'),
+              metadata: expect.objectContaining({
+                existingProspectId: 'prospect-1',
+                campaignId: 'campaign-123',
+                campaignName: 'Summer Outreach',
+              }),
+            }),
+          ]),
+        );
+      });
+
+      it('should not flag duplicates from other campaigns as campaign errors', async () => {
+        const rows = [{ company_name: 'Acme', contact_email: 'john@acme.com' }];
+
+        const existingProspects: ExistingProspect[] = [
+          {
+            id: 'prospect-1',
+            contactEmail: 'john@acme.com',
+            campaignId: 'campaign-456', // Different campaign
+            campaignName: 'Fall Outreach',
+            status: 'Sent',
+            createdAt: new Date('2026-01-01'),
+            daysSinceCreated: 16,
+          },
+        ];
+
+        mockFindExistingProspectsByEmails.mockResolvedValue(existingProspects);
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123');
+
+        expect(result.campaignDuplicateCount).toBe(0);
+        expect(result.organizationDuplicateCount).toBe(1); // Should be a warning instead
+      });
+
+      it('should be case-insensitive for campaign duplicates', async () => {
+        const rows = [{ company_name: 'Acme', contact_email: 'John@Acme.Com' }];
+
+        const existingProspects: ExistingProspect[] = [
+          {
+            id: 'prospect-1',
+            contactEmail: 'john@acme.com',
+            campaignId: 'campaign-123',
+            campaignName: 'Summer Outreach',
+            status: 'Sent',
+            createdAt: new Date('2026-01-01'),
+            daysSinceCreated: 16,
+          },
+        ];
+
+        mockFindExistingProspectsByEmails.mockResolvedValue(existingProspects);
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123');
+
+        expect(result.campaignDuplicateCount).toBe(1);
+      });
+    });
+
+    describe('Organization-level Duplicate Detection (90-day window)', () => {
+      it('should detect duplicates in other campaigns within 90 days as warnings', async () => {
+        const rows = [{ company_name: 'Acme', contact_email: 'john@acme.com' }];
+
+        const existingProspects: ExistingProspect[] = [
+          {
+            id: 'prospect-1',
+            contactEmail: 'john@acme.com',
+            campaignId: 'campaign-456',
+            campaignName: 'Fall Outreach',
+            status: 'Sent',
+            createdAt: new Date('2025-12-01'),
+            daysSinceCreated: 47,
+          },
+        ];
+
+        mockFindExistingProspectsByEmails.mockResolvedValue(existingProspects);
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123');
+
+        expect(result.organizationDuplicateCount).toBe(1);
+        expect(result.warnings).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              rowNumber: 1,
+              field: 'contact_email',
+              warningType: 'DUPLICATE_EMAIL_ORGANIZATION',
+              message: expect.stringMatching(/47 days ago.*Fall Outreach/),
+              metadata: expect.objectContaining({
+                existingProspectId: 'prospect-1',
+                campaignId: 'campaign-456',
+                campaignName: 'Fall Outreach',
+                daysSinceContact: 47,
+              }),
+            }),
+          ]),
+        );
+      });
+
+      it('should not flag duplicates older than 90 days', async () => {
+        const rows = [{ company_name: 'Acme', contact_email: 'john@acme.com' }];
+
+        const existingProspects: ExistingProspect[] = [
+          {
+            id: 'prospect-1',
+            contactEmail: 'john@acme.com',
+            campaignId: 'campaign-456',
+            campaignName: 'Summer Outreach',
+            status: 'Sent',
+            createdAt: new Date('2024-10-01'),
+            daysSinceCreated: 108, // > 90 days
+          },
+        ];
+
+        mockFindExistingProspectsByEmails.mockResolvedValue(existingProspects);
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123');
+
+        expect(result.organizationDuplicateCount).toBe(0);
+        expect(result.warnings).toHaveLength(0);
+      });
+
+      it('should keep most recent contact when multiple org duplicates exist', async () => {
+        const rows = [{ company_name: 'Acme', contact_email: 'john@acme.com' }];
+
+        const existingProspects: ExistingProspect[] = [
+          {
+            id: 'prospect-1',
+            contactEmail: 'john@acme.com',
+            campaignId: 'campaign-456',
+            campaignName: 'Old Campaign',
+            status: 'Sent',
+            createdAt: new Date('2025-11-01'),
+            daysSinceCreated: 77,
+          },
+          {
+            id: 'prospect-2',
+            contactEmail: 'john@acme.com',
+            campaignId: 'campaign-789',
+            campaignName: 'Recent Campaign',
+            status: 'Sent',
+            createdAt: new Date('2026-01-01'),
+            daysSinceCreated: 16,
+          },
+        ];
+
+        mockFindExistingProspectsByEmails.mockResolvedValue(existingProspects);
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123');
+
+        expect(result.organizationDuplicateCount).toBe(1);
+        expect(result.warnings[0].metadata?.daysSinceContact).toBe(16); // Most recent
+        expect(result.warnings[0].metadata?.campaignName).toBe('Recent Campaign');
+      });
+    });
+
+    describe('Duplicate Override', () => {
+      it('should skip duplicate detection when override flag is true', async () => {
+        const rows = [{ company_name: 'Acme', contact_email: 'john@acme.com' }];
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123', {
+          overrideDuplicates: true,
+        });
+
+        expect(mockFindExistingProspectsByEmails).not.toHaveBeenCalled();
+        expect(result.campaignDuplicateCount).toBe(0);
+        expect(result.organizationDuplicateCount).toBe(0);
+      });
+
+      it('should still detect within-upload duplicates when override is true', async () => {
+        const rows = [
+          { company_name: 'Acme', contact_email: 'john@acme.com' },
+          { company_name: 'Beta', contact_email: 'john@acme.com' }, // Within-upload duplicate
+        ];
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123', {
+          overrideDuplicates: true,
+        });
+
+        expect(result.duplicateCount).toBe(1); // Within-upload duplicates still detected
+        expect(result.campaignDuplicateCount).toBe(0); // Cross-campaign skipped
+      });
+    });
+
+    describe('Performance', () => {
+      it('should batch query all emails at once, not individually', async () => {
+        const rows = Array.from({ length: 100 }, (_, i) => ({
+          company_name: `Company ${i}`,
+          contact_email: `user${i}@example.com`,
+        }));
+
+        mockFindExistingProspectsByEmails.mockResolvedValue([]);
+
+        await service.validateData(rows, 'org-1', 'campaign-123');
+
+        // Should be called exactly once with all 100 emails
+        expect(mockFindExistingProspectsByEmails).toHaveBeenCalledTimes(1);
+        expect(mockFindExistingProspectsByEmails).toHaveBeenCalledWith(
+          'org-1',
+          expect.arrayContaining([
+            'user0@example.com',
+            'user50@example.com',
+            'user99@example.com',
+          ]),
+        );
+      });
+
+      it('should handle empty email list gracefully', async () => {
+        const rows = [{ company_name: 'Acme', contact_email: '' }]; // No valid email
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123');
+
+        // Should not call repository when no valid emails  
+        expect(mockFindExistingProspectsByEmails).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Integration with Field Validation and Within-Upload Duplicates', () => {
+      it('should detect all three types of issues: field errors, within-upload duplicates, and campaign duplicates', async () => {
+        const rows = [
+          { company_name: 'Acme', contact_email: 'john@acme.com' }, // Valid
+          { company_name: '', contact_email: 'sarah@beta.com' }, // Field error
+          { company_name: 'Gamma', contact_email: 'john@acme.com' }, // Within-upload duplicate
+          { company_name: 'Delta', contact_email: 'existing@example.com' }, // Campaign duplicate
+        ];
+
+        const existingProspects: ExistingProspect[] = [
+          {
+            id: 'prospect-1',
+            contactEmail: 'existing@example.com',
+            campaignId: 'campaign-123',
+            campaignName: 'Current Campaign',
+            status: 'Sent',
+            createdAt: new Date('2026-01-01'),
+            daysSinceCreated: 16,
+          },
+        ];
+
+        mockFindExistingProspectsByEmails.mockResolvedValue(existingProspects);
+
+        const result = await service.validateData(rows, 'org-1', 'campaign-123');
+
+        // Field validation error
+        expect(result.errors.some((e) => e.errorType === 'COMPANY_NAME_REQUIRED')).toBe(true);
+
+        // Within-upload duplicate
+        expect(result.duplicateCount).toBe(1);
+        expect(result.errors.some((e) => e.errorType === 'DUPLICATE_EMAIL')).toBe(true);
+
+        // Campaign duplicate
+        expect(result.campaignDuplicateCount).toBe(1);
+        expect(result.errors.some((e) => e.errorType === 'DUPLICATE_EMAIL_CAMPAIGN')).toBe(true);
       });
     });
   });

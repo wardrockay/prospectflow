@@ -27,6 +27,16 @@ interface ImportUpload {
   uploadedAt: Date;
 }
 
+export interface ExistingProspect {
+  id: string;
+  contactEmail: string;
+  campaignId: string;
+  campaignName: string;
+  status: string;
+  createdAt: Date;
+  daysSinceCreated: number;
+}
+
 /**
  * Repository for prospect-related database operations
  */
@@ -186,6 +196,64 @@ class ProspectsRepository {
     } catch (error) {
       logger.error({ err: error, uploadId }, 'Failed to update upload mappings');
       throw new DatabaseError('Failed to update upload mappings');
+    }
+  }
+
+  /**
+   * Find existing prospects by email addresses for duplicate detection
+   * @param organisationId - Organisation ID for multi-tenant isolation
+   * @param emails - Array of normalized (lowercase) email addresses
+   * @returns Array of existing prospects with campaign info
+   */
+  async findExistingProspectsByEmails(
+    organisationId: string,
+    emails: string[],
+  ): Promise<ExistingProspect[]> {
+    const pool = getPool();
+
+    logger.debug({ organisationId, emailCount: emails.length }, 'Finding existing prospects by emails');
+
+    if (emails.length === 0) {
+      return [];
+    }
+
+    // Batch lookup query with IN clause
+    const query = `
+      SELECT 
+        p.id,
+        p.contact_email as "contactEmail",
+        p.campaign_id as "campaignId",
+        c.name as "campaignName",
+        p.status,
+        p.created_at as "createdAt",
+        EXTRACT(DAY FROM (NOW() - p.created_at))::INTEGER as "daysSinceCreated"
+      FROM crm.people p
+      INNER JOIN outreach.campaigns c 
+        ON p.organisation_id = c.organisation_id 
+        AND p.campaign_id = c.id
+      WHERE p.organisation_id = $1
+        AND LOWER(p.contact_email) = ANY($2)
+      ORDER BY p.created_at DESC
+    `;
+
+    try {
+      const result = await timeOperation(logger, 'db.prospects.findExistingByEmails', async () => {
+        return pool.query<ExistingProspect>(query, [organisationId, emails]);
+      });
+
+      logger.info(
+        {
+          organisationId,
+          emailCount: emails.length,
+          foundCount: result.rows.length,
+        },
+        'Found existing prospects',
+      );
+
+      return result.rows;
+    } catch (error) {
+      logger.error({ err: error, organisationId, emailCount: emails.length }, 'Error finding existing prospects');
+      throw new DatabaseError('Failed to check for duplicate prospects', { cause: error });
     }
   }
 }
