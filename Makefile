@@ -275,7 +275,8 @@ SERVICE_PATH_campaign-api = apps/campaign-api
 SERVICE_PATH_ui-web = apps/ui-web
 
 # Restart a service
-# Usage: make service-restart SERVICE=ingest-api [APP_ENV=dev|production]
+# Restart a service (interactive multi-select with fzf)
+# Usage: make service-restart [SERVICE=ingest-api] [APP_ENV=dev|production]
 service-restart:
 ifdef SERVICE
 	@echo "🔄 Restarting $(SERVICE) (APP_ENV=$${APP_ENV:-dev})..."
@@ -290,11 +291,11 @@ else
 endif
 	@echo "✅ $(SERVICE) restarted"
 else
-	@./scripts/service-selector.sh restart
+	@./scripts/service-selector.sh restart $${APP_ENV:-dev}
 endif
 
-# Stop a service
-# Usage: make service-stop SERVICE=ingest-api
+# Stop a service (interactive multi-select with fzf)
+# Usage: make service-stop [SERVICE=ingest-api]
 service-stop:
 ifdef SERVICE
 	@echo "🛑 Stopping $(SERVICE)..."
@@ -310,28 +311,7 @@ ifdef SERVICE
 	@echo "📜 Logs for $(SERVICE) (Ctrl+C to exit)..."
 	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose -p prospectflow-$(SERVICE) logs -f --tail=100
 else
-	@echo ""
-	@echo "📋 Available services:"
-	@echo "  [1] postgres        [2] rabbitmq"
-	@echo "  [3] redis           [4] clickhouse"
-	@echo "  [5] nginx           [6] prometheus"
-	@echo "  [7] grafana         [8] ingest-api"
-	@echo "  [9] campaign-api    [10] ui-web"
-	@echo ""
-	@read -p "Select service (1-10): " choice; \
-	case $$choice in \
-		1) docker logs -f --tail=100 prospectflow-postgres ;; \
-		2) docker logs -f --tail=100 prospectflow-rabbitmq ;; \
-		3) docker logs -f --tail=100 prospectflow-redis ;; \
-		4) docker logs -f --tail=100 prospectflow-clickhouse ;; \
-		5) docker logs -f --tail=100 prospectflow-nginx ;; \
-		6) docker logs -f --tail=100 prospectflow-prometheus ;; \
-		7) docker logs -f --tail=100 prospectflow-grafana ;; \
-		8) docker logs -f --tail=100 prospectflow-ingest-api ;; \
-		9) docker logs -f --tail=100 prospectflow-campaign-api ;; \
-		10) docker logs -f --tail=100 prospectflow-ui-web ;; \
-		*) echo "❌ Invalid choice"; exit 1 ;; \
-	esac
+	@./scripts/service-selector.sh logs
 endif
 
 # Run database migrations

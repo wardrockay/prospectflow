@@ -27,6 +27,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 ACTION=${1:-restart}  # restart, logs, stop, or flyway
+APP_ENV=${2:-dev}      # dev or production
 
 # Handle flyway as a standalone command (no service selection needed)
 if [ "$ACTION" = "flyway" ]; then
@@ -53,15 +54,11 @@ show_header() {
 do_restart() {
     local service=$1
     local path=${SERVICE_PATHS[$service]}
-    echo -e "${YELLOW}🔄 Restarting ${service}...${NC}"
+    echo -e "${YELLOW}🔄 Restarting ${service} (APP_ENV=${APP_ENV})...${NC}"
     
-    # For applications, use pnpm run deploy (includes tests and proper build)
-    if [ "$service" = "ingest-api" ] || [ "$service" = "campaign-api" ] || [ "$service" = "ui-web" ]; then
-        cd "$path" && pnpm run deploy
-    else
-        # For infrastructure services, use docker compose directly
-        cd "$path" && docker compose down && docker compose up -d --build
-    fi
+    # Use docker compose with APP_ENV for all services
+    cd "$path" && APP_ENV="$APP_ENV" docker compose -p "prospectflow-${service}" down && \
+                  APP_ENV="$APP_ENV" docker compose -p "prospectflow-${service}" up -d --build --wait
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ ${service} restarted successfully${NC}"
@@ -76,7 +73,7 @@ do_logs() {
     local service=$1
     local path=${SERVICE_PATHS[$service]}
     echo -e "${BLUE}📜 Showing logs for ${service}...${NC}"
-    cd "$path" && docker compose logs -f --tail=100
+    cd "$path" && docker compose -p "prospectflow-${service}" logs -f --tail=100
 }
 
 # Function to stop services
@@ -84,7 +81,7 @@ do_stop() {
     local service=$1
     local path=${SERVICE_PATHS[$service]}
     echo -e "${YELLOW}🛑 Stopping ${service}...${NC}"
-    cd "$path" && docker compose down
+    cd "$path" && docker compose -p "prospectflow-${service}" down
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ ${service} stopped${NC}"
     else
@@ -112,27 +109,20 @@ use_fzf() {
 
 # FZF-based selection (multi-select with Tab)
 select_with_fzf() {
-    show_header
-    echo -e "${BLUE}Use Tab to select multiple services, Enter to confirm${NC}"
-    echo ""
-    
-    selected=$(printf '%s\n' "${SERVICES[@]}" | fzf --multi \
+    printf '%s\n' "${SERVICES[@]}" | fzf --multi \
         --height=15 \
         --border=rounded \
         --prompt="Select service(s) to ${ACTION}: " \
         --header="[Tab] Toggle selection  [Enter] Confirm  [Esc] Cancel" \
         --preview="docker ps --filter name=prospectflow-{} --format 'Status: {{.Status}}' 2>/dev/null || echo 'Not running'" \
-        --preview-window=right:40%)
-    
-    echo "$selected"
+        --preview-window=right:40%
 }
 
 # Fallback numbered menu
 select_with_menu() {
-    show_header
-    echo -e "${BLUE}Select services to ${ACTION}:${NC}"
-    echo -e "${YELLOW}(Enter numbers separated by spaces, or 'all' for all services)${NC}"
-    echo ""
+    echo -e "${BLUE}Select services to ${ACTION}:${NC}" >&2
+    echo -e "${YELLOW}(Enter numbers separated by spaces, or 'all' for all services)${NC}" >&2
+    echo "" >&2
     
     for i in "${!SERVICES[@]}"; do
         # Get container status
@@ -143,17 +133,17 @@ select_with_menu() {
         else
             status_icon="${RED}○${NC}"
         fi
-        printf "  ${status_icon} [%d] %s\n" $((i+1)) "${service}"
+        printf "  ${status_icon} [%d] %s\n" $((i+1)) "${service}" >&2
     done
     
-    echo ""
-    echo -e "  ${CYAN}[a] All services${NC}"
-    echo -e "  ${CYAN}[q] Quit${NC}"
-    echo ""
+    echo "" >&2
+    echo -e "  ${CYAN}[a] All services${NC}" >&2
+    echo -e "  ${CYAN}[q] Quit${NC}" >&2
+    echo "" >&2
     read -p "Your choice: " choice
     
     if [ "$choice" = "q" ] || [ "$choice" = "Q" ]; then
-        echo "Cancelled."
+        echo "Cancelled." >&2
         exit 0
     fi
     
@@ -181,6 +171,9 @@ select_with_menu() {
 # Main execution
 main() {
     cd "$(dirname "$0")/.." || exit 1
+    
+    # Show header
+    show_header
     
     # Select services
     if use_fzf; then
