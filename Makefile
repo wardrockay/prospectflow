@@ -275,17 +275,18 @@ SERVICE_PATH_campaign-api = apps/campaign-api
 SERVICE_PATH_ui-web = apps/ui-web
 
 # Restart a service
+# Usage: make service-restart SERVICE=ingest-api [APP_ENV=dev|production]
 service-restart:
 ifdef SERVICE
-	@echo "🔄 Restarting $(SERVICE)..."
+	@echo "🔄 Restarting $(SERVICE) (APP_ENV=$${APP_ENV:-dev})..."
 ifeq ($(SERVICE),ingest-api)
-	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
+	@cd $(SERVICE_PATH_$(SERVICE)) && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-$(SERVICE) down && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-$(SERVICE) up -d --build --wait
 else ifeq ($(SERVICE),campaign-api)
-	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
+	@cd $(SERVICE_PATH_$(SERVICE)) && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-$(SERVICE) down && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-$(SERVICE) up -d --build --wait
 else ifeq ($(SERVICE),ui-web)
-	@cd $(SERVICE_PATH_$(SERVICE)) && pnpm run deploy
+	@cd $(SERVICE_PATH_$(SERVICE)) && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-$(SERVICE) down && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-$(SERVICE) up -d --build --wait
 else
-	@cd $(SERVICE_PATH_$(SERVICE)) && docker compose -p prospectflow-$(SERVICE) down && docker compose -p prospectflow-$(SERVICE) up -d --build
+	@cd $(SERVICE_PATH_$(SERVICE)) && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-$(SERVICE) down && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-$(SERVICE) up -d --build --wait
 endif
 	@echo "✅ $(SERVICE) restarted"
 else
@@ -293,6 +294,7 @@ else
 endif
 
 # Stop a service
+# Usage: make service-stop SERVICE=ingest-api
 service-stop:
 ifdef SERVICE
 	@echo "🛑 Stopping $(SERVICE)..."
