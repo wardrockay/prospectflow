@@ -12,7 +12,7 @@
     "typecheck": "nuxt typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "vitest",
+    "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "deploy": "git pull && sudo docker compose -p prospectflow-ui-web up --build -d"
