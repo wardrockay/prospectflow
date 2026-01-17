@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { createChildLogger } from '../utils/logger.js';
 import { validateEmail } from '../utils/email-validator.util.js';
 import { normalizeUrl } from '../utils/url-normalizer.util.js';
+import { normalizeEmail } from '../utils/email-normalizer.util.js';
 import type { ValidationResult, ValidationError } from '../types/validation.types.js';
 
 const logger = createChildLogger('DataValidatorService');
@@ -136,6 +137,10 @@ export class DataValidatorService {
       }
     }
 
+    // Step 2: Duplicate detection (NEW)
+    const duplicateErrors = this.detectDuplicates(rows);
+    allErrors.push(...duplicateErrors);
+
     const duration = Date.now() - startTime;
 
     logger.info(
@@ -143,6 +148,7 @@ export class DataValidatorService {
         validCount: validRows.length,
         invalidCount: invalidRows.length,
         totalErrors: allErrors.length,
+        duplicateCount: duplicateErrors.length,
         duration,
       },
       'Data validation complete',
@@ -158,10 +164,65 @@ export class DataValidatorService {
       validCount: validRows.length,
       invalidCount: invalidRows.length,
       totalErrorCount: allErrors.length,
+      duplicateCount: duplicateErrors.length,
       errors: errorsToReturn,
       validRows,
       invalidRows,
     };
+  }
+
+  /**
+   * Detect duplicate emails within the upload
+   * Uses case-insensitive email normalization for duplicate detection
+   * @param rows - Array of prospect data rows
+   * @returns Array of validation errors for duplicate emails
+   */
+  private detectDuplicates(rows: Record<string, string>[]): ValidationError[] {
+    const emailMap = new Map<string, number>(); // normalized email -> first row number
+    const duplicateErrors: ValidationError[] = [];
+
+    logger.debug({ rowCount: rows.length }, 'Starting duplicate detection');
+
+    for (let i = 0; i < rows.length; i++) {
+      const rawEmail = rows[i].contact_email;
+      if (!rawEmail) {
+        // Skip rows without email - they'll be caught by field validation
+        continue;
+      }
+
+      const normalizedEmail = normalizeEmail(rawEmail);
+      if (!normalizedEmail) {
+        // Skip empty emails
+        continue;
+      }
+
+      const firstOccurrence = emailMap.get(normalizedEmail);
+
+      if (firstOccurrence !== undefined) {
+        // Duplicate found - mark this row
+        duplicateErrors.push({
+          rowNumber: i + 1, // 1-indexed for user display
+          field: 'contact_email',
+          errorType: 'DUPLICATE_EMAIL',
+          message: `Duplicate email (${rawEmail}). First occurrence at row ${firstOccurrence}.`,
+          originalValue: rawEmail,
+          metadata: {
+            firstOccurrenceRow: firstOccurrence,
+            duplicateOf: normalizedEmail,
+          },
+        });
+      } else {
+        // First occurrence - record it
+        emailMap.set(normalizedEmail, i + 1);
+      }
+    }
+
+    logger.info(
+      { duplicateCount: duplicateErrors.length, uniqueEmails: emailMap.size },
+      'Duplicate detection complete',
+    );
+
+    return duplicateErrors;
   }
 
   /**

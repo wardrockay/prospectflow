@@ -185,4 +185,240 @@ describe('ValidationResultsStep', () => {
     expect(createObjectURL).toHaveBeenCalled();
     expect(createElementSpy).toHaveBeenCalledWith('a');
   });
+
+  describe('Duplicate Detection Display (Story 2.4)', () => {
+    it('should display duplicate count when duplicates exist', () => {
+      const resultWithDuplicates: ValidationResult = {
+        validCount: 8,
+        invalidCount: 2,
+        totalErrorCount: 3,
+        duplicateCount: 2,
+        errors: [
+          {
+            rowNumber: 3,
+            field: 'contact_email',
+            errorType: 'DUPLICATE_EMAIL',
+            message: 'Duplicate email (john@acme.com). First occurrence at row 1.',
+            originalValue: 'john@acme.com',
+            metadata: {
+              firstOccurrenceRow: 1,
+              duplicateOf: 'john@acme.com',
+            },
+          },
+        ],
+        validRows: [],
+        invalidRows: [],
+      };
+
+      const wrapper = mount(ValidationResultsStep, {
+        props: { validationResult: resultWithDuplicates },
+      });
+
+      expect(wrapper.text()).toContain('Duplicates Found');
+      expect(wrapper.text()).toContain('2');
+    });
+
+    it('should not display duplicate count when no duplicates', () => {
+      const resultNoDuplicates: ValidationResult = {
+        validCount: 10,
+        invalidCount: 0,
+        totalErrorCount: 0,
+        duplicateCount: 0,
+        errors: [],
+        validRows: [],
+        invalidRows: [],
+      };
+
+      const wrapper = mount(ValidationResultsStep, {
+        props: { validationResult: resultNoDuplicates },
+      });
+
+      expect(wrapper.text()).not.toContain('Duplicates Found');
+    });
+
+    it('should highlight duplicate errors with orange styling', () => {
+      const resultWithDuplicates: ValidationResult = {
+        validCount: 8,
+        invalidCount: 2,
+        totalErrorCount: 3,
+        duplicateCount: 2,
+        errors: [
+          {
+            rowNumber: 3,
+            field: 'contact_email',
+            errorType: 'DUPLICATE_EMAIL',
+            message: 'Duplicate email (john@acme.com). First occurrence at row 1.',
+            originalValue: 'john@acme.com',
+          },
+          {
+            rowNumber: 5,
+            field: 'contact_email',
+            errorType: 'INVALID_EMAIL_FORMAT',
+            message: 'Invalid email format',
+            originalValue: 'bad-email',
+          },
+        ],
+        validRows: [],
+        invalidRows: [],
+      };
+
+      const wrapper = mount(ValidationResultsStep, {
+        props: { validationResult: resultWithDuplicates },
+      });
+
+      const rows = wrapper.findAll('tbody tr');
+      
+      // First row (duplicate) should have orange styling
+      expect(rows[0].classes()).toContain('bg-orange-50');
+      expect(rows[0].classes()).toContain('border-l-4');
+      expect(rows[0].classes()).toContain('border-l-orange-400');
+      
+      // Second row (invalid) should NOT have orange styling
+      expect(rows[1].classes()).not.toContain('bg-orange-50');
+    });
+
+    it('should use orange badge for duplicate error field', () => {
+      const resultWithDuplicates: ValidationResult = {
+        validCount: 8,
+        invalidCount: 2,
+        totalErrorCount: 2,
+        duplicateCount: 1,
+        errors: [
+          {
+            rowNumber: 3,
+            field: 'contact_email',
+            errorType: 'DUPLICATE_EMAIL',
+            message: 'Duplicate email',
+            originalValue: 'john@acme.com',
+          },
+        ],
+        validRows: [],
+        invalidRows: [],
+      };
+
+      const wrapper = mount(ValidationResultsStep, {
+        props: { validationResult: resultWithDuplicates },
+      });
+
+      const badge = wrapper.find('tbody tr:first-child td:nth-child(2) .badge');
+      // Badge should have orange color for duplicates
+      expect(wrapper.html()).toContain('color="orange"');
+    });
+
+    it('should display duplicate message with first occurrence row number', () => {
+      const resultWithDuplicates: ValidationResult = {
+        validCount: 8,
+        invalidCount: 2,
+        totalErrorCount: 2,
+        duplicateCount: 2,
+        errors: [
+          {
+            rowNumber: 5,
+            field: 'contact_email',
+            errorType: 'DUPLICATE_EMAIL',
+            message: 'Duplicate email (sarah@beta.com). First occurrence at row 2.',
+            originalValue: 'sarah@beta.com',
+            metadata: {
+              firstOccurrenceRow: 2,
+              duplicateOf: 'sarah@beta.com',
+            },
+          },
+        ],
+        validRows: [],
+        invalidRows: [],
+      };
+
+      const wrapper = mount(ValidationResultsStep, {
+        props: { validationResult: resultWithDuplicates },
+      });
+
+      expect(wrapper.text()).toContain('First occurrence at row 2');
+    });
+
+    it('should adjust grid layout when duplicates exist', () => {
+      const resultWithDuplicates: ValidationResult = {
+        validCount: 8,
+        invalidCount: 2,
+        totalErrorCount: 3,
+        duplicateCount: 2,
+        errors: [],
+        validRows: [],
+        invalidRows: [],
+      };
+
+      const wrapper = mount(ValidationResultsStep, {
+        props: { validationResult: resultWithDuplicates },
+      });
+
+      // Should have 3-column grid when duplicates exist
+      const grid = wrapper.find('.grid');
+      expect(grid.classes()).toContain('grid-cols-3');
+    });
+
+    it('should use 2-column grid when no duplicates', () => {
+      const resultNoDuplicates: ValidationResult = {
+        validCount: 10,
+        invalidCount: 0,
+        totalErrorCount: 0,
+        duplicateCount: 0,
+        errors: [],
+        validRows: [],
+        invalidRows: [],
+      };
+
+      const wrapper = mount(ValidationResultsStep, {
+        props: { validationResult: resultNoDuplicates },
+      });
+
+      // Should have 2-column grid when no duplicates
+      const grid = wrapper.find('.grid');
+      expect(grid.classes()).toContain('grid-cols-2');
+    });
+
+    it('should display multiple duplicate errors correctly', () => {
+      const resultWithMultipleDuplicates: ValidationResult = {
+        validCount: 6,
+        invalidCount: 4,
+        totalErrorCount: 4,
+        duplicateCount: 3,
+        errors: [
+          {
+            rowNumber: 3,
+            field: 'contact_email',
+            errorType: 'DUPLICATE_EMAIL',
+            message: 'Duplicate email (john@acme.com). First occurrence at row 1.',
+            originalValue: 'john@acme.com',
+          },
+          {
+            rowNumber: 5,
+            field: 'contact_email',
+            errorType: 'DUPLICATE_EMAIL',
+            message: 'Duplicate email (sarah@beta.com). First occurrence at row 2.',
+            originalValue: 'sarah@beta.com',
+          },
+          {
+            rowNumber: 7,
+            field: 'contact_email',
+            errorType: 'DUPLICATE_EMAIL',
+            message: 'Duplicate email (john@acme.com). First occurrence at row 1.',
+            originalValue: 'john@acme.com',
+          },
+        ],
+        validRows: [],
+        invalidRows: [],
+      };
+
+      const wrapper = mount(ValidationResultsStep, {
+        props: { validationResult: resultWithMultipleDuplicates },
+      });
+
+      const rows = wrapper.findAll('tbody tr');
+      expect(rows.length).toBe(3);
+      
+      // All should have orange styling
+      rows.forEach((row) => {
+        expect(row.classes()).toContain('bg-orange-50');
+      });
+    });
+  });
 });

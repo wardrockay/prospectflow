@@ -8,7 +8,7 @@
 
       <!-- Summary Section -->
       <div class="mb-6">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid" :class="hasDuplicates ? 'grid-cols-3 gap-3' : 'grid-cols-2 gap-4'">
           <!-- Valid Count -->
           <div class="bg-green-50 border border-green-200 rounded-lg p-4">
             <div class="text-3xl font-bold text-green-700">{{ validationResult.validCount }}</div>
@@ -19,6 +19,12 @@
           <div class="bg-red-50 border border-red-200 rounded-lg p-4">
             <div class="text-3xl font-bold text-red-700">{{ validationResult.invalidCount }}</div>
             <div class="text-sm text-red-600">Invalid Rows</div>
+          </div>
+
+          <!-- Duplicate Count -->
+          <div v-if="hasDuplicates" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div class="text-3xl font-bold text-orange-700">{{ validationResult.duplicateCount }}</div>
+            <div class="text-sm text-orange-600">Duplicates Found</div>
           </div>
         </div>
 
@@ -78,14 +84,30 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
-              <tr v-for="error in paginatedErrors" :key="`${error.rowNumber}-${error.field}`">
+              <tr
+                v-for="error in paginatedErrors"
+                :key="`${error.rowNumber}-${error.field}`"
+                :class="{
+                  'bg-orange-50': error.errorType === 'DUPLICATE_EMAIL',
+                  'border-l-4 border-l-orange-400': error.errorType === 'DUPLICATE_EMAIL',
+                }"
+              >
                 <td class="px-4 py-2 text-gray-900">{{ error.rowNumber }}</td>
                 <td class="px-4 py-2">
-                  <UBadge color="blue" variant="subtle" size="xs">
+                  <UBadge
+                    :color="error.errorType === 'DUPLICATE_EMAIL' ? 'orange' : 'blue'"
+                    variant="subtle"
+                    size="xs"
+                  >
                     {{ error.field }}
                   </UBadge>
                 </td>
-                <td class="px-4 py-2 text-red-600">{{ error.message }}</td>
+                <td
+                  class="px-4 py-2"
+                  :class="error.errorType === 'DUPLICATE_EMAIL' ? 'text-orange-600' : 'text-red-600'"
+                >
+                  {{ error.message }}
+                </td>
                 <td class="px-4 py-2 text-gray-600 truncate max-w-xs">
                   <span class="font-mono text-xs">{{ error.originalValue || '-' }}</span>
                 </td>
@@ -152,6 +174,10 @@
   const currentPage = ref(1);
   const errorsPerPage = 25;
   const showConfirmModal = ref(false);
+
+  const hasDuplicates = computed(() => {
+    return props.validationResult.duplicateCount > 0;
+  });
 
   const validPercentage = computed(() => {
     const total = props.validationResult.validCount + props.validationResult.invalidCount;

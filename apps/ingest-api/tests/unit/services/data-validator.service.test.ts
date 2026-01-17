@@ -321,4 +321,219 @@ describe('DataValidatorService', () => {
       expect(duration).toBeLessThan(5000);
     });
   });
+
+  describe('Duplicate Detection (Story 2.4)', () => {
+    describe('AC1: Duplicate Email Detection', () => {
+      it('should detect duplicate emails and flag all except first occurrence', async () => {
+        const rows = [
+          { company_name: 'Acme Corp', contact_email: 'john@acme.com' },
+          { company_name: 'Beta Inc', contact_email: 'sarah@beta.com' },
+          { company_name: 'Acme Duplicate', contact_email: 'john@acme.com' }, // Duplicate
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.duplicateCount).toBe(1);
+        expect(result.errors).toContainEqual(
+          expect.objectContaining({
+            rowNumber: 3,
+            field: 'contact_email',
+            errorType: 'DUPLICATE_EMAIL',
+            message: expect.stringContaining('First occurrence at row 1'),
+            originalValue: 'john@acme.com',
+            metadata: expect.objectContaining({
+              firstOccurrenceRow: 1,
+              duplicateOf: 'john@acme.com',
+            }),
+          }),
+        );
+      });
+
+      it('should include duplicate count in validation result', async () => {
+        const rows = [
+          { company_name: 'A', contact_email: 'test@example.com' },
+          { company_name: 'B', contact_email: 'test@example.com' },
+          { company_name: 'C', contact_email: 'other@example.com' },
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.duplicateCount).toBe(1);
+        expect(result.totalErrorCount).toBeGreaterThanOrEqual(1);
+      });
+    });
+
+    describe('AC2: Case-Insensitive Matching', () => {
+      it('should detect duplicates regardless of case', async () => {
+        const rows = [
+          { company_name: 'Acme Corp', contact_email: 'John@Acme.com' },
+          { company_name: 'Acme Corp 2', contact_email: 'john@acme.com' }, // Duplicate (different case)
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.duplicateCount).toBe(1);
+        expect(result.errors).toContainEqual(
+          expect.objectContaining({
+            rowNumber: 2,
+            errorType: 'DUPLICATE_EMAIL',
+            metadata: expect.objectContaining({
+              duplicateOf: 'john@acme.com', // normalized
+            }),
+          }),
+        );
+      });
+
+      it('should normalize emails before comparison', async () => {
+        const rows = [
+          { company_name: 'A', contact_email: 'Sarah@Example.COM' },
+          { company_name: 'B', contact_email: 'SARAH@EXAMPLE.COM' },
+          { company_name: 'C', contact_email: 'sarah@example.com' },
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.duplicateCount).toBe(2); // 2nd and 3rd are duplicates
+      });
+    });
+
+    describe('Multiple Duplicates', () => {
+      it('should detect multiple duplicates of the same email', async () => {
+        const rows = [
+          { company_name: 'A', contact_email: 'test@example.com' },
+          { company_name: 'B', contact_email: 'test@example.com' }, // Duplicate 1
+          { company_name: 'C', contact_email: 'test@example.com' }, // Duplicate 2
+          { company_name: 'D', contact_email: 'other@example.com' },
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.duplicateCount).toBe(2);
+        const duplicateErrors = result.errors.filter((e) => e.errorType === 'DUPLICATE_EMAIL');
+        expect(duplicateErrors).toHaveLength(2);
+
+        // Both duplicates should reference row 1 as first occurrence
+        expect(duplicateErrors[0].metadata?.firstOccurrenceRow).toBe(1);
+        expect(duplicateErrors[1].metadata?.firstOccurrenceRow).toBe(1);
+      });
+
+      it('should detect duplicates across multiple different emails', async () => {
+        const rows = [
+          { company_name: 'A', contact_email: 'john@acme.com' },
+          { company_name: 'B', contact_email: 'sarah@beta.com' },
+          { company_name: 'C', contact_email: 'john@acme.com' }, // Duplicate of row 1
+          { company_name: 'D', contact_email: 'sarah@beta.com' }, // Duplicate of row 2
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.duplicateCount).toBe(2);
+      });
+    });
+
+    describe('Edge Cases', () => {
+      it('should handle whitespace in emails before duplicate detection', async () => {
+        const rows = [
+          { company_name: 'A', contact_email: '  john@acme.com  ' },
+          { company_name: 'B', contact_email: 'john@acme.com' }, // Duplicate after trim
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.duplicateCount).toBe(1);
+      });
+
+      it('should skip rows with missing emails in duplicate detection', async () => {
+        const rows = [
+          { company_name: 'A', contact_email: '' },
+          { company_name: 'B', contact_email: '' },
+          { company_name: 'C', contact_email: 'valid@example.com' },
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        // Empty emails should not be counted as duplicates
+        expect(result.duplicateCount).toBe(0);
+      });
+
+      it('should handle dataset with no duplicates', async () => {
+        const rows = [
+          { company_name: 'A', contact_email: 'john@acme.com' },
+          { company_name: 'B', contact_email: 'sarah@beta.com' },
+          { company_name: 'C', contact_email: 'mike@gamma.com' },
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.duplicateCount).toBe(0);
+      });
+    });
+
+    describe('AC4: Performance', () => {
+      it('should complete duplicate detection for 1000 rows in < 2 seconds', async () => {
+        const rows = Array.from({ length: 1000 }, (_, i) => ({
+          company_name: `Company ${i}`,
+          contact_email: `user${i}@example.com`,
+        }));
+
+        const startTime = Date.now();
+        const result = await service.validateData(rows, 'org-123');
+        const duration = Date.now() - startTime;
+
+        expect(duration).toBeLessThan(2000);
+        expect(result.duplicateCount).toBe(0);
+      });
+
+      it('should detect duplicates efficiently in large dataset', async () => {
+        // Create 1000 rows where every 10th row is a duplicate
+        const rows = Array.from({ length: 1000 }, (_, i) => ({
+          company_name: `Company ${i}`,
+          contact_email: i % 10 === 0 ? 'duplicate@example.com' : `user${i}@example.com`,
+        }));
+
+        const startTime = Date.now();
+        const result = await service.validateData(rows, 'org-123');
+        const duration = Date.now() - startTime;
+
+        expect(duration).toBeLessThan(2000);
+        expect(result.duplicateCount).toBe(99); // 100 occurrences, first is not duplicate
+        expect(result.errors.filter((e) => e.errorType === 'DUPLICATE_EMAIL').length).toBeGreaterThan(0);
+      });
+    });
+
+    describe('Integration with Field Validation', () => {
+      it('should detect duplicates even when rows have other validation errors', async () => {
+        const rows = [
+          { company_name: 'Acme', contact_email: 'invalid-email' }, // Invalid format
+          { company_name: 'Beta', contact_email: 'invalid-email' }, // Duplicate + invalid
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        // Should have both email format errors AND duplicate error
+        const emailFormatErrors = result.errors.filter((e) => e.errorType === 'INVALID_EMAIL_FORMAT');
+        const duplicateErrors = result.errors.filter((e) => e.errorType === 'DUPLICATE_EMAIL');
+
+        expect(emailFormatErrors.length).toBeGreaterThanOrEqual(2);
+        expect(duplicateErrors.length).toBe(1);
+        expect(result.duplicateCount).toBe(1);
+      });
+
+      it('should report duplicates separately from validation errors', async () => {
+        const rows = [
+          { company_name: 'Valid Corp', contact_email: 'test@example.com' },
+          { company_name: '', contact_email: 'test@example.com' }, // Missing company name + duplicate
+        ];
+
+        const result = await service.validateData(rows, 'org-123');
+
+        expect(result.invalidCount).toBe(1); // Row 2 has validation error
+        expect(result.duplicateCount).toBe(1); // Row 2 is also duplicate
+
+        const errors = result.errors;
+        expect(errors.some((e) => e.errorType === 'COMPANY_NAME_REQUIRED')).toBe(true);
+        expect(errors.some((e) => e.errorType === 'DUPLICATE_EMAIL')).toBe(true);
+      });
+    });
+  });
 });
