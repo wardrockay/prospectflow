@@ -33,13 +33,13 @@ export class ProspectRepository {
     );
 
     // Build VALUES clause for batch insert
-    const values: any[] = [];
+    const values: (string | null)[] = [];
     const placeholders: string[] = [];
     let paramIndex = 1;
 
     prospects.forEach((prospect) => {
       placeholders.push(
-        `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`,
+        `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 'New', NOW(), NOW())`,
       );
       values.push(
         organisationId,

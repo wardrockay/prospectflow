@@ -97,7 +97,7 @@ development_status:
   2-3-email-format-and-data-validation: done
   2-4-duplicate-detection-within-upload: done
   2-5-duplicate-detection-against-existing-prospects: done
-  2-6-validation-report-and-user-actions: review
+  2-6-validation-report-and-user-actions: done
   epic-2-retrospective: optional
 
   # Epic UI-2: Prospect Management UI

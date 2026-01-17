@@ -3,14 +3,12 @@ import type { ValidationResult } from '../types/validation.types.js';
 import { stringify } from 'csv-stringify/sync';
 
 export class ExportErrorsService {
-  private readonly logger = createChildLogger('ExportErrorsService');
-
   /**
    * Generate CSV file with validation errors
    * @param validationResult - Validation result with errors
    * @returns CSV string
    */
-  async generateErrorCSV(validationResult: ValidationResult): Promise<string> {
+  generateErrorCSV(validationResult: ValidationResult): string {
     const logger = createChildLogger('ExportErrorsService.generateErrorCSV');
 
     if (!validationResult.errors || validationResult.errors.length === 0) {

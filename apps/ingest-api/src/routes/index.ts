@@ -21,7 +21,7 @@ router.use('/auth', authTestRouter);
 
 // Monter les routes
 router.use('/ingest', ingestRouter);
-router.use('/api/v1', prospectsRouter);
+router.use(prospectsRouter);
 
 // Dev-only test routes for error generation
 if (process.env.NODE_ENV !== 'production') {

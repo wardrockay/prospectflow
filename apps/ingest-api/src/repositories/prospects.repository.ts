@@ -253,7 +253,107 @@ class ProspectsRepository {
       return result.rows;
     } catch (error) {
       logger.error({ err: error, organisationId, emailCount: emails.length }, 'Error finding existing prospects');
-      throw new DatabaseError('Failed to check for duplicate prospects', { cause: error });
+      throw new DatabaseError('Failed to check for duplicate prospects');
+    }
+  }
+
+  /**
+   * Batch insert prospects into crm.people table
+   * @param prospects - Array of prospect data to insert
+   * @param campaignId - Campaign ID to associate prospects with
+   * @param organisationId - Organisation ID for multi-tenant isolation
+   * @returns Array of inserted prospect IDs
+   */
+  async batchInsertProspects(
+    prospects: Array<{
+      company_name: string;
+      contact_email: string;
+      contact_name?: string;
+      website_url?: string;
+    }>,
+    campaignId: string,
+    organisationId: string,
+  ): Promise<Array<{ id: string; contactEmail: string }>> {
+    const pool = getPool();
+
+    if (prospects.length === 0) {
+      logger.warn({ campaignId, organisationId }, 'No prospects to insert');
+      return [];
+    }
+
+    logger.info(
+      { campaignId, organisationId, count: prospects.length },
+      'Batch inserting prospects',
+    );
+
+    // Build VALUES clause for batch insert
+    const values: (string | null)[] = [];
+    const placeholders: string[] = [];
+    let paramIndex = 1;
+
+    prospects.forEach((prospect) => {
+      placeholders.push(
+        `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 'New', NOW(), NOW())`,
+      );
+      values.push(
+        organisationId,
+        campaignId,
+        prospect.company_name,
+        prospect.contact_email,
+        prospect.contact_name || null,
+        prospect.website_url || null,
+      );
+    });
+
+    const query = `
+      INSERT INTO crm.people (
+        organisation_id,
+        campaign_id,
+        company_name,
+        contact_email,
+        contact_name,
+        website_url,
+        status,
+        created_at,
+        updated_at
+      )
+      VALUES ${placeholders.join(', ')}
+      RETURNING id, contact_email as "contactEmail"
+    `;
+
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const startTime = Date.now();
+      const result = await client.query(query, values);
+      const duration = Date.now() - startTime;
+
+      await client.query('COMMIT');
+
+      logger.info(
+        {
+          campaignId,
+          organisationId,
+          inserted: result.rows.length,
+          duration,
+        },
+        'Prospects inserted successfully',
+      );
+
+      return result.rows;
+    } catch (error) {
+      await client.query('ROLLBACK');
+
+      logger.error(
+        { err: error, campaignId, organisationId, count: prospects.length },
+        'Error inserting prospects - transaction rolled back',
+      );
+
+      throw new DatabaseError('Failed to insert prospects');
+    } finally {
+      client.release();
     }
   }
 }

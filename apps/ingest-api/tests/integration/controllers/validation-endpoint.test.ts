@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
-import { app } from '../../../src/app.js';
+import app from '../../../src/app.js';
 
 describe('POST /api/v1/imports/:uploadId/validate-data', () => {
   const uploadId = 'test-upload-123';
