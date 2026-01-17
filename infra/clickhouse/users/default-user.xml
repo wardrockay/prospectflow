@@ -5,14 +5,14 @@
     <default remove="remove">
     </default>
 
-    <admin>
+    <default>
       <profile>default</profile>
       <networks>
         <ip>::/0</ip>
       </networks>
-      <password><![CDATA[rrbTP@Q>kACuMjH5^]]></password>
+      <password><![CDATA[]]></password>
       <quota>default</quota>
       <access_management>1</access_management>
-    </admin>
+    </default>
   </users>
 </clickhouse>
