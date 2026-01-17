@@ -96,7 +96,7 @@ development_status:
   2-2-csv-parsing-and-column-validation: done
   2-3-email-format-and-data-validation: done
   2-4-duplicate-detection-within-upload: done
-  2-5-duplicate-detection-against-existing-prospects: backlog
+  2-5-duplicate-detection-against-existing-prospects: ready-for-dev
   2-6-validation-report-and-user-actions: backlog
   epic-2-retrospective: optional
 

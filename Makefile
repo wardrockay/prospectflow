@@ -2,7 +2,7 @@
 .PHONY: infra-only apps-only full-stack infra-restart apps-restart
 .PHONY: prod-up prod-down prod-restart prod-logs
 .PHONY: test-unit test-integration
-.PHONY: service-restart service-stop service-logs db-migrate
+.PHONY: service-restart service-stop service-logs db-migrate db-seed
 .PHONY: sync-env vps-connect network-create
 .PHONY: nginx-up nginx-down nginx-logs nginx-init-ssl nginx-renew-ssl nginx-reload nginx-test
 .PHONY: monitoring-up monitoring-down prometheus-up prometheus-down grafana-up grafana-down monitoring-logs
@@ -318,6 +318,12 @@ endif
 db-migrate:
 	@echo "📦 Running database migrations..."
 	@./scripts/service-selector.sh flyway
+
+# Load test data into database
+db-seed:
+	@echo "🌱 Loading test data into database..."
+	@docker exec -i prospectflow-postgres psql -U prospectflow -d prospectflow < infra/postgres/db/test-data.sql
+	@echo "✅ Test data loaded successfully!"
 
 # ============================================
 # HEALTH CHECK
