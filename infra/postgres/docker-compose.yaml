@@ -3,6 +3,8 @@ services:
     image: postgres:18-alpine
     container_name: prospectflow-postgres
     restart: unless-stopped
+    env_file:
+      - ./env/.env.${APP_ENV:-production}
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-prospectflow}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
@@ -29,6 +31,8 @@ services:
     image: dpage/pgadmin4:latest
     container_name: prospectflow-pgadmin
     restart: unless-stopped
+    env_file:
+      - ./env/.env.${APP_ENV:-production}
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@prospectflow.local}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-changeme}
@@ -50,6 +54,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - ./env/.env.${APP_ENV:-production}
     environment:
       FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-prospectflow}
       FLYWAY_USER: ${POSTGRES_USER:-prospectflow}
@@ -71,6 +77,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - ./env/.env.${APP_ENV:-production}
     environment:
       DB_HOST: postgres
       DB_PORT: 5432

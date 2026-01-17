@@ -74,18 +74,18 @@ dev-up: network-create
 	@echo "🚀 Starting Development Environment (APP_ENV=dev)..."
 	@echo ""
 	@echo "📦 Starting Infrastructure..."
-	@cd infra/postgres && docker compose -p prospectflow-postgres up -d
-	@cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq up -d
-	@cd infra/redis && docker compose -p prospectflow-redis up -d
-	@cd infra/clickhouse && docker compose -p prospectflow-clickhouse up -d
+	@cd infra/postgres && APP_ENV=dev docker compose -p prospectflow-postgres up -d --wait
+	@cd infra/rabbitmq && APP_ENV=dev docker compose -p prospectflow-rabbitmq up -d --wait
+	@cd infra/redis && APP_ENV=dev docker compose -p prospectflow-redis up -d --wait
+	@cd infra/clickhouse && APP_ENV=dev docker compose -p prospectflow-clickhouse up -d --wait
 	@echo "⏳ Waiting for infrastructure..."
 	@sleep 5
 	@./scripts/wait-for-services.sh
 	@echo ""
 	@echo "🌐 Starting Applications (dev mode)..."
-	@cd apps/ingest-api && APP_ENV=dev docker compose -p prospectflow-ingest-api up -d
-	@cd apps/campaign-api && APP_ENV=dev docker compose -p prospectflow-campaign-api up -d
-	@cd apps/ui-web && APP_ENV=dev docker compose -p prospectflow-ui-web up -d
+	@cd apps/ingest-api && APP_ENV=dev docker compose -p prospectflow-ingest-api up -d --wait
+	@cd apps/campaign-api && APP_ENV=dev docker compose -p prospectflow-campaign-api up -d --wait
+	@cd apps/ui-web && APP_ENV=dev docker compose -p prospectflow-ui-web up -d --wait
 	@echo ""
 	@echo "⏳ Waiting for applications..."
 	@sleep 5
@@ -126,12 +126,13 @@ dev-logs:
 # ============================================
 
 # Start infrastructure tier only
+# Usage: make infra-only [APP_ENV=dev|production]
 infra-only: network-create
-	@echo "🚀 Starting Infrastructure Tier..."
-	@cd infra/postgres && docker compose -p prospectflow-postgres up -d
-	@cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq up -d
-	@cd infra/redis && docker compose -p prospectflow-redis up -d
-	@cd infra/clickhouse && docker compose -p prospectflow-clickhouse up -d
+	@echo "🚀 Starting Infrastructure Tier (APP_ENV=$${APP_ENV:-dev})..."
+	@cd infra/postgres && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-postgres up -d --wait
+	@cd infra/rabbitmq && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-rabbitmq up -d --wait
+	@cd infra/redis && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-redis up -d --wait
+	@cd infra/clickhouse && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-clickhouse up -d --wait
 	@echo "⏳ Waiting for infrastructure..."
 	@./scripts/wait-for-services.sh
 	@echo "✅ Infrastructure tier ready!"
@@ -140,9 +141,9 @@ infra-only: network-create
 # Usage: make apps-only [APP_ENV=dev|production]
 apps-only:
 	@echo "🚀 Starting Application Tier (APP_ENV=$${APP_ENV:-dev})..."
-	@cd apps/ingest-api && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-ingest-api up -d
-	@cd apps/campaign-api && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-campaign-api up -d
-	@cd apps/ui-web && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-ui-web up -d
+	@cd apps/ingest-api && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-ingest-api up -d --wait
+	@cd apps/campaign-api && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-campaign-api up -d --wait
+	@cd apps/ui-web && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-ui-web up -d --wait
 	@echo "⏳ Waiting for applications..."
 	@sleep 5
 	@docker exec prospectflow-ingest-api curl -sf http://localhost:3000/health > /dev/null 2>&1 || echo "⚠️  ingest-api not ready yet"
@@ -203,20 +204,20 @@ prod-up: network-create
 	@./scripts/sync-env-to-vps.sh || true
 	@echo ""
 	@echo "📦 Starting Infrastructure..."
-	@cd infra/postgres && docker compose -p prospectflow-postgres up -d
-	@cd infra/rabbitmq && docker compose -p prospectflow-rabbitmq up -d
-	@cd infra/redis && docker compose -p prospectflow-redis up -d
-	@cd infra/clickhouse && docker compose -p prospectflow-clickhouse up -d
+	@cd infra/postgres && APP_ENV=dev docker compose -p prospectflow-postgres up -d --wait
+	@cd infra/rabbitmq && APP_ENV=dev docker compose -p prospectflow-rabbitmq up -d --wait
+	@cd infra/redis && APP_ENV=dev docker compose -p prospectflow-redis up -d --wait
+	@cd infra/clickhouse && APP_ENV=dev docker compose -p prospectflow-clickhouse up -d --wait
 	@echo "⏳ Waiting for infrastructure..."
 	@sleep 10
 	@echo ""
 	@echo "🌐 Starting Applications (production mode)..."
-	@cd apps/ingest-api && APP_ENV=production docker compose -p prospectflow-ingest-api up -d
-	@cd apps/campaign-api && APP_ENV=production docker compose -p prospectflow-campaign-api up -d
-	@cd apps/ui-web && APP_ENV=production docker compose -p prospectflow-ui-web up -d
+	@cd apps/ingest-api && APP_ENV=production docker compose -p prospectflow-ingest-api up -d --wait
+	@cd apps/campaign-api && APP_ENV=production docker compose -p prospectflow-campaign-api up -d --wait
+	@cd apps/ui-web && APP_ENV=production docker compose -p prospectflow-ui-web up -d --wait
 	@echo ""
 	@echo "🔒 Starting Reverse Proxy..."
-	@cd infra/nginx && docker compose -p prospectflow-nginx up -d
+	@cd infra/nginx && docker compose -p prospectflow-nginx up -d --wait
 	@echo ""
 	@echo "✅ Production environment started!"
 	@echo "🔗 Access at: https://app.lightandshutter.fr"
@@ -397,7 +398,7 @@ vps-connect:
 
 nginx-up: network-create
 	@echo "🚀 Starting NGINX..."
-	@cd infra/nginx && docker compose -p prospectflow-nginx up -d
+	@cd infra/nginx && docker compose -p prospectflow-nginx up -d --wait
 	@echo "✅ NGINX started"
 
 nginx-down:
@@ -438,7 +439,7 @@ monitoring-down: grafana-down prometheus-down
 
 prometheus-up: network-create
 	@echo "🚀 Starting Prometheus..."
-	@cd infra/prometheus && docker compose -p prospectflow-prometheus up -d
+	@cd infra/prometheus && docker compose -p prospectflow-prometheus up -d --wait
 	@echo "✅ Prometheus: http://localhost:9090"
 
 prometheus-down:
@@ -446,7 +447,7 @@ prometheus-down:
 
 grafana-up: network-create
 	@echo "🚀 Starting Grafana..."
-	@cd infra/grafana && docker compose -p prospectflow-grafana up -d
+	@cd infra/grafana && docker compose -p prospectflow-grafana up -d --wait
 	@echo "✅ Grafana: http://localhost:3002 (admin/admin)"
 
 grafana-down:

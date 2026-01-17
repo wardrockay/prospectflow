@@ -7,6 +7,8 @@ services:
     container_name: prospectflow-rabbitmq
     hostname: rabbitmq
     restart: unless-stopped
+    env_file:
+      - ./env/.env.${APP_ENV:-production}
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-changeme}
