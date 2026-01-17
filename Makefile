@@ -317,7 +317,7 @@ endif
 # Run database migrations
 db-migrate:
 	@echo "📦 Running database migrations..."
-	@./scripts/service-selector.sh flyway
+	@cd "infra/postgres" && APP_ENV=$${APP_ENV:-dev} docker compose -p prospectflow-postgres up flyway
 
 # Load test data into database
 db-seed:

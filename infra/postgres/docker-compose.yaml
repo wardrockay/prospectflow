@@ -5,21 +5,13 @@ services:
     restart: unless-stopped
     env_file:
       - ./env/.env.${APP_ENV:-production}
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-prospectflow}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-      POSTGRES_DB: ${POSTGRES_DB:-prospectflow}
     ports:
       - '127.0.0.1:5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${POSTGRES_USER:-prospectflow} -d ${POSTGRES_DB:-prospectflow}',
-        ]
+      test: ['CMD-SHELL', 'pg_isready -U prospectflow -d prospectflow']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -34,8 +26,6 @@ services:
     env_file:
       - ./env/.env.${APP_ENV:-production}
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@prospectflow.local}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-changeme}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     ports:
@@ -57,9 +47,6 @@ services:
     env_file:
       - ./env/.env.${APP_ENV:-production}
     environment:
-      FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-prospectflow}
-      FLYWAY_USER: ${POSTGRES_USER:-prospectflow}
-      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
       FLYWAY_SCHEMAS: public,iam,crm,outreach,tracking
       FLYWAY_DEFAULT_SCHEMA: public
       FLYWAY_BASELINE_ON_MIGRATE: 'true'
@@ -80,11 +67,6 @@ services:
     env_file:
       - ./env/.env.${APP_ENV:-production}
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB:-prospectflow}
-      DB_USER: ${POSTGRES_USER:-prospectflow}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
       PGBOUNCER_POOL_MODE: transaction
       PGBOUNCER_MAX_CLIENT_CONN: 100
       PGBOUNCER_DEFAULT_POOL_SIZE: 25
