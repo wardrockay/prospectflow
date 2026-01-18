@@ -166,6 +166,42 @@ export class ProspectsService {
   }
 
   /**
+   * Save user-confirmed column mappings to database
+   */
+  async saveColumnMappings(
+    uploadId: string,
+    organisationId: string,
+    columnMappings: Record<string, string>,
+  ): Promise<{ uploadId: string; mappingsSaved: number; previewAvailable: boolean }> {
+    logger.info(
+      { uploadId, organisationId, mappingsCount: Object.keys(columnMappings).length },
+      'Saving column mappings',
+    );
+
+    // Validate upload exists and belongs to organisation
+    const upload = await prospectsRepository.findUploadByIdAndOrg(uploadId, organisationId);
+
+    if (!upload) {
+      logger.warn({ uploadId, organisationId }, 'Upload not found or access denied');
+      throw new AppError('Upload not found', 404);
+    }
+
+    // Store mappings in database
+    await prospectsRepository.updateColumnMappings(uploadId, columnMappings);
+
+    logger.info(
+      { uploadId, mappingsCount: Object.keys(columnMappings).length },
+      'Column mappings saved successfully',
+    );
+
+    return {
+      uploadId,
+      mappingsSaved: Object.keys(columnMappings).length,
+      previewAvailable: true,
+    };
+  }
+
+  /**
    * Parse CSV with user-confirmed column mappings
    */
   async parseWithMappings(

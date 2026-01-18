@@ -32,3 +32,9 @@ export interface ValidationResult {
   validRows: Record<string, string>[];
   invalidRows: Record<string, string>[];
 }
+
+export interface ImportSummary {
+  imported: number;
+  failed: number;
+  prospectIds: string[];
+}

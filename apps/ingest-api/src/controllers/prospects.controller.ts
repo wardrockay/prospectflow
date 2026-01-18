@@ -114,6 +114,56 @@ export class ProspectsController {
   }
 
   /**
+   * POST /api/v1/imports/:uploadId/map
+   * Save user-confirmed column mappings for later processing
+   */
+  async saveColumnMappings(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { uploadId } = req.params;
+    const organisationId = req.organisationId;
+
+    try {
+      const { columnMappings } = req.body as ColumnMappingsInput;
+
+      if (!organisationId) {
+        logger.error({ uploadId }, 'Organisation ID missing from request');
+        res.status(401).json({
+          success: false,
+          error: 'Unauthorized - Organisation ID missing',
+        });
+        return;
+      }
+
+      if (!columnMappings) {
+        logger.warn({ uploadId }, 'Column mappings missing from request');
+        res.status(400).json({
+          success: false,
+          error: 'Column mappings required',
+        });
+        return;
+      }
+
+      logger.info(
+        { uploadId, organisationId, mappingsCount: Object.keys(columnMappings).length },
+        'Saving column mappings',
+      );
+
+      const result = await prospectsService.saveColumnMappings(
+        uploadId,
+        organisationId,
+        columnMappings,
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      logger.error({ err: error, uploadId, organisationId }, 'Failed to save column mappings');
+      next(error);
+    }
+  }
+
+  /**
    * POST /api/v1/imports/:uploadId/parse
    * Parse CSV with user-confirmed column mappings
    */

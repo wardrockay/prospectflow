@@ -6,6 +6,14 @@ export default defineConfig({
   // @ts-expect-error - Vue plugin type mismatch with Vite versions
   plugins: [vue()],
   test: {
+    // WSL Memory Management - Prevent OOM-kills (see project-context.md)
+    pool: 'forks',        // Use forks instead of threads for memory isolation
+    poolOptions: {
+      forks: {
+        singleFork: true, // Run all tests in a single fork to reduce memory
+      },
+    },
+    maxConcurrency: 5,    // Limit concurrent tests
     environment: 'happy-dom',
     globals: true,
     setupFiles: ['./tests/setup.ts'],

@@ -33,11 +33,11 @@
 
   /**
    * Handle successful upload
-   * Navigate to mapping page with uploadId
+   * Navigate to mapping page with uploadId and campaignId
    */
   const handleUploaded = (uploadId: string) => {
     console.log('Upload success, navigating to map page with uploadId:', uploadId);
-    navigateTo(`/prospects/import/map?upload_id=${uploadId}`);
+    navigateTo(`/prospects/import/map?upload_id=${uploadId}&campaign_id=${campaignId.value}`);
   };
 
   /**

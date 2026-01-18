@@ -4,6 +4,8 @@
 import { Router } from 'express';
 import { prospectsController } from '../controllers/prospects.controller.js';
 import { uploadCsv } from '../middlewares/upload.middleware.js';
+import { validate } from '../middlewares/validation.middleware.js';
+import { saveColumnMappingsSchema } from '../schemas/prospects.schemas.js';
 import {
   cognitoAuthMiddleware,
   sessionMiddleware,
@@ -39,6 +41,14 @@ router.get('/campaigns/prospects/template', (req, res, next) =>
  */
 router.get('/imports/:uploadId/columns', (req, res, next) =>
   prospectsController.getColumns(req, res, next),
+);
+
+/**
+ * POST /api/v1/imports/:uploadId/map
+ * Save user-confirmed column mappings
+ */
+router.post('/imports/:uploadId/map', validate(saveColumnMappingsSchema), (req, res, next) =>
+  prospectsController.saveColumnMappings(req, res, next),
 );
 
 /**

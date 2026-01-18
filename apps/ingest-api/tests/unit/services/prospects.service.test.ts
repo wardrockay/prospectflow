@@ -11,6 +11,7 @@ vi.mock('../../../src/repositories/prospects.repository.js', () => ({
     findUploadByIdAndOrg: vi.fn(),
     updateUploadColumns: vi.fn(),
     updateUploadColumnMappings: vi.fn(),
+    updateColumnMappings: vi.fn(),
   },
 }));
 
@@ -162,6 +163,79 @@ describe('ProspectsService', () => {
       await expect(
         prospectsService.validateData('upload-123', 'org-123')
       ).rejects.toThrow('Column mappings must be set');
+    });
+  });
+
+  describe('saveColumnMappings', () => {
+    it('should save column mappings for a valid upload', async () => {
+      // Arrange
+      const uploadId = 'upload-123';
+      const organisationId = 'org-123';
+      const columnMappings = {
+        company: 'company_name',
+        email: 'contact_email',
+        website: 'website_url',
+      };
+
+      vi.mocked(prospectsRepository.findUploadByIdAndOrg).mockResolvedValue({
+        id: uploadId,
+        organisationId,
+      } as any);
+
+      vi.mocked(prospectsRepository.updateColumnMappings).mockResolvedValue(undefined);
+
+      // Act
+      const result = await prospectsService.saveColumnMappings(
+        uploadId,
+        organisationId,
+        columnMappings,
+      );
+
+      // Assert
+      expect(result).toEqual({
+        uploadId,
+        mappingsSaved: 3,
+        previewAvailable: true,
+      });
+      expect(prospectsRepository.updateColumnMappings).toHaveBeenCalledWith(
+        uploadId,
+        columnMappings,
+      );
+    });
+
+    it('should throw 404 when upload not found', async () => {
+      // Arrange
+      vi.mocked(prospectsRepository.findUploadByIdAndOrg).mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(
+        prospectsService.saveColumnMappings('invalid-id', 'org-123', { company: 'company_name' }),
+      ).rejects.toThrow('Upload not found');
+    });
+
+    it('should throw 404 when upload belongs to different organisation', async () => {
+      // Arrange
+      vi.mocked(prospectsRepository.findUploadByIdAndOrg).mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(
+        prospectsService.saveColumnMappings('upload-123', 'wrong-org', { company: 'company_name' }),
+      ).rejects.toThrow('Upload not found');
+    });
+
+    it('should save empty column mappings (zero entries)', async () => {
+      // Note: This tests the service layer - validation for min 1 mapping is in route/schema
+      // Arrange
+      vi.mocked(prospectsRepository.findUploadByIdAndOrg).mockResolvedValue({
+        id: 'upload-123',
+      } as any);
+      vi.mocked(prospectsRepository.updateColumnMappings).mockResolvedValue(undefined);
+
+      // Act
+      const result = await prospectsService.saveColumnMappings('upload-123', 'org-123', {});
+
+      // Assert
+      expect(result.mappingsSaved).toBe(0);
     });
   });
 });

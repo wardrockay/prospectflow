@@ -171,6 +171,36 @@ class ProspectsRepository {
   }
 
   /**
+   * Save user-confirmed column mappings to database
+   */
+  async updateColumnMappings(
+    uploadId: string,
+    columnMappings: Record<string, string>,
+  ): Promise<void> {
+    const pool = getPool();
+
+    try {
+      await timeOperation(logger, 'db.prospects.updateMappings', async () => {
+        return pool.query(
+          `UPDATE outreach.import_uploads
+           SET column_mappings = $1,
+               updated_at = NOW()
+           WHERE id = $2`,
+          [JSON.stringify(columnMappings), uploadId],
+        );
+      });
+
+      logger.debug(
+        { uploadId, mappingsCount: Object.keys(columnMappings).length },
+        'Column mappings saved',
+      );
+    } catch (error) {
+      logger.error({ err: error, uploadId }, 'Failed to save column mappings');
+      throw new DatabaseError('Failed to save column mappings');
+    }
+  }
+
+  /**
    * Update column mappings and row count after parsing
    */
   async updateUploadColumnMappings(

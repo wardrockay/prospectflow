@@ -2,8 +2,8 @@
   <div class="validation-results-step">
     <UCard>
       <template #header>
-        <h3 class="text-lg font-semibold">Validation Results</h3>
-        <p class="text-sm text-gray-600 mt-1">Review data quality before importing</p>
+        <h3 class="text-lg font-semibold">Résultats de validation</h3>
+        <p class="text-sm text-gray-600 mt-1">Vérifiez la qualité des données avant l'import</p>
       </template>
 
       <!-- Summary Section -->
@@ -12,29 +12,36 @@
           <!-- Valid Count -->
           <div class="bg-green-50 border border-green-200 rounded-lg p-4">
             <div class="text-3xl font-bold text-green-700">{{ validationResult.validCount }}</div>
-            <div class="text-sm text-green-600">Valid Rows</div>
+            <div class="text-sm text-green-600">Lignes valides</div>
           </div>
 
           <!-- Invalid Count -->
           <div class="bg-red-50 border border-red-200 rounded-lg p-4">
             <div class="text-3xl font-bold text-red-700">{{ validationResult.invalidCount }}</div>
-            <div class="text-sm text-red-600">Invalid Rows</div>
+            <div class="text-sm text-red-600">Lignes invalides</div>
           </div>
 
           <!-- Duplicate Count -->
           <div v-if="hasDuplicates" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
             <div class="text-3xl font-bold text-orange-700">{{ validationResult.duplicateCount }}</div>
-            <div class="text-sm text-orange-600">Duplicates Found</div>
+            <div class="text-sm text-orange-600">Doublons détectés</div>
           </div>
         </div>
 
         <!-- Progress Bar -->
         <div class="mt-4">
           <div class="flex justify-between text-sm mb-1">
-            <span class="text-gray-600">Data Quality</span>
-            <span class="font-medium">{{ validPercentage }}% valid</span>
+            <span class="text-gray-600">Qualité des données</span>
+            <span class="font-medium">{{ validPercentage }}% valides</span>
           </div>
-          <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div 
+            class="w-full bg-gray-200 rounded-full h-2.5" 
+            role="progressbar" 
+            :aria-valuenow="validPercentage" 
+            aria-valuemin="0" 
+            aria-valuemax="100"
+            :aria-label="`Qualité des données: ${validPercentage}% valides`"
+          >
             <div
               class="h-2.5 rounded-full transition-all"
               :class="
@@ -54,9 +61,10 @@
           v-if="validPercentage < 50"
           color="yellow"
           variant="soft"
-          title="Low Data Quality"
-          description="More than 50% of rows contain errors. Please review and fix the errors before importing."
+          title="Qualité des données faible"
+          description="Plus de 50% des lignes contiennent des erreurs. Veuillez vérifier et corriger les erreurs avant l'import."
           class="mt-4"
+          role="alert"
         />
       </div>
 
@@ -64,12 +72,12 @@
       <div v-if="validationResult.errors.length > 0" class="mb-6">
         <div class="flex justify-between items-center mb-3">
           <h4 class="text-sm font-semibold">
-            Error Details ({{ Math.min(validationResult.errors.length, 100) }} of
+            Détails des erreurs ({{ Math.min(validationResult.errors.length, 100) }} sur
             {{ validationResult.totalErrorCount }})
           </h4>
           <UButton size="xs" color="gray" variant="ghost" @click="downloadErrors">
             <UIcon name="i-heroicons-arrow-down-tray" class="mr-1" />
-            Download Errors CSV
+            Télécharger le CSV des erreurs
           </UButton>
         </div>
 
@@ -77,10 +85,10 @@
           <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">Row #</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">Field</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">Error</th>
-                <th class="px-4 py-2 text-left font-medium text-gray-700">Original Value</th>
+                <th scope="col" class="px-4 py-2 text-left font-medium text-gray-700">Ligne #</th>
+                <th scope="col" class="px-4 py-2 text-left font-medium text-gray-700">Champ</th>
+                <th scope="col" class="px-4 py-2 text-left font-medium text-gray-700">Erreur</th>
+                <th scope="col" class="px-4 py-2 text-left font-medium text-gray-700">Valeur originale</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
@@ -128,17 +136,19 @@
 
       <template #footer>
         <div class="flex justify-between">
-          <UButton color="gray" variant="ghost" @click="$emit('back')"> Back </UButton>
+          <UButton color="gray" variant="ghost" :disabled="importing" @click="$emit('back')"> Retour </UButton>
           <div class="flex gap-2">
-            <UButton v-if="validationResult.invalidCount > 0" color="gray" @click="$emit('cancel')">
-              Cancel Import
+            <UButton v-if="validationResult.invalidCount > 0" color="gray" :disabled="importing" @click="$emit('cancel')">
+              Annuler l'import
             </UButton>
             <UButton
               color="primary"
-              :disabled="validationResult.validCount === 0"
+              :disabled="validationResult.validCount === 0 || importing"
+              :loading="importing"
+              :aria-busy="importing ? 'true' : 'false'"
               @click="confirmImport"
             >
-              Import {{ validationResult.validCount }} Valid Rows
+              Importer {{ validationResult.validCount }} lignes valides
             </UButton>
           </div>
         </div>
@@ -146,15 +156,15 @@
     </UCard>
 
     <!-- Confirmation Modal -->
-    <UModal v-model="showConfirmModal" title="Confirm Import">
+    <UModal v-model="showConfirmModal" title="Confirmer l'import">
       <div class="p-4">
         <p class="mb-4">
-          {{ validationResult.invalidCount }} rows will be skipped due to validation errors. Do you
-          want to proceed with importing {{ validationResult.validCount }} valid rows?
+          {{ validationResult.invalidCount }} lignes seront ignorées en raison d'erreurs de validation. Voulez-vous
+          continuer l'import de {{ validationResult.validCount }} lignes valides ?
         </p>
         <div class="flex justify-end gap-2">
-          <UButton color="gray" variant="ghost" @click="showConfirmModal = false"> Cancel </UButton>
-          <UButton color="primary" @click="proceedImport"> Proceed </UButton>
+          <UButton color="gray" variant="ghost" @click="showConfirmModal = false"> Annuler </UButton>
+          <UButton color="primary" @click="proceedImport"> Continuer </UButton>
         </div>
       </div>
     </UModal>
@@ -166,6 +176,7 @@
 
   interface Props {
     validationResult: ValidationResult;
+    importing?: boolean;
   }
 
   const props = defineProps<Props>();

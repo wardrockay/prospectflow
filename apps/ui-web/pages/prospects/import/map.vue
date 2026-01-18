@@ -1,65 +1,111 @@
-<script setup lang="ts">
-  definePageMeta({
-    middleware: 'auth',
-  });
-
-  useHead({
-    title: 'Mapping de Colonnes | ProspectFlow',
-  });
-
-  const route = useRoute();
-  const router = useRouter();
-
-  // Get uploadId from query params
-  const uploadId = computed(() => route.query.upload_id as string);
-
-  // Validate uploadId exists
-  if (!uploadId.value) {
-    navigateTo('/prospects/import');
-  }
-</script>
-
 <template>
-  <div class="container mx-auto p-6">
-    <!-- Page Header -->
+  <div class="max-w-4xl mx-auto py-8 px-4">
     <div class="mb-6">
-      <h1 class="text-3xl font-bold mb-2">Mapping de Colonnes</h1>
-      <p class="text-gray-600">
-        Associez les colonnes de votre fichier aux champs ProspectFlow
+      <h1 class="text-2xl font-bold text-gray-900">Mapping des colonnes</h1>
+      <p class="text-gray-600 mt-1">
+        Associez les colonnes de votre fichier CSV aux champs de votre CRM
       </p>
     </div>
 
-    <!-- Upload ID Display -->
-    <UCard class="mb-6">
-      <div class="space-y-4">
-        <div>
-          <p class="text-sm text-gray-500 mb-1">Upload ID</p>
-          <p class="font-mono text-sm">{{ uploadId }}</p>
-        </div>
-
-        <UAlert
-          color="blue"
-          variant="soft"
-          icon="i-heroicons-information-circle"
-          title="Fonctionnalité en développement"
-          description="L'interface de mapping des colonnes sera implémentée dans la Story UI-2.2"
-        />
-      </div>
-    </UCard>
-
-    <!-- Navigation Buttons -->
-    <div class="flex gap-3">
-      <UButton
-        to="/prospects/import"
-        color="gray"
-        variant="soft"
-        icon="i-heroicons-arrow-left"
-      >
-        Retour à l'import
-      </UButton>
-      <UButton to="/campaigns" color="primary" icon="i-heroicons-home">
-        Retour aux campagnes
-      </UButton>
+    <!-- Loading State -->
+    <div v-if="loading && !mappings.length" class="flex justify-center py-12">
+      <UIcon name="i-heroicons-arrow-path" class="animate-spin h-8 w-8 text-primary" />
     </div>
+
+    <!-- Error State -->
+    <UAlert
+      v-if="error"
+      color="red"
+      variant="soft"
+      title="Erreur"
+      :description="error"
+      class="mb-4"
+    />
+
+    <!-- Mapping Component -->
+    <ProspectColumnMapper
+      v-if="mappings.length > 0"
+      :mappings="mappings"
+      :validation="validation"
+      @update-mapping="handleUpdateMapping"
+      @back="handleBack"
+      @confirm="handleConfirm"
+    />
   </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({
+  middleware: 'auth',
+  layout: 'default',
+});
+
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+
+const uploadId = computed(() => route.query.upload_id as string);
+const campaignId = computed(() => route.query.campaign_id as string);
+
+if (!uploadId.value) {
+  throw createError({
+    statusCode: 400,
+    message: 'Upload ID manquant',
+  });
+}
+
+if (!campaignId.value) {
+  throw createError({
+    statusCode: 400,
+    message: 'Campaign ID manquant',
+  });
+}
+
+const {
+  loading,
+  error,
+  mappings,
+  validation,
+  fetchColumnMappings,
+  updateMapping,
+  submitMappings,
+} = useColumnMapping(uploadId.value);
+
+// Fetch column mappings on mount
+onMounted(async () => {
+  try {
+    await fetchColumnMappings();
+  } catch {
+    // Error is already set in composable and displayed via UAlert
+  }
+});
+
+const handleUpdateMapping = (detectedColumn: string, suggestedField: string) => {
+  updateMapping(detectedColumn, suggestedField);
+};
+
+const handleBack = () => {
+  router.push('/prospects/import');
+};
+
+const handleConfirm = async () => {
+  try {
+    await submitMappings();
+    
+    toast.add({
+      title: 'Mappings sauvegardés',
+      description: 'Les colonnes ont été mappées avec succès',
+      color: 'green',
+    });
+
+    // Navigate to validation page with both uploadId and campaignId
+    router.push(`/prospects/import/validate?upload_id=${uploadId.value}&campaign_id=${campaignId.value}`);
+  } catch (err: any) {
+    toast.add({
+      title: 'Erreur',
+      description: err.message || 'Impossible de sauvegarder les mappings',
+      color: 'red',
+    });
+  }
+};
+</script>
