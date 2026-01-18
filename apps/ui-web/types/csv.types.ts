@@ -13,6 +13,7 @@ export interface ValidationResult {
 
 export interface ColumnDetectionResponse {
   uploadId: string;
+  campaignId: string;
   detectedColumns: string[];
   suggestedMappings: ColumnMapping[];
   validation: ValidationResult;

@@ -45,7 +45,6 @@ const router = useRouter();
 const toast = useToast();
 
 const uploadId = computed(() => route.query.upload_id as string);
-const campaignId = computed(() => route.query.campaign_id as string);
 
 if (!uploadId.value) {
   throw createError({
@@ -54,24 +53,18 @@ if (!uploadId.value) {
   });
 }
 
-if (!campaignId.value) {
-  throw createError({
-    statusCode: 400,
-    message: 'Campaign ID manquant',
-  });
-}
-
 const {
   loading,
   error,
   mappings,
   validation,
+  campaignId,
   fetchColumnMappings,
   updateMapping,
   submitMappings,
 } = useColumnMapping(uploadId.value);
 
-// Fetch column mappings on mount
+// Fetch column mappings on mount - this will also populate campaignId
 onMounted(async () => {
   try {
     await fetchColumnMappings();

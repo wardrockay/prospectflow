@@ -2,6 +2,7 @@ import type { ColumnMapping, ValidationResult } from '../services/column-validat
 
 export interface ColumnDetectionResponse {
   uploadId: string;
+  campaignId: string;
   detectedColumns: string[];
   suggestedMappings: ColumnMapping[];
   validation: ValidationResult;

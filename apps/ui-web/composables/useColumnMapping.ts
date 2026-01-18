@@ -6,6 +6,7 @@ export const useColumnMapping = (uploadId: string) => {
   const detectedColumns = ref<string[]>([]);
   const mappings = ref<ColumnMapping[]>([]);
   const validation = ref<ValidationResult>({ valid: false, missing: [] });
+  const campaignId = ref<string>('');
 
   /**
    * Fetch column detection results from backend
@@ -23,6 +24,7 @@ export const useColumnMapping = (uploadId: string) => {
       detectedColumns.value = response.data.detectedColumns;
       mappings.value = response.data.suggestedMappings;
       validation.value = response.data.validation;
+      campaignId.value = response.data.campaignId;
 
       return response.data;
     } catch (err: any) {
@@ -109,6 +111,7 @@ export const useColumnMapping = (uploadId: string) => {
     detectedColumns,
     mappings,
     validation,
+    campaignId,
     fetchColumnMappings,
     updateMapping,
     validateMappings,

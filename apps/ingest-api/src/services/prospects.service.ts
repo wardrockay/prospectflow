@@ -121,6 +121,7 @@ export class ProspectsService {
 
       return {
         uploadId,
+        campaignId: upload.campaignId,
         detectedColumns: upload.detectedColumns,
         suggestedMappings,
         validation,
@@ -159,6 +160,7 @@ export class ProspectsService {
 
     return {
       uploadId,
+      campaignId: upload.campaignId,
       detectedColumns: parseResult.headers,
       suggestedMappings,
       validation,
