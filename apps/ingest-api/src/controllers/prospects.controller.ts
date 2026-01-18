@@ -334,6 +334,75 @@ export class ProspectsController {
       next(error);
     }
   }
+
+  /**
+   * GET /api/v1/campaigns/:campaignId/imports
+   * Get list of import uploads for a campaign, optionally filtered by status
+   */
+  async getImportsList(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { campaignId } = req.params;
+    const organisationId = req.organisationId;
+    const { status } = req.query;
+
+    try {
+      if (!organisationId) {
+        logger.error({ campaignId }, 'Organisation ID missing from request');
+        res.status(401).json({
+          success: false,
+          error: 'Unauthorized - Organisation ID missing',
+        });
+        return;
+      }
+
+      logger.info({ campaignId, organisationId, status }, 'Fetching imports list');
+
+      const result = await prospectsService.getImportsList(
+        campaignId,
+        organisationId,
+        status as string | undefined,
+      );
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      logger.error({ err: error, campaignId, organisationId }, 'Failed to fetch imports list');
+      next(error);
+    }
+  }
+
+  /**
+   * DELETE /api/v1/imports/:uploadId
+   * Delete an import upload
+   */
+  async deleteImportUpload(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { uploadId } = req.params;
+    const organisationId = req.organisationId;
+
+    try {
+      if (!organisationId) {
+        logger.error({ uploadId }, 'Organisation ID missing from request');
+        res.status(401).json({
+          success: false,
+          error: 'Unauthorized - Organisation ID missing',
+        });
+        return;
+      }
+
+      logger.info({ uploadId, organisationId }, 'Deleting import upload');
+
+      await prospectsService.deleteImportUpload(uploadId, organisationId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Import supprimé avec succès',
+      });
+    } catch (error) {
+      logger.error({ err: error, uploadId, organisationId }, 'Failed to delete import upload');
+      next(error);
+    }
+  }
 }
 
 export const prospectsController = new ProspectsController();

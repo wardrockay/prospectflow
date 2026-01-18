@@ -52,9 +52,22 @@
 <template>
   <div class="container mx-auto p-6">
     <!-- Page Header -->
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold mb-2">Import de Prospects</h1>
-      <p class="text-gray-600">Importez vos prospects depuis un fichier CSV ou Excel</p>
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold mb-2">Import de Prospects</h1>
+        <p class="text-gray-600">Importez vos prospects depuis un fichier CSV ou Excel</p>
+      </div>
+      
+      <!-- Link to imports list -->
+      <UButton
+        to="/prospects/imports"
+        variant="outline"
+        color="primary"
+        icon="i-heroicons-queue-list"
+        size="lg"
+      >
+        Voir les imports en cours
+      </UButton>
     </div>
 
     <!-- Import Modal Component -->

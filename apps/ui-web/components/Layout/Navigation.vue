@@ -1,6 +1,9 @@
 <script setup lang="ts">
   const route = useRoute();
 
+  // Track pending imports count across all campaigns
+  const pendingImportsCount = ref(0);
+
   const navigation = [
     {
       label: 'Campagnes',
@@ -11,6 +14,7 @@
       label: 'Prospects',
       to: '/prospects',
       icon: 'i-heroicons-users',
+      badge: computed(() => pendingImportsCount.value),
     },
   ];
 
@@ -20,6 +24,18 @@
   const isActive = (to: string): boolean => {
     return route.path === to || route.path.startsWith(`${to}/`);
   };
+
+  // TODO: Fetch pending imports count from API when campaigns are available
+  // For now, this is a placeholder that can be enhanced later
+  onMounted(() => {
+    // Future: Fetch pending imports count
+    // const campaigns = await fetchCampaigns();
+    // for (const campaign of campaigns) {
+    //   const { pendingCount } = useImportsList(campaign.id, 'uploaded');
+    //   await fetchImports();
+    //   pendingImportsCount.value += pendingCount.value;
+    // }
+  });
 </script>
 
 <template>
@@ -36,7 +52,17 @@
         'transition-colors duration-200': true,
       }"
     >
-      {{ item.label }}
+      <div class="flex items-center gap-2">
+        <span>{{ item.label }}</span>
+        <UBadge
+          v-if="item.badge && item.badge > 0"
+          color="red"
+          variant="solid"
+          size="xs"
+        >
+          {{ item.badge }}
+        </UBadge>
+      </div>
     </UButton>
   </nav>
 </template>

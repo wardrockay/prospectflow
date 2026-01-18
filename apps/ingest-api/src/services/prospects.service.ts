@@ -191,6 +191,9 @@ export class ProspectsService {
     // Store mappings in database
     await prospectsRepository.updateColumnMappings(uploadId, columnMappings);
 
+    // Update status to 'mapped'
+    await prospectsRepository.updateUploadStatus(uploadId, 'mapped');
+
     logger.info(
       { uploadId, mappingsCount: Object.keys(columnMappings).length },
       'Column mappings saved successfully',
@@ -303,6 +306,9 @@ export class ProspectsService {
       throw new AppError('Upload not found', 404);
     }
 
+    // Update status to 'validating'
+    await prospectsRepository.updateUploadStatus(uploadId, 'validating');
+
     // Check if column mappings exist
     if (!upload.columnMappings || Object.keys(upload.columnMappings).length === 0) {
       logger.warn({ uploadId }, 'Column mappings not set - cannot validate data');
@@ -348,6 +354,67 @@ export class ProspectsService {
     );
 
     return validationResult;
+  }
+
+  /**
+   * Get list of import uploads for a campaign
+   * Optionally filter by status (uploaded, mapped, completed, etc.)
+   */
+  async getImportsList(
+    campaignId: string,
+    organisationId: string,
+    status?: string,
+  ): Promise<Array<{
+    id: string;
+    campaignId: string;
+    filename: string;
+    fileSize: number;
+    rowCount: number;
+    status: string;
+    uploadedAt: string;
+  }>> {
+    logger.info({ campaignId, organisationId, status }, 'Fetching imports list');
+
+    // Verify campaign exists and belongs to org (multi-tenant isolation)
+    const campaign = await prospectsRepository.findCampaignByIdAndOrg(campaignId, organisationId);
+
+    if (!campaign) {
+      logger.warn({ campaignId, organisationId }, 'Campaign not found or access denied');
+      throw new AppError('Campaign not found', 404);
+    }
+
+    const imports = await prospectsRepository.getImportsList(campaignId, organisationId, status);
+
+    return imports.map((imp) => ({
+      id: imp.id,
+      campaignId: imp.campaignId,
+      filename: imp.filename,
+      fileSize: imp.fileSize,
+      rowCount: imp.rowCount,
+      status: imp.status,
+      uploadedAt: imp.uploadedAt.toISOString(),
+    }));
+  }
+
+  /**
+   * Delete an import upload
+   * @param uploadId - Upload ID to delete
+   * @param organisationId - Organisation ID for multi-tenant isolation
+   */
+  async deleteImportUpload(uploadId: string, organisationId: string): Promise<void> {
+    logger.info({ uploadId, organisationId }, 'Deleting import upload');
+
+    // Verify upload exists and belongs to org (multi-tenant isolation)
+    const upload = await prospectsRepository.findUploadByIdAndOrg(uploadId, organisationId);
+
+    if (!upload) {
+      logger.warn({ uploadId, organisationId }, 'Upload not found or access denied');
+      throw new AppError('Upload not found', 404);
+    }
+
+    await prospectsRepository.deleteImportUpload(uploadId, organisationId);
+
+    logger.info({ uploadId, organisationId }, 'Import upload deleted successfully');
   }
 }
 

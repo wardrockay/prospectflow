@@ -23,7 +23,7 @@
     />
 
     <!-- Validation Results Component -->
-    <ValidationResultsStep
+    <ProspectsValidationResultsStep
       v-if="validationResult"
       :validation-result="validationResult"
       :importing="importing"
@@ -75,7 +75,9 @@ const {
 // Fetch validation results on mount
 onMounted(async () => {
   try {
+    console.log('Fetching validation results for uploadId:', uploadId.value);
     await fetchValidationResults();
+    console.log('Validation results fetched:', validationResult.value);
   } catch (err) {
     // Error is already set in composable and displayed via UAlert
     console.error('Failed to fetch validation results:', err);

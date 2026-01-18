@@ -79,6 +79,18 @@ router.post('/prospects/import', (req, res, next) => prospectsController.importP
  */
 router.post('/prospects/export-errors', (req, res, next) => prospectsController.exportErrors(req, res, next));
 
+/**
+ * GET /api/v1/campaigns/:campaignId/imports
+ * Get list of import uploads for a campaign, optionally filtered by status
+ */
+router.get('/campaigns/:campaignId/imports', (req, res, next) => prospectsController.getImportsList(req, res, next));
+
+/**
+ * DELETE /api/v1/imports/:uploadId
+ * Delete an import upload
+ */
+router.delete('/imports/:uploadId', (req, res, next) => prospectsController.deleteImportUpload(req, res, next));
+
 logger.info('Prospects routes configured');
 
 export default router;

@@ -25,6 +25,17 @@ interface ImportUpload {
   columnMappings?: Record<string, string>;
   rowCount?: number;
   uploadedAt: Date;
+  status?: string;
+}
+
+export interface ImportUploadListItem {
+  id: string;
+  campaignId: string;
+  filename: string;
+  fileSize: number;
+  rowCount: number;
+  status: string;
+  uploadedAt: Date;
 }
 
 export interface ExistingProspect {
@@ -284,6 +295,108 @@ class ProspectsRepository {
     } catch (error) {
       logger.error({ err: error, organisationId, emailCount: emails.length }, 'Error finding existing prospects');
       throw new DatabaseError('Failed to check for duplicate prospects');
+    }
+  }
+
+  /**
+   * Get list of import uploads for a campaign, optionally filtered by status
+   * @param campaignId - Campaign ID to filter by
+   * @param organisationId - Organisation ID for multi-tenant isolation
+   * @param status - Optional status filter ('uploaded', 'mapped', 'completed', etc.)
+   * @returns Array of import upload summaries
+   */
+  async getImportsList(
+    campaignId: string,
+    organisationId: string,
+    status?: string,
+  ): Promise<ImportUploadListItem[]> {
+    const pool = getPool();
+
+    const params: any[] = [organisationId, campaignId];
+    let query = `
+      SELECT 
+        id,
+        campaign_id as "campaignId",
+        filename,
+        file_size as "fileSize",
+        row_count as "rowCount",
+        COALESCE(status, 'uploaded') as status,
+        uploaded_at as "uploadedAt"
+      FROM outreach.import_uploads
+      WHERE organisation_id = $1 AND campaign_id = $2
+    `;
+
+    if (status) {
+      query += ` AND COALESCE(status, 'uploaded') = $3`;
+      params.push(status);
+    }
+
+    query += ` ORDER BY uploaded_at DESC`;
+
+    try {
+      const result = await timeOperation(logger, 'db.prospects.getImportsList', async () => {
+        return pool.query<ImportUploadListItem>(query, params);
+      });
+
+      logger.debug(
+        { organisationId, campaignId, status, count: result.rows.length },
+        'Retrieved imports list',
+      );
+
+      return result.rows;
+    } catch (error) {
+      logger.error({ err: error, organisationId, campaignId, status }, 'Failed to fetch imports list');
+      throw new DatabaseError('Failed to fetch imports list');
+    }
+  }
+
+  /**
+   * Update import upload status
+   * @param uploadId - Upload ID
+   * @param status - New status value
+   */
+  async updateUploadStatus(uploadId: string, status: string): Promise<void> {
+    const pool = getPool();
+
+    try {
+      await timeOperation(logger, 'db.prospects.updateStatus', async () => {
+        return pool.query(
+          `UPDATE outreach.import_uploads
+           SET status = $1,
+               updated_at = NOW()
+           WHERE id = $2`,
+          [status, uploadId],
+        );
+      });
+
+      logger.debug({ uploadId, status }, 'Upload status updated');
+    } catch (error) {
+      logger.error({ err: error, uploadId, status }, 'Failed to update upload status');
+      throw new DatabaseError('Failed to update upload status');
+    }
+  }
+
+  /**
+   * Delete an import upload
+   * @param uploadId - Upload ID to delete
+   * @param organisationId - Organisation ID for multi-tenant isolation
+   */
+  async deleteImportUpload(uploadId: string, organisationId: string): Promise<void> {
+    const pool = getPool();
+
+    try {
+      await timeOperation(logger, 'db.prospects.deleteUpload', async () => {
+        return pool.query(
+          `DELETE FROM outreach.import_uploads
+           WHERE id = $1 AND organisation_id = $2`,
+          [uploadId, organisationId],
+        );
+      });
+
+      logger.info({ uploadId, organisationId }, 'Import upload deleted');
+    } catch (error) {
+      logger.error({ err: error, uploadId, organisationId }, 'Failed to delete import upload');
+      throw new DatabaseError('Failed to delete import upload');
     }
   }
 
