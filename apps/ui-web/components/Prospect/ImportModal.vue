@@ -78,9 +78,14 @@
    * Handle continue to validation
    */
   const handleContinue = async () => {
+    console.log('[ImportModal] 🚀 Bouton "Continuer" cliqué');
+    console.log('[ImportModal] 📁 Fichier:', file.value?.name, 'Taille:', file.value?.size);
+    
     try {
+      console.log('[ImportModal] 📤 Appel uploadFile()...');
       const result = await uploadFile();
 
+      console.log('[ImportModal] ✅ Upload réussi:', result);
       toast.add({
         title: 'Succès',
         description: `Fichier uploadé avec succès (${result.rowCount} prospects)`,
@@ -88,10 +93,11 @@
         icon: 'i-heroicons-check-circle',
       });
 
-      console.log('Emitting uploaded event with uploadId:', result.uploadId);
+      console.log('[ImportModal] 📡 Émission event "uploaded" avec uploadId:', result.uploadId);
       emit('uploaded', result.uploadId);
       isOpen.value = false;
     } catch (err: any) {
+      console.error('[ImportModal] ❌ Erreur lors de l\'upload:', err);
       toast.add({
         title: 'Erreur',
         description: err.message || "Échec de l'upload",

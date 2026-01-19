@@ -84,16 +84,22 @@ export const useProspectImport = (campaignId: string) => {
    * falls back to $fetch for SSR/testing environments
    */
   const uploadFile = async (): Promise<UploadResult> => {
+    console.log('[useProspectImport] 🚀 uploadFile() appelé');
+    
     if (!file.value) {
+      console.error('[useProspectImport] ❌ Aucun fichier sélectionné');
       throw new Error('Aucun fichier sélectionné');
     }
 
+    console.log('[useProspectImport] 📁 Fichier:', file.value.name, 'Type:', file.value.type, 'Taille:', file.value.size);
+    
     uploading.value = true;
     uploadProgress.value = 0;
     error.value = null;
 
     const formData = new FormData();
     formData.append('file', file.value);
+    console.log('[useProspectImport] 📦 FormData créé');
 
     // Check if we're in a real browser (not happy-dom/jsdom/SSR)
     // happy-dom sets navigator.userAgent to 'Mozilla/5.0 (X11; Linux x64) AppleWebKit/537.36...'
@@ -103,33 +109,45 @@ export const useProspectImport = (campaignId: string) => {
                           typeof window.FormData !== 'undefined' &&
                           !import.meta.env.TEST &&
                           !import.meta.env.SSR;
+    
+    console.log('[useProspectImport] 🌐 Mode:', isRealBrowser ? 'Browser (XMLHttpRequest)' : 'SSR/Test ($fetch)');
 
     try {
       if (isRealBrowser) {
         // Use XMLHttpRequest for progress tracking in browser
+        console.log('[useProspectImport] 📡 Utilisation de XMLHttpRequest');
         return await new Promise<UploadResult>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
 
           xhr.upload.addEventListener('progress', (event) => {
             if (event.lengthComputable) {
-              uploadProgress.value = Math.round((event.loaded / event.total) * 100);
+              const progress = Math.round((event.loaded / event.total) * 100);
+              uploadProgress.value = progress;
+              console.log(`[useProspectImport] 📊 Progression: ${progress}% (${event.loaded}/${event.total})`);
             }
           });
 
           xhr.addEventListener('load', () => {
+            console.log('[useProspectImport] 📥 Réponse reçue:', xhr.status, xhr.statusText);
             uploading.value = false;
             if (xhr.status >= 200 && xhr.status < 300) {
               try {
+                console.log('[useProspectImport] 📄 Parsing de la réponse...');
                 const response = JSON.parse(xhr.responseText);
+                console.log('[useProspectImport] 📋 Réponse parsée:', response);
                 if (response.success) {
                   uploadProgress.value = 100;
+                  console.log('[useProspectImport] ✅ Upload réussi:', response.data);
                   resolve(response.data);
                 } else {
                   error.value = "Échec de l'upload";
+                  console.error('[useProspectImport] ❌ response.success = false');
                   reject(new Error("Échec de l'upload"));
                 }
-              } catch {
+              } catch (parseErr) {
                 error.value = 'Réponse invalide du serveur';
+                console.error('[useProspectImport] ❌ Erreur de parsing:', parseErr);
+                console.error('[useProspectImport] 📄 Texte reçu:', xhr.responseText);
                 reject(new Error('Réponse invalide du serveur'));
               }
             } else {
@@ -137,9 +155,11 @@ export const useProspectImport = (campaignId: string) => {
                 const errorResponse = JSON.parse(xhr.responseText);
                 const errMsg = errorResponse.message || `Erreur ${xhr.status}`;
                 error.value = errMsg;
+                console.error('[useProspectImport] ❌ Erreur HTTP:', xhr.status, errMsg);
                 reject(new Error(errMsg));
               } catch {
                 error.value = `Erreur ${xhr.status}`;
+                console.error('[useProspectImport] ❌ Erreur HTTP:', xhr.status, xhr.responseText);
                 reject(new Error(`Erreur ${xhr.status}`));
               }
             }
@@ -148,37 +168,50 @@ export const useProspectImport = (campaignId: string) => {
           xhr.addEventListener('error', () => {
             uploading.value = false;
             error.value = 'Erreur réseau';
+            console.error('[useProspectImport] ❌ Erreur réseau XHR');
             reject(new Error('Erreur réseau'));
           });
 
           xhr.addEventListener('abort', () => {
             uploading.value = false;
             error.value = 'Upload annulé';
+            console.warn('[useProspectImport] ⚠️ Upload annulé');
             reject(new Error('Upload annulé'));
           });
 
-          xhr.open('POST', `/api/campaigns/${campaignId}/prospects/upload`);
+          const url = `/api/campaigns/${campaignId}/prospects/upload`;
+          console.log('[useProspectImport] 🎯 URL:', url);
+          xhr.open('POST', url);
+          console.log('[useProspectImport] 📤 Envoi de la requête XHR...');
           xhr.send(formData);
         });
       } else {
         // Fallback to $fetch for SSR/testing
+        console.log('[useProspectImport] 🔄 Utilisation de $fetch (SSR/Test)');
+        const url = `/api/campaigns/${campaignId}/prospects/upload`;
+        console.log('[useProspectImport] 🎯 URL:', url);
+        
         const response = await $fetch<{ success: boolean; data: UploadResult }>(
-          `/api/campaigns/${campaignId}/prospects/upload`,
+          url,
           {
             method: 'POST',
             body: formData,
           }
         );
 
+        console.log('[useProspectImport] 📥 Réponse $fetch:', response);
+
         if (!response.success) {
+          console.error('[useProspectImport] ❌ response.success = false');
           throw new Error("Échec de l'upload");
         }
 
         uploadProgress.value = 100;
-        console.log('Upload completed successfully:', response.data);
+        console.log('[useProspectImport] ✅ Upload réussi:', response.data);
         return response.data;
       }
     } catch (err: any) {
+      console.error('[useProspectImport] ❌ Erreur catch:', err);
       error.value = err.data?.message || err.message || "Erreur lors de l'upload";
       throw err;
     } finally {

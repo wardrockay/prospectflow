@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
-  const { campaignId } = getRouterParams(event);
+  const campaignId = event.context.params?.id;
   const query = getQuery(event);
   
   // Get auth token from cookie - use id_token like other campaign endpoints
