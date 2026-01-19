@@ -1,13 +1,13 @@
 /**
  * Server API proxy for prospect CSV upload
- * Routes: POST /api/campaigns/:id/prospects/upload
+ * Routes: POST /api/campaigns/:campaignId/prospects/upload
  *
  * This endpoint proxies multipart/form-data requests to the ingest-api service.
  * Handles file upload forwarding with proper authentication.
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
-  const campaignId = event.context.params?.id;
+  const campaignId = event.context.params?.campaignId;
 
   if (!campaignId) {
     throw createError({
