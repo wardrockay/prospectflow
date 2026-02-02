@@ -14,6 +14,7 @@ import { errorHandler } from './middlewares/error.middleware.js';
 import { initSentry } from './config/sentry.js';
 import { register, initMetrics } from './config/metrics.js';
 import router from './routes/index.js';
+import leadMagnetRouter from './routes/lead-magnet.routes.js';
 
 // Initialize Sentry BEFORE registering middlewares
 initSentry();
@@ -59,7 +60,11 @@ app.use(
   }),
 );
 
+// B2B authenticated routes
 app.use('/api/v1', router);
+
+// B2C Lead Magnet routes (no auth required)
+app.use('/api/lead-magnet', leadMagnetRouter);
 
 // Health check (no auth required)
 app.get('/health', (req, res) => {

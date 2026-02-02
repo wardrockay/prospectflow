@@ -77,7 +77,7 @@ development_status:
   # Epic LM: Lead Magnet Delivery System with Double Opt-in & Analytics
   epic-lm-001: in-progress
   lm-001-database-schema-infrastructure-setup: done
-  lm-002-email-capture-double-optin-flow: ready-for-dev
+  lm-002-email-capture-double-optin-flow: review
   lm-003-download-delivery-token-management: backlog
   lm-004-analytics-dashboard-reporting: backlog
   lm-005-email-template-design-copy: backlog

@@ -33,6 +33,12 @@ const envSchema = z.object({
   COGNITO_CLIENT_ID: z.string(),
   COGNITO_ISSUER: z.string(),
 
+  // Lead Magnet AWS (SES)
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  SES_FROM_EMAIL: z.string().optional(),
+  BASE_URL: z.string().optional(),
+
   // Sentry
   SENTRY_DSN: z.string().optional(),
   SENTRY_ENVIRONMENT: z.enum(['development', 'staging', 'production']).optional(),
@@ -67,6 +73,12 @@ const parsedEnv = envSchema.parse({
   COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
   COGNITO_ISSUER: process.env.COGNITO_ISSUER,
 
+  // Lead Magnet AWS
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+  SES_FROM_EMAIL: process.env.SES_FROM_EMAIL,
+  BASE_URL: process.env.BASE_URL,
+
   // Sentry
   SENTRY_DSN: process.env.SENTRY_DSN,
   SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
@@ -97,6 +109,15 @@ export const env = {
     userPoolId: parsedEnv.COGNITO_USER_POOL_ID,
     clientId: parsedEnv.COGNITO_CLIENT_ID,
     issuer: parsedEnv.COGNITO_ISSUER,
+  },
+
+  // Lead Magnet AWS (SES)
+  leadMagnet: {
+    awsRegion: parsedEnv.AWS_REGION,
+    awsAccessKeyId: parsedEnv.AWS_ACCESS_KEY_ID,
+    awsSecretAccessKey: parsedEnv.AWS_SECRET_ACCESS_KEY,
+    sesFromEmail: parsedEnv.SES_FROM_EMAIL,
+    baseUrl: parsedEnv.BASE_URL,
   },
 
   // Sentry configuration
