@@ -543,9 +543,19 @@ Key variables:
   - `prospectflow` - Application access
 - **Accès:** **Uniquement depuis le VPS** (whitelist IP)
 
-**⚠️ LIMITATION OVH CloudDB:** Impossible de créer des schémas personnalisés (iam, crm, etc.)
+**⚠️ LIMITATIONS OVH CloudDB:**
 
-**Solution:** Utiliser uniquement le schéma `public` avec des préfixes de tables:
+1. **Schémas personnalisés:** Impossible de créer des schémas (iam, crm, etc.) avec `CREATE SCHEMA`
+2. **Extensions:** Impossible de créer des extensions (pgcrypto, citext) - doivent être pré-installées par OVH
+3. **Rôles:** Impossible de créer des rôles avec `CREATE ROLE` - contact support OVH requis
+4. **RLS:** Row Level Security non disponible sans rôle applicatif personnalisé
+
+**Solutions implémentées:**
+- Utiliser uniquement le schéma `public` avec des préfixes de tables
+- Commenter les `CREATE EXTENSION` (extensions pré-installées par OVH)
+- Commenter les `CREATE ROLE` et RLS policies (sécurité à gérer au niveau application)
+
+**Convention des préfixes:**
 - Tables IAM: `iam_users`, `iam_organisations`, `iam_roles`
 - Tables CRM: `crm_companies`, `crm_contacts`
 - Tables Outreach: `outreach_campaigns`, `outreach_emails`

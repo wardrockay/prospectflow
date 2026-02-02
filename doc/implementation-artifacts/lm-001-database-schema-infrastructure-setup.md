@@ -907,10 +907,17 @@ February 2, 2026
 - ✅ Security best practices documented
 - ✅ Troubleshooting guide included
 
+**Deployment:**
+- ✅ All 16 Flyway migrations successfully applied to prospectflow-dev database
+- ✅ Tables verified: lm_subscribers, lm_consent_events, lm_download_tokens
+- ✅ All constraints and indexes created successfully
+- ⚠️ RLS policies commented out (OVH CloudDB restriction - requires manual role creation)
+
 ---
 
-**Story Status:** review  
+**Story Status:** done  
 **Created:** 2026-02-02  
 **Last Updated:** 2026-02-02  
 **Completed:** 2026-02-02  
+**Deployed to Dev:** 2026-02-02  
 **Next Story:** LM-002 - Email Capture & Double Opt-in Flow
