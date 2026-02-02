@@ -3,11 +3,11 @@
 -- Required for Story 1.1: Create New Campaign
 
 -- Add value_prop column (nullable for now to allow safe migration)
-ALTER TABLE outreach.campaigns
+ALTER TABLE public.outreach_campaigns
   ADD COLUMN value_prop VARCHAR(150) NULL;
 
 -- Add template_id column (nullable - templates are optional)
-ALTER TABLE outreach.campaigns
+ALTER TABLE public.outreach_campaigns
   ADD COLUMN template_id UUID NULL;
 
 -- Note: Existing campaigns have NULL value_prop

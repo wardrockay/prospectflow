@@ -1,6 +1,8 @@
 -- V20251223_112356___base_init.sql
 -- Domain: --
 -- Purpose: base init
+-- NOTE: OVH CloudDB managed PostgreSQL does not allow custom schemas
+-- Using public schema with table prefixes: iam_*, crm_*, outreach_*, lm_*
 
 -- Write safe migrations:
 -- 1) add nullable column
@@ -10,8 +12,9 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS citext;
 
-CREATE SCHEMA IF NOT EXISTS iam;
-CREATE SCHEMA IF NOT EXISTS crm;
+-- OVH CloudDB: Cannot create custom schemas, use table prefixes instead
+-- CREATE SCHEMA IF NOT EXISTS iam;
+-- CREATE SCHEMA IF NOT EXISTS crm;
 
 -- Helper: auto update updated_at
 CREATE OR REPLACE FUNCTION public.set_updated_at()

@@ -9,9 +9,9 @@
 
 -- Pixels + aggregated open stats (hits are in ClickHouse)
 
-CREATE TABLE tracking.pixels (
+CREATE TABLE public.tracking_pixels (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   message_id UUID NOT NULL,
   token TEXT NOT NULL,
@@ -22,16 +22,16 @@ CREATE TABLE tracking.pixels (
 
   CONSTRAINT fk_pixels_message_same_org
     FOREIGN KEY (organisation_id, message_id)
-    REFERENCES outreach.messages(organisation_id, id)
+    REFERENCES public.outreach_messages(organisation_id, id)
     ON DELETE CASCADE
 );
 
 CREATE INDEX idx_pixels_org_message
-  ON tracking.pixels(organisation_id, message_id);
+  ON public.tracking_pixels(organisation_id, message_id);
 
 
-CREATE TABLE tracking.message_open_stats (
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+CREATE TABLE public.tracking_message_open_stats (
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
   message_id UUID NOT NULL,
 
   first_open_at TIMESTAMPTZ NULL,
@@ -45,9 +45,9 @@ CREATE TABLE tracking.message_open_stats (
 
   CONSTRAINT fk_open_stats_message_same_org
     FOREIGN KEY (organisation_id, message_id)
-    REFERENCES outreach.messages(organisation_id, id)
+    REFERENCES public.outreach_messages(organisation_id, id)
     ON DELETE CASCADE
 );
 
 CREATE INDEX idx_open_stats_org_last_open
-  ON tracking.message_open_stats(organisation_id, last_open_at);
+  ON public.tracking_message_open_stats(organisation_id, last_open_at);

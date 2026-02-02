@@ -530,6 +530,53 @@ Key variables:
 - `POSTGRES_*`: Database connection
 - `COGNITO_*`: AWS Cognito authentication
 
+### PostgreSQL Database (OVH Managed)
+
+**CRITICAL:** PostgreSQL est hébergé sur OVH CloudDB avec **accès restreint par IP**.
+
+- **Host:** `me456214-001.eu.clouddb.ovh.net:35787`
+- **Databases:**
+  - `prospectflow` - Production
+  - `prospectflow-dev` - Development/Staging
+- **Users:**
+  - `flyway` - Migrations (credentials in `infra/postgres/env/.env.dev`)
+  - `prospectflow` - Application access
+- **Accès:** **Uniquement depuis le VPS** (whitelist IP)
+
+**⚠️ LIMITATION OVH CloudDB:** Impossible de créer des schémas personnalisés (iam, crm, etc.)
+
+**Solution:** Utiliser uniquement le schéma `public` avec des préfixes de tables:
+- Tables IAM: `iam_users`, `iam_organisations`, `iam_roles`
+- Tables CRM: `crm_companies`, `crm_contacts`
+- Tables Outreach: `outreach_campaigns`, `outreach_emails`
+- Tables Lead Magnet: `lm_subscribers`, `lm_consent_events`, `lm_download_tokens` ✅
+
+**Configuration Flyway:**
+```yaml
+FLYWAY_SCHEMAS: public  # Uniquement public (pas iam, crm, etc.)
+FLYWAY_DEFAULT_SCHEMA: public
+```
+
+**Testing Migrations:**
+```bash
+# Les migrations ne peuvent PAS être testées localement
+# Elles doivent être déployées sur le VPS
+
+# 1. Se connecter au VPS
+make vps-connect
+
+# 2. Sur le VPS, exécuter Flyway
+cd ~/starlightcoder/prospectflow/infra/postgres
+export APP_ENV=dev
+docker compose run --rm flyway migrate
+
+# 3. Vérifier l'état
+docker compose run --rm flyway info
+```
+
+**Migration depuis l'ancien système avec schémas:**
+Si des migrations existantes utilisent `CREATE SCHEMA iam`, `CREATE SCHEMA crm`, etc., elles doivent être adaptées ou ignorées (baseline) car OVH CloudDB ne permet pas la création de schémas personnalisés.
+
 ---
 
 ## Deployment & Infrastructure
@@ -543,6 +590,8 @@ ssh vps
 ```
 
 All production services (APIs, workers, databases, monitoring) are containerized and managed through Docker Compose on this VPS.
+
+**PostgreSQL Database:** Hébergé séparément sur OVH CloudDB (accès VPS uniquement).
 
 ### Quick Reference Commands
 

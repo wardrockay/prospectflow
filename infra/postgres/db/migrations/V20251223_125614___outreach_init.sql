@@ -7,15 +7,15 @@
 -- 2) backfill
 -- 3) add NOT NULL / constraints in a later migration
 
-ALTER TABLE crm.positions
+ALTER TABLE public.crm_positions
   ADD CONSTRAINT ux_positions_org_id UNIQUE (organisation_id, id);
 
 -- -------------------------
 -- campaigns
 -- -------------------------
-CREATE TABLE outreach.campaigns (
+CREATE TABLE public.outreach_campaigns (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   name TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'draft'
@@ -29,22 +29,22 @@ CREATE TABLE outreach.campaigns (
 );
 
 CREATE TRIGGER trg_outreach_campaigns_updated_at
-BEFORE UPDATE ON outreach.campaigns
+BEFORE UPDATE ON public.outreach_campaigns
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-ALTER TABLE outreach.campaigns
+ALTER TABLE public.outreach_campaigns
   ADD CONSTRAINT ux_campaigns_org_id UNIQUE (organisation_id, id);
 
 CREATE INDEX idx_campaigns_org_status
-  ON outreach.campaigns(organisation_id, status);
+  ON public.outreach_campaigns(organisation_id, status);
 
 
 -- -------------------------
 -- workflow_steps
 -- -------------------------
-CREATE TABLE outreach.workflow_steps (
+CREATE TABLE public.outreach_workflow_steps (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   campaign_id UUID NOT NULL,
 
@@ -62,27 +62,27 @@ CREATE TABLE outreach.workflow_steps (
 
   CONSTRAINT fk_workflow_steps_campaign_same_org
     FOREIGN KEY (organisation_id, campaign_id)
-    REFERENCES outreach.campaigns(organisation_id, id)
+    REFERENCES public.outreach_campaigns(organisation_id, id)
     ON DELETE CASCADE
 );
 
 CREATE TRIGGER trg_outreach_workflow_steps_updated_at
-BEFORE UPDATE ON outreach.workflow_steps
+BEFORE UPDATE ON public.outreach_workflow_steps
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-ALTER TABLE outreach.workflow_steps
+ALTER TABLE public.outreach_workflow_steps
   ADD CONSTRAINT ux_workflow_steps_org_id UNIQUE (organisation_id, id);
 
 CREATE INDEX idx_workflow_steps_org_campaign
-  ON outreach.workflow_steps(organisation_id, campaign_id);
+  ON public.outreach_workflow_steps(organisation_id, campaign_id);
 
 
 -- -------------------------
 -- prompts (versioned)
 -- -------------------------
-CREATE TABLE outreach.prompts (
+CREATE TABLE public.outreach_prompts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   name TEXT NOT NULL,
   purpose TEXT NULL, -- initial_email, fu1, fu2...
@@ -100,22 +100,22 @@ CREATE TABLE outreach.prompts (
 );
 
 CREATE TRIGGER trg_outreach_prompts_updated_at
-BEFORE UPDATE ON outreach.prompts
+BEFORE UPDATE ON public.outreach_prompts
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-ALTER TABLE outreach.prompts
+ALTER TABLE public.outreach_prompts
   ADD CONSTRAINT ux_prompts_org_id UNIQUE (organisation_id, id);
 
 CREATE INDEX idx_prompts_org_active
-  ON outreach.prompts(organisation_id, is_active);
+  ON public.outreach_prompts(organisation_id, is_active);
 
 
 -- -------------------------
 -- experiments (A/B per step)
 -- -------------------------
-CREATE TABLE outreach.step_experiments (
+CREATE TABLE public.outreach_step_experiments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   workflow_step_id UUID NOT NULL,
   name TEXT NOT NULL,
@@ -129,26 +129,26 @@ CREATE TABLE outreach.step_experiments (
 
   CONSTRAINT fk_step_experiments_step_same_org
     FOREIGN KEY (organisation_id, workflow_step_id)
-    REFERENCES outreach.workflow_steps(organisation_id, id)
+    REFERENCES public.outreach_workflow_steps(organisation_id, id)
     ON DELETE CASCADE
 );
 
 
 
 CREATE TRIGGER trg_outreach_step_experiments_updated_at
-BEFORE UPDATE ON outreach.step_experiments
+BEFORE UPDATE ON public.outreach_step_experiments
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-ALTER TABLE outreach.step_experiments
+ALTER TABLE public.outreach_step_experiments
   ADD CONSTRAINT ux_step_experiments_org_id UNIQUE (organisation_id, id);
 
 CREATE INDEX idx_step_experiments_org_step
-  ON outreach.step_experiments(organisation_id, workflow_step_id);
+  ON public.outreach_step_experiments(organisation_id, workflow_step_id);
 
 
-CREATE TABLE outreach.step_experiment_variants (
+CREATE TABLE public.outreach_step_experiment_variants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   step_experiment_id UUID NOT NULL,
 
@@ -165,28 +165,28 @@ CREATE TABLE outreach.step_experiment_variants (
 
   CONSTRAINT fk_step_variants_experiment_same_org
     FOREIGN KEY (organisation_id, step_experiment_id)
-    REFERENCES outreach.step_experiments(organisation_id, id)
+    REFERENCES public.outreach_step_experiments(organisation_id, id)
     ON DELETE CASCADE,
 
   CONSTRAINT fk_step_variants_prompt_same_org
     FOREIGN KEY (organisation_id, prompt_id)
-    REFERENCES outreach.prompts(organisation_id, id)
+    REFERENCES public.outreach_prompts(organisation_id, id)
     ON DELETE SET NULL
 );
 
-ALTER TABLE outreach.step_experiment_variants
+ALTER TABLE public.outreach_step_experiment_variants
   ADD CONSTRAINT ux_step_experiment_variants_org_id UNIQUE (organisation_id, id);
 
 CREATE INDEX idx_step_variants_org_experiment
-  ON outreach.step_experiment_variants(organisation_id, step_experiment_id);
+  ON public.outreach_step_experiment_variants(organisation_id, step_experiment_id);
 
 
 -- -------------------------
 -- enrollments (position in campaign)
 -- -------------------------
-CREATE TABLE outreach.campaign_enrollments (
+CREATE TABLE public.outreach_campaign_enrollments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   campaign_id UUID NOT NULL,
   position_id UUID NOT NULL,
@@ -205,34 +205,34 @@ CREATE TABLE outreach.campaign_enrollments (
 
   CONSTRAINT fk_enrollments_campaign_same_org
     FOREIGN KEY (organisation_id, campaign_id)
-    REFERENCES outreach.campaigns(organisation_id, id)
+    REFERENCES public.outreach_campaigns(organisation_id, id)
     ON DELETE CASCADE,
 
   CONSTRAINT fk_enrollments_position_same_org
     FOREIGN KEY (organisation_id, position_id)
-    REFERENCES crm.positions(organisation_id, id)
+    REFERENCES public.crm_positions(organisation_id, id)
     ON DELETE CASCADE
 );
 
 CREATE TRIGGER trg_outreach_enrollments_updated_at
-BEFORE UPDATE ON outreach.campaign_enrollments
+BEFORE UPDATE ON public.outreach_campaign_enrollments
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-ALTER TABLE outreach.campaign_enrollments
+ALTER TABLE public.outreach_campaign_enrollments
   ADD CONSTRAINT ux_enrollments_org_id UNIQUE (organisation_id, id);
 
 CREATE INDEX idx_enrollments_org_campaign
-  ON outreach.campaign_enrollments(organisation_id, campaign_id);
+  ON public.outreach_campaign_enrollments(organisation_id, campaign_id);
 
 CREATE INDEX idx_enrollments_org_state
-  ON outreach.campaign_enrollments(organisation_id, state);
+  ON public.outreach_campaign_enrollments(organisation_id, state);
 
 
 -- -------------------------
 -- enrollment + step assignment (stable A/B)
 -- -------------------------
-CREATE TABLE outreach.enrollment_step_variant_assignments (
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+CREATE TABLE public.outreach_enrollment_step_variant_assignments (
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   enrollment_id UUID NOT NULL,
   workflow_step_id UUID NOT NULL,
@@ -245,35 +245,35 @@ CREATE TABLE outreach.enrollment_step_variant_assignments (
 
   CONSTRAINT fk_assign_enrollment_same_org
     FOREIGN KEY (organisation_id, enrollment_id)
-    REFERENCES outreach.campaign_enrollments(organisation_id, id)
+    REFERENCES public.outreach_campaign_enrollments(organisation_id, id)
     ON DELETE CASCADE,
 
   CONSTRAINT fk_assign_step_same_org
     FOREIGN KEY (organisation_id, workflow_step_id)
-    REFERENCES outreach.workflow_steps(organisation_id, id)
+    REFERENCES public.outreach_workflow_steps(organisation_id, id)
     ON DELETE CASCADE,
 
   CONSTRAINT fk_assign_experiment_same_org
     FOREIGN KEY (organisation_id, step_experiment_id)
-    REFERENCES outreach.step_experiments(organisation_id, id)
+    REFERENCES public.outreach_step_experiments(organisation_id, id)
     ON DELETE CASCADE,
 
   CONSTRAINT fk_assign_variant_same_org
     FOREIGN KEY (organisation_id, variant_id)
-    REFERENCES outreach.step_experiment_variants(organisation_id, id)
+    REFERENCES public.outreach_step_experiment_variants(organisation_id, id)
     ON DELETE CASCADE
 );
 
 CREATE INDEX idx_assignments_org_variant
-  ON outreach.enrollment_step_variant_assignments(organisation_id, variant_id);
+  ON public.outreach_enrollment_step_variant_assignments(organisation_id, variant_id);
 
 
 -- -------------------------
 -- tasks (intention)
 -- -------------------------
-CREATE TABLE outreach.tasks (
+CREATE TABLE public.outreach_tasks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   enrollment_id UUID NOT NULL,
   workflow_step_id UUID NOT NULL,
@@ -294,33 +294,33 @@ CREATE TABLE outreach.tasks (
 
   CONSTRAINT fk_tasks_enrollment_same_org
     FOREIGN KEY (organisation_id, enrollment_id)
-    REFERENCES outreach.campaign_enrollments(organisation_id, id)
+    REFERENCES public.outreach_campaign_enrollments(organisation_id, id)
     ON DELETE CASCADE,
 
   CONSTRAINT fk_tasks_step_same_org
     FOREIGN KEY (organisation_id, workflow_step_id)
-    REFERENCES outreach.workflow_steps(organisation_id, id)
+    REFERENCES public.outreach_workflow_steps(organisation_id, id)
     ON DELETE CASCADE
 );
 
-ALTER TABLE outreach.tasks
+ALTER TABLE public.outreach_tasks
   ADD CONSTRAINT ux_tasks_org_id UNIQUE (organisation_id, id);
 
 
 CREATE TRIGGER trg_outreach_tasks_updated_at
-BEFORE UPDATE ON outreach.tasks
+BEFORE UPDATE ON public.outreach_tasks
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 CREATE INDEX idx_tasks_due
-  ON outreach.tasks(organisation_id, status, scheduled_for);
+  ON public.outreach_tasks(organisation_id, status, scheduled_for);
 
 
 -- -------------------------
 -- messages (event)
 -- -------------------------
-CREATE TABLE outreach.messages (
+CREATE TABLE public.outreach_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organisation_id UUID NOT NULL REFERENCES iam.organisations(id) ON DELETE CASCADE,
+  organisation_id UUID NOT NULL REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   enrollment_id UUID NULL,
   task_id UUID NULL,
@@ -356,47 +356,47 @@ CREATE TABLE outreach.messages (
 
   CONSTRAINT fk_messages_position_same_org
     FOREIGN KEY (organisation_id, position_id)
-    REFERENCES crm.positions(organisation_id, id)
+    REFERENCES public.crm_positions(organisation_id, id)
     ON DELETE CASCADE
 );
 
-ALTER TABLE outreach.messages
+ALTER TABLE public.outreach_messages
   ADD CONSTRAINT ux_messages_org_id UNIQUE (organisation_id, id);
 
 CREATE TRIGGER trg_outreach_messages_updated_at
-BEFORE UPDATE ON outreach.messages
+BEFORE UPDATE ON public.outreach_messages
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-ALTER TABLE outreach.messages
+ALTER TABLE public.outreach_messages
   ADD CONSTRAINT fk_messages_enrollment_same_org
   FOREIGN KEY (organisation_id, enrollment_id)
-  REFERENCES outreach.campaign_enrollments(organisation_id, id)
+  REFERENCES public.outreach_campaign_enrollments(organisation_id, id)
   ON DELETE SET NULL;
 
-ALTER TABLE outreach.messages
+ALTER TABLE public.outreach_messages
   ADD CONSTRAINT fk_messages_task_same_org
   FOREIGN KEY (organisation_id, task_id)
-  REFERENCES outreach.tasks(organisation_id, id)
+  REFERENCES public.outreach_tasks(organisation_id, id)
   ON DELETE SET NULL;
 
-ALTER TABLE outreach.messages
+ALTER TABLE public.outreach_messages
   ADD CONSTRAINT fk_messages_experiment_same_org
   FOREIGN KEY (organisation_id, step_experiment_id)
-  REFERENCES outreach.step_experiments(organisation_id, id)
+  REFERENCES public.outreach_step_experiments(organisation_id, id)
   ON DELETE SET NULL;
 
-ALTER TABLE outreach.messages
+ALTER TABLE public.outreach_messages
   ADD CONSTRAINT fk_messages_variant_same_org
   FOREIGN KEY (organisation_id, variant_id)
-  REFERENCES outreach.step_experiment_variants(organisation_id, id)
+  REFERENCES public.outreach_step_experiment_variants(organisation_id, id)
   ON DELETE SET NULL;
 
 CREATE INDEX idx_messages_org_position_time
-  ON outreach.messages(organisation_id, position_id, created_at);
+  ON public.outreach_messages(organisation_id, position_id, created_at);
 
 CREATE INDEX idx_messages_org_thread
-  ON outreach.messages(organisation_id, provider_thread_id);
+  ON public.outreach_messages(organisation_id, provider_thread_id);
 
 CREATE UNIQUE INDEX ux_messages_org_provider_message_id
-  ON outreach.messages(organisation_id, provider_message_id)
+  ON public.outreach_messages(organisation_id, provider_message_id)
   WHERE provider_message_id IS NOT NULL;

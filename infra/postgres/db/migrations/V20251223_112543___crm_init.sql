@@ -1,19 +1,16 @@
 -- V20251223_112543___crm_init.sql
--- Domain: --
--- Purpose: crm init
+-- Domain: CRM (companies, people, positions)
+-- Purpose: CRM init with public schema + crm_ prefix (OVH CloudDB compatible)
 
 -- Write safe migrations:
 -- 1) add nullable column
 -- 2) backfill
 -- 3) add NOT NULL / constraints in a later migration
 
--- V20251223_161200__crm_init.sql
--- Domain: CRM (companies, people, positions)
-
-CREATE TABLE crm.companies (
+CREATE TABLE public.crm_companies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organisation_id UUID NOT NULL
-    REFERENCES iam.organisations(id) ON DELETE CASCADE,
+    REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   -- Identifiants externes
   pharow_company_id VARCHAR(32),
@@ -52,25 +49,25 @@ CREATE TABLE crm.companies (
   UNIQUE (organisation_id, pharow_company_id)
 );
 
-CREATE TRIGGER trg_companies_updated_at
-BEFORE UPDATE ON crm.companies
+CREATE TRIGGER trg_crm_companies_updated_at
+BEFORE UPDATE ON public.crm_companies
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-CREATE INDEX idx_companies_org_siren
-  ON crm.companies(organisation_id, siren);
+CREATE INDEX idx_crm_companies_org_siren
+  ON public.crm_companies(organisation_id, siren);
 
-CREATE INDEX idx_companies_org_pharow
-  ON crm.companies(organisation_id, pharow_company_id);
+CREATE INDEX idx_crm_companies_org_pharow
+  ON public.crm_companies(organisation_id, pharow_company_id);
 
 -- clé composite pour FKs cross-tenant
-ALTER TABLE crm.companies
-  ADD CONSTRAINT ux_companies_org_id UNIQUE (organisation_id, id);
+ALTER TABLE public.crm_companies
+  ADD CONSTRAINT ux_crm_companies_org_id UNIQUE (organisation_id, id);
 
 
-CREATE TABLE crm.people (
+CREATE TABLE public.crm_people (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organisation_id UUID NOT NULL
-    REFERENCES iam.organisations(id) ON DELETE CASCADE,
+    REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   first_name VARCHAR(100),
   last_name  VARCHAR(100),
@@ -92,21 +89,21 @@ CREATE TABLE crm.people (
   UNIQUE (organisation_id, first_name, last_name, linkedin_url)
 );
 
-CREATE TRIGGER trg_people_updated_at
-BEFORE UPDATE ON crm.people
+CREATE TRIGGER trg_crm_people_updated_at
+BEFORE UPDATE ON public.crm_people
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-CREATE INDEX idx_people_org_last_name
-  ON crm.people(organisation_id, last_name);
+CREATE INDEX idx_crm_people_org_last_name
+  ON public.crm_people(organisation_id, last_name);
 
-ALTER TABLE crm.people
-  ADD CONSTRAINT ux_people_org_id UNIQUE (organisation_id, id);
+ALTER TABLE public.crm_people
+  ADD CONSTRAINT ux_crm_people_org_id UNIQUE (organisation_id, id);
 
 
-CREATE TABLE crm.positions (
+CREATE TABLE public.crm_positions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organisation_id UUID NOT NULL
-    REFERENCES iam.organisations(id) ON DELETE CASCADE,
+    REFERENCES public.iam_organisations(id) ON DELETE CASCADE,
 
   person_id  UUID NOT NULL,
   company_id UUID NOT NULL,
@@ -125,26 +122,26 @@ CREATE TABLE crm.positions (
   UNIQUE (organisation_id, company_id, person_id, email),
 
   -- Anti cross-tenant
-  CONSTRAINT fk_positions_person_same_org
+  CONSTRAINT fk_crm_positions_person_same_org
     FOREIGN KEY (organisation_id, person_id)
-    REFERENCES crm.people(organisation_id, id)
+    REFERENCES public.crm_people(organisation_id, id)
     ON DELETE CASCADE,
 
-  CONSTRAINT fk_positions_company_same_org
+  CONSTRAINT fk_crm_positions_company_same_org
     FOREIGN KEY (organisation_id, company_id)
-    REFERENCES crm.companies(organisation_id, id)
+    REFERENCES public.crm_companies(organisation_id, id)
     ON DELETE CASCADE
 );
 
-CREATE TRIGGER trg_positions_updated_at
-BEFORE UPDATE ON crm.positions
+CREATE TRIGGER trg_crm_positions_updated_at
+BEFORE UPDATE ON public.crm_positions
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-CREATE INDEX idx_positions_org_email
-  ON crm.positions(organisation_id, email);
+CREATE INDEX idx_crm_positions_org_email
+  ON public.crm_positions(organisation_id, email);
 
-CREATE INDEX idx_positions_org_company
-  ON crm.positions(organisation_id, company_id);
+CREATE INDEX idx_crm_positions_org_company
+  ON public.crm_positions(organisation_id, company_id);
 
-CREATE INDEX idx_positions_org_person
-  ON crm.positions(organisation_id, person_id);
+CREATE INDEX idx_crm_positions_org_person
+  ON public.crm_positions(organisation_id, person_id);

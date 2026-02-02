@@ -7,5 +7,5 @@
 -- 2) backfill
 -- 3) add NOT NULL / constraints in a later migration
 
-CREATE SCHEMA IF NOT EXISTS outreach;
-CREATE SCHEMA IF NOT EXISTS tracking;
+-- CREATE SCHEMA IF NOT EXISTS outreach (OVH CloudDB: using public schema);
+-- CREATE SCHEMA IF NOT EXISTS tracking (OVH CloudDB: using public schema);
