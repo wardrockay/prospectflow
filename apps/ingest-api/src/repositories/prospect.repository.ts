@@ -39,7 +39,7 @@ export class ProspectRepository {
 
     prospects.forEach((prospect) => {
       placeholders.push(
-        `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`,
+        `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 'New', NOW(), NOW())`,
       );
       values.push(
         organisationId,

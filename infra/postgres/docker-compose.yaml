@@ -1,23 +1,4 @@
 services:
-  postgres:
-    image: postgres:18-alpine
-    container_name: prospectflow-postgres
-    restart: unless-stopped
-    env_file:
-      - ./env/.env.${APP_ENV:-production}
-    ports:
-      - '127.0.0.1:5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./db/init:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U prospectflow -d prospectflow']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - prospectflow-network
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -32,18 +13,12 @@ services:
       - '5050:80'
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - prospectflow-network
 
   flyway:
     image: flyway/flyway:11
     container_name: prospectflow-flyway
-    depends_on:
-      postgres:
-        condition: service_healthy
     env_file:
       - ./env/.env.${APP_ENV:-production}
     environment:
@@ -61,9 +36,6 @@ services:
     image: pgbouncer/pgbouncer:latest
     container_name: prospectflow-pgbouncer
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
     env_file:
       - ./env/.env.${APP_ENV:-production}
     environment:
@@ -86,7 +58,6 @@ services:
       - prospectflow-network
 
 volumes:
-  postgres_data:
   pgadmin_data:
 
 networks:
