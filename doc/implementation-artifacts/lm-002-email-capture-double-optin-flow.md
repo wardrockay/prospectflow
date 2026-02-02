@@ -53,26 +53,26 @@ This story implements the **core lead capture mechanism** for the Lead Magnet De
 ### Frontend Form
 
 - [ ] **AC2.1:** Email signup form component created:
-  - File: `apps/ui-web/components/LeadMagnet/EmailSignupForm.vue`
+  - **SCOPE CHANGE:** Form is in **separate landing page repo**, NOT in ProspectFlow ui-web
+  - Form calls API endpoint: `POST /api/lead-magnet/signup` on ingest-api
   - Fields: Email (required, validated), checkbox "J'accepte de recevoir des conseils par email" (required)
   - Submit button: "Recevoir le guide gratuit"
-  - Inline validation: Email format, required fields
-  - Loading state during API call
-  - Success message: "Email de confirmation envoyé! Vérifiez votre boîte de réception."
-  - Error message: Display server errors (duplicate, rate limit, etc.)
+  - **Out of scope for LM-002:** Frontend UI implementation (landing page is separate repo)
 
-- [ ] **AC2.2:** Form disables submit button during processing and shows loading spinner
+- [ ] **AC2.2:** **OUT OF SCOPE** - Form UI is in separate landing page repo (not part of ProspectFlow)
 
-- [ ] **AC2.3:** Success state clears form and displays confirmation message with next step instructions
+- [ ] **AC2.3:** **OUT OF SCOPE** - Success state handled by landing page frontend
 
 ### API Endpoint
 
 - [ ] **AC2.4:** API endpoint created: `POST /api/lead-magnet/signup`
-  - File: `apps/ui-web/server/api/lead-magnet/signup.post.ts`
+  - **Architecture:** Express.js in `apps/ingest-api/`
+  - **Files:** Controller → Service → Repository pattern
   - Request body: `{ email: string, consentGiven: boolean, source?: string }`
-  - Validates: Email format, consent checkbox, rate limiting
-  - Returns 201 with `{ success: true, message: "..." }` on success
+  - Validates: Email format (Zod), consent checkbox, rate limiting
+  - Returns 200 with `{ success: true, message: "..." }` on success
   - Returns 400/429 with error message on failure
+  - **CORS:** Must allow requests from landing page domain
 
 ### Backend Logic
 
@@ -139,38 +139,48 @@ This story implements the **core lead capture mechanism** for the Lead Magnet De
 ### File Structure
 
 ```
-apps/ui-web/
-├── components/
-│   └── LeadMagnet/
-│       └── EmailSignupForm.vue          # NEW - Signup form component
-├── server/
-│   ├── api/
-│   │   └── lead-magnet/
-│   │       └── signup.post.ts            # NEW - API endpoint
+apps/ingest-api/
+├── src/
+│   ├── routes/
+│   │   └── lead-magnet.routes.ts         # NEW - Express routes
+│   ├── controllers/
+│   │   └── lead-magnet.controller.ts     # NEW - Request handlers
+│   ├── services/
+│   │   ├── lead-magnet.service.ts        # NEW - Business logic
+│   │   └── email.service.ts              # NEW - SES email sending
+│   ├── repositories/
+│   │   └── lead-magnet.repository.ts     # NEW - Database operations
 │   └── utils/
-│       ├── lead-magnet/
-│       │   ├── token.ts                  # NEW - Token generation and hashing
-│       │   ├── email.ts                  # NEW - SES email sending
-│       │   └── subscriber.ts             # NEW - Database operations
-│       └── db.ts                         # EXISTING - PostgreSQL connection
-└── .env                                   # UPDATE - Add AWS credentials
+│       └── token.utils.ts                # NEW - Token generation/hashing
+└── env/
+    └── .env                               # UPDATE - Add AWS credentials
+
+apps/ui-web/
+├── pages/
+│   └── lead-magnet/
+│       └── subscribers.vue               # NEW - List subscribers (future)
+└── components/
+    └── LeadMagnet/
+        └── StatsWidget.vue               # NEW - Display stats (future)
 ```
 
 ### Dependencies Required
 
-Add to `apps/ui-web/package.json`:
+Add to `apps/ingest-api/package.json`:
 ```json
 {
   "dependencies": {
     "@aws-sdk/client-ses": "^3.515.0",  // SES email sending
-    "zod": "^3.22.4"                     // Request validation
+    "zod": "^3.22.4"                     // Request validation (already present)
   }
 }
 ```
 
+**Note:** `zod` should already be present in ingest-api from story 0-2 (Express.js API foundation).
+
 ### Environment Variables
 
-Add to `apps/ui-web/.env`:
+Add to `apps/ingest-api/env/.env`:
 ```bash
 # AWS Lead Magnet Configuration (from LM-001)
 AWS_REGION=eu-west-3
@@ -179,9 +189,11 @@ AWS_SECRET_ACCESS_KEY=***                    # From IAM user
 SES_FROM_EMAIL=etienne.maillot@lightandshutter.fr
 BASE_URL=https://lightandshutter.fr          # For confirmation links
 
-# Database connection (shared with B2B system)
+# Database connection (already configured in ingest-api)
 DATABASE_URL=postgresql://user:password@host:5432/prospectflow
 ```
+
+**Note:** Database connection is already configured in ingest-api from story 0-1 (PostgreSQL setup).
 
 ---
 
@@ -219,13 +231,14 @@ DATABASE_URL=postgresql://user:password@host:5432/prospectflow
    logger.info({ token: plainToken }, 'Token created'); // ❌ NEVER LOG PLAIN TOKENS
    ```
 
-### 📧 AWS SES Integration Patterns
-
-**From Architecture:** Use AWS SDK v3 (modular imports for smaller bundle size)
+##Architecture:** Express.js layered architecture with service layer
 
 ```typescript
-// File: apps/ui-web/server/utils/lead-magnet/email.ts
+// File: apps/ingest-api/src/services/email.service.ts
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('EmailService');
 
 const sesClient = new SESClient({
   region: process.env.AWS_REGION,
@@ -235,7 +248,9 @@ const sesClient = new SESClient({
   },
 });
 
-export async function sendConfirmationEmail(email: string, confirmationUrl: string) {
+export async function sendConfirmationEmail(email: string, token: string): Promise<void> {
+  const confirmationUrl = `${process.env.BASE_URL}/api/lead-magnet/confirm/${token}`;
+  
   const command = new SendEmailCommand({
     Source: process.env.SES_FROM_EMAIL,
     Destination: { ToAddresses: [email] },
@@ -248,107 +263,95 @@ export async function sendConfirmationEmail(email: string, confirmationUrl: stri
     },
   });
   
-  return await sesClient.send(command);
-}
-```
+  logger.info({ email: email.substring(0, 3) + '***' }, 'Sending confirmation email');
+  await sesClientRepository Pattern
 
-### 🗄️ Database Transaction Pattern
-
-**From Project Context:** Use parameterized queries, avoid string interpolation
+**Architecture:** Repository layer handles database operations
 
 ```typescript
-// File: apps/ui-web/server/utils/lead-magnet/subscriber.ts
-import { Pool } from 'pg';
+// File: apps/ingest-api/src/repositories/lead-magnet.repository.ts
+import { Pool, PoolClient } from 'pg';
+import { createChildLogger } from '../utils/logger.js';
 
-export async function createSubscriber(
-  db: Pool,
-  email: string,
-  tokenHash: string,
-  consentText: string,
-  ipAddress: string,
-  userAgent: string
-) {
-  const client = await db.connect();
-  
-  try {
-    await client.query('BEGIN');
-    
-    // Step 1: Insert subscriber
-    const subscriberResult = await client.query(
-      `INSERT INTO lm_subscribers (email, status, source, created_at)
-       VALUES ($1, $2, $3, NOW())
-       RETURNING id`,
-      [email.toLowerCase().trim(), 'pending', 'landing_page']
-    );
-    const subscriberId = subscriberResult.rows[0].id;
-    
-    // Step 2: Insert consent event
-    await client.query(
-      `INSERT INTO lm_consent_events (subscriber_id, event_type, consent_text, ip, user_agent, occurred_at)
-       VALUES ($1, $2, $3, $4, $5, NOW())`,
-      [subscriberId, 'signup', consentText, ipAddress, userAgent]
-    );
-    
-    // Step 3: Insert download token
-    await client.query(
-      `INSERT INTO lm_download_tokens (subscriber_id, token_hash, purpose, expires_at, created_at)
-       VALUES ($1, $2, $3, NOW() + INTERVAL '48 hours', NOW())`,
-      [subscriberId, tokenHash, 'confirm_and_download']
-    );
-    
-    await client.query('COMMIT');
-    return subscriberId;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-```
+const logger = createChildLogger('LeadMagnetRepository');
 
-### 🎨 Frontend Component Pattern
+export class LeadMagnetRepository {
+  constructor(private pool: Pool) {}
 
-**From Architecture:** Nuxt 3 with Vue 3 Composition API, NuxtUI for form components
+  async createSubscriberWithToken(
+    email: string,
+    tokenHash: string,
+    consentText: string,
+    ipAddress: string,
+    userAgent: string,
+    source: string = 'landing_page'
+  ): Promise<string> {
+    const client: PoolClient = await this.pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      // Step 1: Insert subscriber
+      const subscriberResult = await client.query(
+        `INSERT INTO lm_subscribers (email, status, source, created_at)
+         VALUES ($1, $2, $3, NOW())
+         RETURNING id`,
+        [email.toLowerCase().trim(), 'pending', source]
+      );
+      const subscriberId = subscriberResult.rows[0].id;
+      
+      logger.info({ subscriberId }, 'Subscriber created');
+      
+      // Step 2: Insert consent event
+      await client.query(
+        `INSERT INTO lm_consent_events (subscriber_id, event_type, consent_text, privacy_policy_version, ip, user_agent, occurred_at)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+        [subscriberId, 'signup', consentText, '2026-02-01', ipAddress, userAgent]
+      );
+      
+      // Step 3: Insert download token
+      await client.query(
+        `INSERT INTO lm_download_tokens (subscriber_id, token_hash, purpose, expires_at, max_uses, created_at)
+         VALUES ($1, $2, $3, NOW() + INTERVAL '48 hours', 999, NOW())`,
+        [subscriberId, tokenHash, 'confirm_and_download']
+      );
+      
+      await client.query('COMMIT');
+      logger.info({ subscriberId }, 'Transaction committed');
+      
+      return subscriberId;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error({ err: error }, 'Transaction rolled back');
+      throw error;
+    } finally {
+      client.release();
+    } (FUTURE - LM-004)
 
+**Note:** Story LM-002 focuses on **backend API only**. Frontend UI for statistics and subscriber list will be implemented in story LM-004 (Analytics Dashboard).
+
+**Architecture Decision:**
+- **Landing page with form:** Separate Nuxt repo (not part of ProspectFlow ui-web)
+- **Admin statistics UI:** `apps/ui-web/` - displays subscriber metrics, list, funnel analytics
+- **Form submits to:** `POST https://api.prospectflow.com/api/lead-magnet/signup` (ingest-api)
+
+**Future UI Components (LM-004):**
 ```vue
-<!-- File: apps/ui-web/components/LeadMagnet/EmailSignupForm.vue -->
+<!-- File: apps/ui-web/pages/lead-magnet/subscribers.vue -->
 <script setup lang="ts">
-const email = ref('');
-const consentGiven = ref(false);
-const loading = ref(false);
-const success = ref(false);
-const error = ref('');
-
-async function handleSubmit() {
-  loading.value = true;
-  error.value = '';
-  
-  try {
-    const response = await $fetch('/api/lead-magnet/signup', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        consentGiven: consentGiven.value,
-        source: 'landing_page'
-      }
-    });
-    
-    success.value = true;
-    email.value = '';
-    consentGiven.value = false;
-  } catch (err: any) {
-    error.value = err.data?.message || 'Une erreur est survenue';
-  } finally {
-    loading.value = false;
-  }
-}
+// Fetch subscribers from ingest-api
+const { data: subscribers } = await useFetch('/api/lead-magnet/subscribers');
 </script>
 
 <template>
-  <div class="lead-magnet-form">
-    <div v-if="success" class="success-message">
-      <h3>Email de confirmation envoyé!</h3>
+  <div>
+    <h1>Lead Magnet Subscribers</h1>
+    <UTable :rows="subscribers" :columns="columns" />
+  </div>
+</template>
+```
+
+**For LM-002:** Focus on ingest-api backend implementation only.   <h3>Email de confirmation envoyé!</h3>
       <p>Vérifiez votre boîte de réception (et vos spams) pour confirmer votre inscription.</p>
     </div>
     
@@ -430,56 +433,92 @@ if (existingSubscriber.rows.length > 0) {
     });
   }
 }
+ (Service Layer)
 
-// SCENARIO A: New email → Create subscriber (happy path)
-```
-
-### 📊 Rate Limiting Logic
+**Business Rules from Epic:**
 
 ```typescript
-// Check signup attempts in last 7 days
-const signupAttempts = await db.query(
-  `SELECT COUNT(*) as count
-   FROM lm_consent_events ce
-   JOIN lm_subscribers s ON ce.subscriber_id = s.id
-   WHERE LOWER(s.email) = LOWER($1)
-     AND ce.event_type = 'signup'
-     AND ce.occurred_at > NOW() - INTERVAL '7 days'`,
-  [email]
-);
+// File: apps/ingest-api/src/services/lead-magnet.service.ts
+import { LeadMagnetRepository } from '../repositories/lead-magnet.repository.js';
+import { sendConfirmationEmail } from './email.service.js';
+import { generateToken, hashToken } from '../utils/token.utils.js';
+import { createChildLogger } from '../utils/logger.js';
 
-if (parseInt(signupAttempts.rows[0].count) >= 3) {
-  throw createError({
-    statusCode: 429,
-    message: 'Vous avez déjà demandé ce guide récemment. Vérifiez votre boîte de réception ou contactez-nous.'
-  });
+const logger = createChildLogger('LeadMagnetService');
+
+export class LeadMagnetService {
+  constructor(private repository: LeadMagnetRepository) {}
+
+  async handleSignup(
+    email: string,
+    consentGiven: boolean,
+    ipAddress: string,
+    userAgent: string,
+    source: string = 'landing_page'
+  ): Promise<{ success: boolean; message: string }> {
+    // Validate consent
+    if (!consentGiven) {
+      throw new Error('CONSENT_REQUIRED');
+    }
+
+    // Normalize email
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if email already exists
+    const existingSubscriber = await this.repository.findSubscriberByEmail(normalizedEmail);
+
+    if (existingSubscriber) {
+      const { id: subscriberId, status } = existingSubscriber;
+
+      if (status === 'confirmed') {
+        // SCENARIO C: Already confirmed
+        throw new Error('ALREADY_SUBSCRIBED');
+      }
+
+      if (status === 'unsubscribed') {
+        // SCENARIO D: Unsubscribed
+        throw new Error('UNSUBSCRIBED');
+      }
+
+      if (status === 'pending') {
+        // SCENARIO B: Pending subscriber → Check if token still valid
+        const hasUnexpiredToken = await this.repository.checkUnexpiredToken(subscriberId);
+
+        if (hasUnexpiredToken) {
+          // Token still valid, don't spam user
+          logger.info({ subscriberId }, 'Unexpired token exists, not resending');
+          return { success: true, message: 'Email déjà envoyé' };
+        }
+
+        // Token expired, regenerate and resend
+        const { token, hash } = generateToken();
+        await this.repository.createTokenForExistingSubscriber(subscriberId, hash);
+        await sendConfirmationEmail(normalizedEmail, token);
+        logger.info({ subscriberId }, 'Token regenerated and email resent');
+        
+        return { success: true, message: 'Email de confirmation renvoyé' };
+      }
+    }
+
+    // SCENARIO A: New email → Create subscriber (happy path)
+    const { token, hash } = generateToken();
+    const consentText = "J'accepte de recevoir des emails de Light & Shutter";
+
+    const subscriberId = await this.repository.createSubscriberWithToken(
+      normalizedEmail,
+      hash,
+      consentText,
+      ipAddress,
+      userAgent,
+      source
+    );
+
+    await sendConfirmationEmail(normalizedEmail, token);
+    logger.info({ subscriberId }, 'New subscriber created and email sent');
+
+    return { success: true, message: 'Email envoyé' };
+  }
 }
-```
-
-### 📝 Logging Standards
-
-**From Project Context:** Use structured logging with Pino
-
-```typescript
-import { createChildLogger } from '~/server/utils/logger';
-
-const logger = createChildLogger('LeadMagnetSignup');
-
-// CORRECT: Context object first, message second
-logger.info({ email: emailHash, subscriberId }, 'Subscriber created');
-logger.error({ err: error, email: emailHash }, 'Signup failed');
-
-// WRONG: Template strings are not parseable
-logger.info(`Subscriber created: ${subscriberId}`); // ❌
-```
-
-**Security Note:** Never log full email addresses in production. Use hashed or truncated values for privacy.
-
----
-
-## Email Template Requirements
-
-### HTML Email Template
 
 **Brand Guidelines:**
 - Primary color: #2C5364 (dark teal)
@@ -526,20 +565,18 @@ Pour vous désinscrire, répondez à cet email avec "UNSUBSCRIBE".
 
 ## Testing Requirements
 
-### Unit Tests
-
-Create file: `apps/ui-web/server/utils/lead-magnet/__tests__/token.test.ts`
+### Unit Testsingest-api/src/utils/__tests__/token.utils.test.ts`
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { generateToken, hashToken, verifyToken } from '../token';
+import { generateToken, hashToken, verifyToken } from '../token.utils';
 
 describe('Token utilities', () => {
   it('generates unique tokens', () => {
-    const token1 = generateToken();
-    const token2 = generateToken();
-    expect(token1).not.toBe(token2);
-    expect(token1.length).toBeGreaterThan(40);
+    const result1 = generateToken();
+    const result2 = generateToken();
+    expect(result1.token).not.toBe(result2.token);
+    expect(result1.token.length).toBeGreaterThan(40);
   });
   
   it('hashes token consistently', () => {
@@ -550,9 +587,9 @@ describe('Token utilities', () => {
     expect(hash1.length).toBe(64); // SHA-256 produces 64-char hex string
   });
   
-  it('verifies token against hash', () => {
-    const token = generateToken();
-    const hash = hashToken(token);
+  it('token and hash pair match', () => {
+    const { token, hash } = generateToken();
+    expect(hashToken(token)).toBe(hash
     expect(verifyToken(token, hash)).toBe(true);
     expect(verifyToken('wrong-token', hash)).toBe(false);
   });
@@ -636,29 +673,27 @@ describe('POST /api/lead-magnet/signup', () => {
 
 ### Manual QA Checklist
 
-- [ ] **Happy Path Test:**
-  1. Open landing page
-  2. Enter email: `test+signup@gmail.com`
-  3. Check consent checkbox
-  4. Click "Recevoir le guide gratuit"
-  5. ✅ Success message appears
-  6. ✅ Email received in inbox within 30 seconds
-  7. ✅ Email contains confirmation button
-  8. ✅ Database has 3 new records (subscriber, consent_event, token)
+- [ ] **Happy Path Test (Backend API):**
+  1. Send POST request to `/api/lead-magnet/signup`:
+     ```bash
+     curl -X POST http://localhost:3001/api/lead-magnet/signup \
+       -H "Content-Type: application/json" \
+       -d '{"email":"test@gmail.com","consentGiven":true,"source":"test"}'
+     ```
+  2. ✅ Response: `{ "success": true, "message": "Email envoyé" }`
+  3. ✅ Email received in inbox within 30 seconds
+  4. ✅ Email contains confirmation button
+  5. ✅ Database has 3 new records (subscriber, consent_event, token)
 
 - [ ] **Duplicate Email Tests:**
-  - Scenario B: Submit same email twice (pending) → Resend confirmation
+  - Scenario B: Submit same email twice (pending) → Second call returns "Email déjà envoyé"
   - Scenario C: Submit confirmed email → Error message "déjà inscrit"
   - Scenario D: Submit unsubscribed email → Error message "désinscrite"
 
 - [ ] **Validation Tests:**
-  - Invalid email format → Inline error message
-  - Missing consent checkbox → Submit button disabled
-  - Empty email → Required field error
-
-- [ ] **Rate Limiting Test:**
-  - Submit same email 3 times in quick succession → Works
-  - Submit 4th time → 429 error "Trop de tentatives"
+  - Invalid email format → 400 with "Email invalide"
+  - Missing consent (consentGiven: false) → 400 with "accepter de recevoir"
+  - Empty request body → 400 error
 
 - [ ] **Email Rendering Test:**
   - Email displays correctly in Gmail web
@@ -669,7 +704,7 @@ describe('POST /api/lead-magnet/signup', () => {
 - [ ] **Database Verification:**
   ```sql
   -- Check subscriber created
-  SELECT * FROM lm_subscribers WHERE email = 'test+signup@gmail.com';
+  SELECT * FROM lm_subscribers WHERE email = 'test@gmail.com';
   -- status should be 'pending'
   
   -- Check consent event created
@@ -704,8 +739,22 @@ describe('POST /api/lead-magnet/signup', () => {
 ### 🚨 CORS for API
 **Problem:** Landing page on separate domain can't call API.  
 **Solution:** Nuxt API routes automatically handle CORS. If separate Nuxt repo, configure `nuxt.config.ts` to allow CORS from landing page domain.
+ingest-api.  
+**Solution:** Configure CORS in Express.js to allow requests from landing page domain.
 
-### 🚨 Token Expiration
+```typescript
+// File: apps/ingest-api/src/app.ts
+import cors from 'cors';
+
+app.use(cors({
+  origin: [
+    'https://lightandshutter.fr',
+    'https://www.lightandshutter.fr',
+    'http://localhost:3000' // Development
+  ],
+  credentials: true
+}));
+```
 **Problem:** User clicks link after 48 hours → Token expired error.  
 **Solution:** Story LM-003 handles expired tokens. This story just sets expiration correctly.
 
@@ -782,16 +831,20 @@ echo $SES_FROM_EMAIL
 
 ### External Documentation
 - [AWS SDK v3 SES Client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ses/)
-- [Nuxt 3 Server API Routes](https://nuxt.com/docs/guide/directory-structure/server#server-routes)
-- [PostgreSQL Transaction Control](https://www.postgresql.org/docs/current/tutorial-transactions.html)
-- [Node.js Crypto Module](https://nodejs.org/api/crypto.html)
-
-### Related Stories
-- **Next:** LM-003 (Download Delivery & Token Management) - Handles confirmation link click and PDF download
-- **Later:** LM-004 (Analytics Dashboard & Reporting) - Displays funnel metrics
-
----
-
+- [Nuxt 3 Server API Routes](https://nuxt.com/doc)
+- [ ] Create utility files (token.utils.ts)
+- [ ] Create repository (lead-magnet.repository.ts)
+- [ ] Create service (lead-magnet.service.ts, email.service.ts)
+- [ ] Create controller (lead-magnet.controller.ts)
+- [ ] Create routes (lead-magnet.routes.ts)
+- [ ] Register routes in app.ts
+- [ ] Configure CORS for landing page domain
+- [ ] Write unit tests (token.utils.test.ts)
+- [ ] Write integration tests (lead-magnet.controller.test.ts)
+- [ ] Manual API testing with curl/Postman
+- [ ] Database verification queries
+- [ ] Email template testing (Gmail, Outlook)
+- [ ] Error handl
 ## Dev Agent Record
 
 ### Implementation Checklist

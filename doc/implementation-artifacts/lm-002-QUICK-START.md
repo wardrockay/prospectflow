@@ -16,20 +16,26 @@
 
 ## What You're Building
 
-**User Journey:**
-1. User submits email + consent on landing page
-2. System creates subscriber (status='pending')
-3. System generates secure token (SHA-256 hashed)
-4. System sends confirmation email via AWS SES
-5. User receives email with "Confirm and Download" link
-6. *(LM-003 handles the click)*
+**Backend API in Express.js (ingest-api service):**
+1. Endpoint: `POST /api/lead-magnet/signup`
+2. Landing page (separate repo) calls this API
+3. System creates subscriber (status='pending')
+4. System generates secure token (SHA-256 hashed)
+5. System sends confirmation email via AWS SES
+6. User receives email with "Confirm and Download" link
+7. *(LM-003 handles the click)*
+
+**Architecture:**
+- **API Backend:** `apps/ingest-api/` (Express.js layered architecture)
+- **Frontend UI:** `apps/ui-web/` (statistics + subscriber list - future story LM-004)
+- **Landing Page:** Separate Nuxt repo (not part of ProspectFlow)
 
 ---
 
 ## Files to Create
 
 ### 1. Token Utility
-**File:** `apps/ui-web/server/utils/token.ts`
+**File:** `apps/ingest-api/src/utils/token.utils.ts`
 
 ```typescript
 import crypto from 'crypto';
@@ -45,11 +51,14 @@ export function hashToken(token: string): string {
 }
 ```
 
-### 2. Email Utility
-**File:** `apps/ui-web/server/utils/email.ts`
+### 2. Email Service
+**File:** `apps/ingest-api/src/services/email.service.ts`
 
 ```typescript
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { createChildLogger } from '../utils/logger.js';
+
+const logger = createChildLogger('EmailService');
 
 const sesClient = new SESClient({ 
   region: process.env.AWS_REGION || 'eu-west-3',
@@ -104,302 +113,244 @@ export async function sendConfirmationEmail(
     }
   };
 
+  logger.info({ email: toEmail.substring(0, 3) + '***' }, 'Sending confirmation email');
   await sesClient.send(new SendEmailCommand(params));
+  logger.info('Email sent successfully');
 }
 ```
 
-### 3. API Endpoint
-**File:** `apps/ui-web/server/api/lead-magnet/submit.post.ts`
+### 3. Repository Layer
+**File:** `apps/ingest-api/src/repositories/lead-magnet.repository.ts`
 
 ```typescript
-import { generateToken } from '~/server/utils/token';
-import { sendConfirmationEmail } from '~/server/utils/email';
+import { Pool, PoolClient } from 'pg';
+import { createChildLogger } from '../utils/logger.js';
 
-export default defineEventHandler(async (event) => {
-  const body = await readBody(event);
-  const { email, consentGiven, source } = body;
+const logger = createChildLogger('LeadMagnetRepository');
 
-  // Validation
-  if (!email || !consentGiven) {
-    throw createError({ statusCode: 400, message: 'Email et consentement requis' });
-  }
+export class LeadMagnetRepository {
+  constructor(private pool: Pool) {}
 
-  const normalizedEmail = email.toLowerCase().trim();
-  const ip = getRequestIP(event);
-  const userAgent = getRequestHeader(event, 'user-agent');
-
-  // Get database connection (adjust to your setup)
-  const db = useDatabase();  // or however you access DB
-
-  try {
-    // Check for existing subscriber
-    const existingSubscriber = await db.query(
-      'SELECT id, status FROM lm_subscribers WHERE LOWER(email) = $1',
-      [normalizedEmail]
-    );
-
-    let subscriberId: string;
-
-    if (existingSubscriber.rows.length > 0) {
-      const subscriber = existingSubscriber.rows[0];
-      subscriberId = subscriber.id;
-
-      // If already confirmed, don't send again
-      if (subscriber.status === 'confirmed') {
-        return { success: true, message: 'Déjà confirmé' };
-      }
-
-      // Check if token still valid
-      const validToken = await db.query(
-        `SELECT id FROM lm_download_tokens 
-         WHERE subscriber_id = $1 AND expires_at > NOW() AND purpose = 'confirm_and_download'
-         LIMIT 1`,
-        [subscriberId]
-      );
-
-      if (validToken.rows.length > 0) {
-        return { success: true, message: 'Email déjà envoyé' };
-      }
-    } else {
-      // Create new subscriber
-      await db.query('BEGIN');
+  async createSubscriberWithToken(
+    email: string,
+    tokenHash: string,
+    consentText: string,
+    ipAddress: string,
+    userAgent: string,
+    source: string = 'landing_page'
+  ): Promise<string> {
+    const client: PoolClient = await this.pool.connect();
+    
+    try {
+      await client.query('BEGIN');
       
-      const newSubscriber = await db.query(
+      const subscriberResult = await client.query(
         `INSERT INTO lm_subscribers (email, status, source, created_at)
          VALUES ($1, 'pending', $2, NOW())
          RETURNING id`,
-        [normalizedEmail, source || 'lead_magnet_form']
+        [email.toLowerCase().trim(), source]
       );
-      subscriberId = newSubscriber.rows[0].id;
-
-      // Log consent event
-      await db.query(
-        `INSERT INTO lm_consent_events 
-         (subscriber_id, event_type, consent_text, privacy_policy_version, ip, user_agent, occurred_at)
-         VALUES ($1, 'signup', $2, $3, $4, $5, NOW())`,
-        [
-          subscriberId,
-          "J'accepte de recevoir des emails de Light & Shutter",
-          '2026-02-01',
-          ip,
-          userAgent
-        ]
+      const subscriberId = subscriberResult.rows[0].id;
+      
+      await client.query(
+        `INSERT INTO lm_consent_events (subscriber_id, event_type, consent_text, privacy_policy_version, ip, user_agent, occurred_at)
+         VALUES ($1, 'signup', $2, '2026-02-01', $3, $4, NOW())`,
+        [subscriberId, consentText, ipAddress, userAgent]
       );
+      
+      await client.query(
+        `INSERT INTO lm_download_tokens (subscriber_id, token_hash, purpose, expires_at, max_uses, created_at)
+         VALUES ($1, $2, 'confirm_and_download', NOW() + INTERVAL '48 hours', 999, NOW())`,
+        [subscriberId, tokenHash]
+      );
+      
+      await client.query('COMMIT');
+      logger.info({ subscriberId }, 'Subscriber created');
+      
+      return subscriberId;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error({ err: error }, 'Transaction failed');
+      throw error;
+    } finally {
+      client.release();
     }
-
-    // Generate token
-    const { token, hash } = generateToken();
-    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
-
-    // Store token
-    await db.query(
-      `INSERT INTO lm_download_tokens 
-       (subscriber_id, token_hash, purpose, expires_at, max_uses, created_at)
-       VALUES ($1, $2, 'confirm_and_download', $3, 999, NOW())`,
-      [subscriberId, hash, expiresAt]
-    );
-
-    await db.query('COMMIT');
-
-    // Send email
-    await sendConfirmationEmail(normalizedEmail, token);
-
-    return { success: true, message: 'Email envoyé' };
-
-  } catch (error) {
-    await db.query('ROLLBACK');
-    console.error('Lead magnet submission error:', error);
-    throw createError({ 
-      statusCode: 500, 
-      message: 'Une erreur est survenue. Veuillez réessayer.' 
-    });
   }
-});
+  
+  async findSubscriberByEmail(email: string) {
+    const result = await this.pool.query(
+      'SELECT id, status FROM lm_subscribers WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
+    return result.rows[0] || null;
+  }
+  
+  async checkUnexpiredToken(subscriberId: string): Promise<boolean> {
+    const result = await this.pool.query(
+      `SELECT id FROM lm_download_tokens 
+       WHERE subscriber_id = $1 AND expires_at > NOW() AND purpose = 'confirm_and_download'
+       LIMIT 1`,
+      [subscriberId]
+    );
+    return result.rows.length > 0;
+  }
+}
 ```
 
-### 4. Frontend Form
-**File:** `apps/ui-web/components/forms/LeadMagnetForm.vue`
+### 4. Service Layer
+**File:** `apps/ingest-api/src/services/lead-magnet.service.ts`
 
-```vue
-<template>
-  <form @submit.prevent="handleSubmit" class="lead-magnet-form">
-    <h3>Téléchargez le Guide Gratuit</h3>
-    
-    <div class="form-group">
-      <label for="email">Votre email</label>
-      <input
-        id="email"
-        v-model="formData.email"
-        type="email"
-        required
-        placeholder="vous@example.com"
-        :disabled="isSubmitting || isSuccess"
-      />
-      <span v-if="errors.email" class="error">{{ errors.email }}</span>
-    </div>
+```typescript
+import { LeadMagnetRepository } from '../repositories/lead-magnet.repository.js';
+import { sendConfirmationEmail } from './email.service.js';
+import { generateToken } from '../utils/token.utils.js';
+import { createChildLogger } from '../utils/logger.js';
 
-    <div class="form-group checkbox">
-      <label>
-        <input
-          v-model="formData.consentGiven"
-          type="checkbox"
-          required
-          :disabled="isSubmitting || isSuccess"
-        />
-        J'accepte de recevoir des emails de Light & Shutter
-      </label>
-      <span v-if="errors.consent" class="error">{{ errors.consent }}</span>
-    </div>
+const logger = createChildLogger('LeadMagnetService');
 
-    <p class="privacy-note">
-      <a href="/politique-de-confidentialite">Politique de confidentialité</a>
-    </p>
+export class LeadMagnetService {
+  constructor(private repository: LeadMagnetRepository) {}
 
-    <button type="submit" :disabled="isSubmitting || isSuccess" class="submit-button">
-      {{ buttonText }}
-    </button>
-
-    <div v-if="isSuccess" class="success-message">
-      ✅ Vérifiez votre email ! Un lien de confirmation vous a été envoyé.
-    </div>
-
-    <div v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
-  </form>
-</template>
-
-<script setup lang="ts">
-const formData = ref({
-  email: '',
-  consentGiven: false
-});
-
-const isSubmitting = ref(false);
-const isSuccess = ref(false);
-const errorMessage = ref('');
-const errors = ref({ email: '', consent: '' });
-
-const buttonText = computed(() => {
-  if (isSuccess.value) return '✓ Email envoyé';
-  if (isSubmitting.value) return 'Envoi en cours...';
-  return 'Télécharger le Guide Gratuit';
-});
-
-async function handleSubmit() {
-  errors.value = { email: '', consent: '' };
-  errorMessage.value = '';
-
-  if (!formData.value.email) {
-    errors.value.email = 'Email requis';
-    return;
-  }
-  if (!formData.value.consentGiven) {
-    errors.value.consent = 'Veuillez accepter de recevoir nos emails';
-    return;
-  }
-
-  isSubmitting.value = true;
-
-  try {
-    const response = await $fetch('/api/lead-magnet/submit', {
-      method: 'POST',
-      body: {
-        email: formData.value.email,
-        consentGiven: formData.value.consentGiven,
-        source: 'landing_page'
-      }
-    });
-
-    if (response.success) {
-      isSuccess.value = true;
+  async handleSignup(
+    email: string,
+    consentGiven: boolean,
+    ipAddress: string,
+    userAgent: string,
+    source: string = 'landing_page'
+  ): Promise<{ success: boolean; message: string }> {
+    if (!consentGiven) {
+      throw new Error('CONSENT_REQUIRED');
     }
-  } catch (error: any) {
-    errorMessage.value = error.data?.message || 'Une erreur est survenue. Veuillez réessayer.';
-  } finally {
-    isSubmitting.value = false;
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingSubscriber = await this.repository.findSubscriberByEmail(normalizedEmail);
+
+    if (existingSubscriber) {
+      const { id: subscriberId, status } = existingSubscriber;
+
+      if (status === 'confirmed') {
+        throw new Error('ALREADY_SUBSCRIBED');
+      }
+
+      if (status === 'unsubscribed') {
+        throw new Error('UNSUBSCRIBED');
+      }
+
+      if (status === 'pending') {
+        const hasUnexpiredToken = await this.repository.checkUnexpiredToken(subscriberId);
+        if (hasUnexpiredToken) {
+          logger.info({ subscriberId }, 'Token still valid, not resending');
+          return { success: true, message: 'Email déjà envoyé' };
+        }
+      }
+    }
+
+    const { token, hash } = generateToken();
+    const consentText = "J'accepte de recevoir des emails de Light & Shutter";
+
+    const subscriberId = await this.repository.createSubscriberWithToken(
+      normalizedEmail,
+      hash,
+      consentText,
+      ipAddress,
+      userAgent,
+      source
+    );
+
+    await sendConfirmationEmail(normalizedEmail, token);
+    logger.info({ subscriberId }, 'Signup completed');
+
+    return { success: true, message: 'Email envoyé' };
   }
 }
-</script>
+```
 
-<style scoped>
-.lead-magnet-form {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  max-width: 500px;
-  margin: 0 auto;
-}
+### 5. Controller
+**File:** `apps/ingest-api/src/controllers/lead-magnet.controller.ts`
 
-h3 {
-  color: #213E60;
-  font-family: 'Cormorant Garamond', serif;
-  margin-bottom: 20px;
-}
+```typescript
+import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
+import { LeadMagnetService } from '../services/lead-magnet.service.js';
+import { createChildLogger } from '../utils/logger.js';
 
-.form-group {
-  margin-bottom: 20px;
-}
+const logger = createChildLogger('LeadMagnetController');
 
-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #213E60;
-  font-weight: 500;
-}
+const signupSchema = z.object({
+  email: z.string().email('Email invalide'),
+  consentGiven: z.boolean(),
+  source: z.string().optional(),
+});
 
-input[type="email"] {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #E0E0E0;
-  border-radius: 5px;
-}
+export class LeadMagnetController {
+  constructor(private service: LeadMagnetService) {}
 
-.checkbox label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  async signup(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validatedData = signupSchema.parse(req.body);
+      const ipAddress = req.ip || req.socket.remoteAddress || '';
+      const userAgent = req.headers['user-agent'] || '';
 
-.submit-button {
-  width: 100%;
-  background: #FFCC2B;
-  color: #213E60;
-  padding: 15px;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-}
+      const result = await this.service.handleSignup(
+        validatedData.email,
+        validatedData.consentGiven,
+        ipAddress,
+        userAgent,
+        validatedData.source
+      );
 
-.submit-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+      res.status(200).json(result);
+    } catch (error: any) {
+      if (error.message === 'CONSENT_REQUIRED') {
+        res.status(400).json({ success: false, message: 'Vous devez accepter de recevoir des emails' });
+        return;
+      }
+      if (error.message === 'ALREADY_SUBSCRIBED') {
+        res.status(400).json({ success: false, message: 'Vous êtes déjà inscrit(e)' });
+        return;
+      }
+      if (error.message === 'UNSUBSCRIBED') {
+        res.status(400).json({ success: false, message: 'Adresse désinscrite' });
+        return;
+      }
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ success: false, message: error.errors[0].message });
+        return;
+      }
+      next(error);
+    }
+  }
 }
+```
 
-.success-message {
-  margin-top: 20px;
-  padding: 15px;
-  background: #E8F5E9;
-  border-left: 4px solid #4CAF50;
-  color: #2E7D32;
-}
+### 6. Routes
+**File:** `apps/ingest-api/src/routes/lead-magnet.routes.ts`
 
-.error-message {
-  margin-top: 20px;
-  padding: 15px;
-  background: #FFEBEE;
-  border-left: 4px solid #F44336;
-  color: #C62828;
-}
+```typescript
+import { Router } from 'express';
+import { LeadMagnetController } from '../controllers/lead-magnet.controller.js';
+import { LeadMagnetService } from '../services/lead-magnet.service.js';
+import { LeadMagnetRepository } from '../repositories/lead-magnet.repository.js';
+import { pool } from '../config/database.js';
 
-.error {
-  color: #F44336;
-  font-size: 14px;
-  margin-top: 5px;
-  display: block;
-}
-</style>
+const router = Router();
+
+const repository = new LeadMagnetRepository(pool);
+const service = new LeadMagnetService(repository);
+const controller = new LeadMagnetController(service);
+
+router.post('/signup', (req, res, next) => controller.signup(req, res, next));
+
+export default router;
+```
+
+**Register in app.ts:**
+
+```typescript
+// File: apps/ingest-api/src/app.ts
+import leadMagnetRoutes from './routes/lead-magnet.routes.js';
+
+app.use('/api/lead-magnet', leadMagnetRoutes);
 ```
 
 ---
@@ -420,11 +371,17 @@ DATABASE_URL=postgresql://...
 
 ## Testing Checklist
 
-### Quick Smoke Test
-1. [ ] Submit form with valid email + consent
-2. [ ] Check database: subscriber created with status='pending'
-3. [ ] Check email: confirmation email received
-4. [ ] Click confirmation link (will fail - LM-003 not done yet)
+### Quick API Test
+1. [ ] Start ingest-api service: `pnpm --filter ingest-api dev`
+2. [ ] Test endpoint with curl:
+     ```bash
+     curl -X POST http://localhost:3001/api/lead-magnet/signup \
+       -H "Content-Type: application/json" \
+       -d '{"email":"test@example.com","consentGiven":true,"source":"test"}'
+     ```
+3. [ ] Check database: subscriber created with status='pending'
+4. [ ] Check email: confirmation email received
+5. [ ] Click confirmation link (will fail - LM-003 not done yet)
 
 ### Database Verification
 ```sql
@@ -461,7 +418,7 @@ SELECT token_hash, expires_at FROM lm_download_tokens WHERE subscriber_id = (
 - Import crypto: `import crypto from 'crypto';`
 - Don't use crypto-js (different library)
 - Use Node.js built-in crypto module
-
+ingest-api/env
 ---
 
 ## Next Story
