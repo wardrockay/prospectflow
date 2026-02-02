@@ -41,41 +41,41 @@ $$;
 -- -------------------------
 
 -- CRM
-ALTER TABLE public.crm_companies DROP CONSTRAINT IF EXISTS companies_pkey;
+ALTER TABLE public.crm_companies DROP CONSTRAINT IF EXISTS crm_companies_pkey;
 ALTER TABLE public.crm_companies ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.crm_people DROP CONSTRAINT IF EXISTS people_pkey;
+ALTER TABLE public.crm_people DROP CONSTRAINT IF EXISTS crm_people_pkey;
 ALTER TABLE public.crm_people ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.crm_positions DROP CONSTRAINT IF EXISTS positions_pkey;
+ALTER TABLE public.crm_positions DROP CONSTRAINT IF EXISTS crm_positions_pkey;
 ALTER TABLE public.crm_positions ADD PRIMARY KEY (organisation_id, id);
 
 -- Outreach
-ALTER TABLE public.outreach_campaigns DROP CONSTRAINT IF EXISTS campaigns_pkey;
+ALTER TABLE public.outreach_campaigns DROP CONSTRAINT IF EXISTS outreach_campaigns_pkey;
 ALTER TABLE public.outreach_campaigns ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.outreach_workflow_steps DROP CONSTRAINT IF EXISTS workflow_steps_pkey;
+ALTER TABLE public.outreach_workflow_steps DROP CONSTRAINT IF EXISTS outreach_workflow_steps_pkey;
 ALTER TABLE public.outreach_workflow_steps ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.outreach_prompts DROP CONSTRAINT IF EXISTS prompts_pkey;
+ALTER TABLE public.outreach_prompts DROP CONSTRAINT IF EXISTS outreach_prompts_pkey;
 ALTER TABLE public.outreach_prompts ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.outreach_step_experiments DROP CONSTRAINT IF EXISTS step_experiments_pkey;
+ALTER TABLE public.outreach_step_experiments DROP CONSTRAINT IF EXISTS outreach_step_experiments_pkey;
 ALTER TABLE public.outreach_step_experiments ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.outreach_step_experiment_variants DROP CONSTRAINT IF EXISTS step_experiment_variants_pkey;
+ALTER TABLE public.outreach_step_experiment_variants DROP CONSTRAINT IF EXISTS outreach_step_experiment_variants_pkey;
 ALTER TABLE public.outreach_step_experiment_variants ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.outreach_campaign_enrollments DROP CONSTRAINT IF EXISTS campaign_enrollments_pkey;
+ALTER TABLE public.outreach_campaign_enrollments DROP CONSTRAINT IF EXISTS outreach_campaign_enrollments_pkey;
 ALTER TABLE public.outreach_campaign_enrollments ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.outreach_enrollment_step_variant_assignments DROP CONSTRAINT IF EXISTS enrollment_step_variant_assignments_pkey;
+ALTER TABLE public.outreach_enrollment_step_variant_assignments DROP CONSTRAINT IF EXISTS outreach_enrollment_step_variant_assignments_pkey;
 ALTER TABLE public.outreach_enrollment_step_variant_assignments ADD PRIMARY KEY (organisation_id, enrollment_id, workflow_step_id);
 
-ALTER TABLE public.outreach_tasks DROP CONSTRAINT IF EXISTS tasks_pkey;
+ALTER TABLE public.outreach_tasks DROP CONSTRAINT IF EXISTS outreach_tasks_pkey;
 ALTER TABLE public.outreach_tasks ADD PRIMARY KEY (organisation_id, id);
 
-ALTER TABLE public.outreach_messages DROP CONSTRAINT IF EXISTS messages_pkey;
+ALTER TABLE public.outreach_messages DROP CONSTRAINT IF EXISTS outreach_messages_pkey;
 ALTER TABLE public.outreach_messages ADD PRIMARY KEY (organisation_id, id);
 
 -- Tracking
