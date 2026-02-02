@@ -7,14 +7,17 @@
 -- Notes:
 -- - This migration is designed to be safe to run once.
 -- - RLS uses session variable: app.organisation_id
+-- - OVH CloudDB: Cannot create 'app' schema, using public schema instead
 
 -- -------------------------
 -- 1) Helper schema + functions
 -- -------------------------
 
-CREATE SCHEMA IF NOT EXISTS app;
+-- OVH CloudDB: Cannot create custom schemas
+-- CREATE SCHEMA IF NOT EXISTS app;
 
-CREATE OR REPLACE FUNCTION app.current_organisation_id()
+-- Using public schema for helper function
+CREATE OR REPLACE FUNCTION public.current_organisation_id()
 RETURNS uuid
 LANGUAGE plpgsql
 STABLE
@@ -104,98 +107,98 @@ ALTER TABLE public.crm_companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.crm_companies FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.crm_companies;
 CREATE POLICY tenant_isolation ON public.crm_companies
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.crm_people ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.crm_people FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.crm_people;
 CREATE POLICY tenant_isolation ON public.crm_people
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.crm_positions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.crm_positions FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.crm_positions;
 CREATE POLICY tenant_isolation ON public.crm_positions
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 -- Outreach
 ALTER TABLE public.outreach_campaigns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_campaigns FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_campaigns;
 CREATE POLICY tenant_isolation ON public.outreach_campaigns
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.outreach_workflow_steps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_workflow_steps FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_workflow_steps;
 CREATE POLICY tenant_isolation ON public.outreach_workflow_steps
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.outreach_prompts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_prompts FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_prompts;
 CREATE POLICY tenant_isolation ON public.outreach_prompts
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.outreach_step_experiments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_step_experiments FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_step_experiments;
 CREATE POLICY tenant_isolation ON public.outreach_step_experiments
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.outreach_step_experiment_variants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_step_experiment_variants FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_step_experiment_variants;
 CREATE POLICY tenant_isolation ON public.outreach_step_experiment_variants
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.outreach_campaign_enrollments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_campaign_enrollments FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_campaign_enrollments;
 CREATE POLICY tenant_isolation ON public.outreach_campaign_enrollments
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.outreach_enrollment_step_variant_assignments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_enrollment_step_variant_assignments FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_enrollment_step_variant_assignments;
 CREATE POLICY tenant_isolation ON public.outreach_enrollment_step_variant_assignments
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.outreach_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_tasks FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_tasks;
 CREATE POLICY tenant_isolation ON public.outreach_tasks
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.outreach_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.outreach_messages FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.outreach_messages;
 CREATE POLICY tenant_isolation ON public.outreach_messages
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 -- Tracking
 ALTER TABLE public.tracking_pixels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tracking_pixels FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.tracking_pixels;
 CREATE POLICY tenant_isolation ON public.tracking_pixels
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
 
 ALTER TABLE public.tracking_message_open_stats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tracking_message_open_stats FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON public.tracking_message_open_stats;
 CREATE POLICY tenant_isolation ON public.tracking_message_open_stats
-  USING (organisation_id = app.current_organisation_id())
-  WITH CHECK (organisation_id = app.current_organisation_id());
+  USING (organisation_id = public.current_organisation_id())
+  WITH CHECK (organisation_id = public.current_organisation_id());
