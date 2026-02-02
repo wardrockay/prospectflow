@@ -24,16 +24,22 @@ Build a complete lead magnet delivery system that captures emails, implements RG
 
 ## User Stories Overview
 
-| Story ID | Title | Priority | Estimate | Dependencies |
-|----------|-------|----------|----------|--------------|
-| LM-001 | Database Schema & Infrastructure Setup | MUST | 8 pts | None |
-| LM-002 | Email Capture & Double Opt-in Flow | MUST | 13 pts | LM-001 |
-| LM-003 | Download Delivery & Token Management | MUST | 13 pts | LM-001, LM-002 |
-| LM-004 | Analytics Dashboard & Reporting | SHOULD | 8 pts | LM-001, LM-002, LM-003 |
-| LM-005 | Email Template Design & Copy | SHOULD | 5 pts | LM-002 |
-| LM-006 | Rate Limiting & Abuse Prevention | COULD | 5 pts | LM-002, LM-003 |
+| Story ID | Title | Priority | Estimate | Dependencies | Location |
+|----------|-------|----------|----------|--------------|----------|
+| LM-001 | Database Schema & Infrastructure Setup | MUST | 8 pts | None | infra |
+| LM-002 | Email Capture & Double Opt-in Flow | MUST | 13 pts | LM-001 | ingest-api |
+| LM-003 | Download Delivery & Token Management (API) | MUST | 8 pts | LM-001, LM-002 | ingest-api |
+| LM-005 | Email Template Design & Copy | SHOULD | 5 pts | LM-002 | ingest-api |
+| LM-006 | Rate Limiting & Abuse Prevention | COULD | 5 pts | LM-002, LM-003 | ingest-api |
+| LM-007 | Dashboard Lead Magnet | SHOULD | 13 pts | LM-001, LM-002, LM-003 | ui-web |
 
 **Total Estimate:** 52 story points
+
+> **Note Architecture (2026-02-02):** 
+> - Les APIs Lead Magnet sont exposées via **ingest-api** (Express) pour la landing page externe
+> - L'API `/confirm/:token` retourne du **JSON** (pas de redirect) - la landing page gère l'UI
+> - Le dashboard (LM-007) est dans **ui-web** (Nuxt) pour l'admin
+> - LM-004 a été fusionné dans LM-007
 
 ---
 
@@ -42,40 +48,67 @@ Build a complete lead magnet delivery system that captures emails, implements RG
 ### System Components
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    User Journey Flow                         │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         ARCHITECTURE LEAD MAGNET                             │
+├─────────────────────────────────────────┬───────────────────────────────────┤
+│  REPO EXTERNE (hors scope)              │  CE REPO (ProspectFlow)           │
+├─────────────────────────────────────────┼───────────────────────────────────┤
+│                                         │                                   │
+│  Landing Page B2C                       │  apps/ingest-api (Express)        │
+│  (lightandshutter.fr)                   │  ├── POST /lead-magnet/signup     │
+│         │                               │  │   → JSON: { success, message } │
+│         │ HTTP                          │  │                                 │
+│         └──────────────────────────────►│  └── GET /lead-magnet/confirm/:t  │
+│                                         │      → JSON: { success, status,   │
+│  Gère localement:                       │               downloadUrl?,       │
+│  ├── Page succès                        │               error? }            │
+│  ├── Page erreur (expiré)               │                                   │
+│  └── Page erreur (invalide)             ├───────────────────────────────────┤
+│                                         │  apps/ui-web (Nuxt Dashboard)     │
+│                                         │  ├── /admin/lead-magnets          │
+│                                         │  │   └── Analytics funnel         │
+│                                         │  ├── /admin/subscribers           │
+│                                         │  │   └── Liste + export           │
+│                                         │  ├── /admin/nurture               │
+│                                         │  │   └── Séquences emails         │
+│                                         │  └── /admin/email-templates       │
+│                                         │      └── Gestion templates        │
+└─────────────────────────────────────────┴───────────────────────────────────┘
+```
 
-1. Landing Page Form
+### User Journey Flow (API-centric)
+
+```
+1. Landing Page Form (EXTERNE)
    ↓
-2. POST /api/lead-magnet/submit
+2. POST ingest-api/lead-magnet/signup
    ├─→ Insert subscriber (status=pending)
    ├─→ Log consent_event (signup)
    ├─→ Generate download_token (48h expiry)
-   └─→ Send confirmation email (Amazon SES)
+   ├─→ Send confirmation email (Amazon SES)
+   └─→ Return JSON: { success: true }
    ↓
-3. User clicks email link
+3. User clicks email link → Landing page calls API
    ↓
-4. GET /api/lead-magnet/confirm/:token
+4. GET ingest-api/lead-magnet/confirm/:token
    ├─→ Validate token (hash, expiry, use_count)
    ├─→ Update subscriber (status=confirmed)
    ├─→ Log consent_event (confirm)
    ├─→ Generate S3 signed URL (15 min)
-   └─→ Redirect to download or serve file
+   └─→ Return JSON: { success, downloadUrl }
    ↓
-5. PDF Download (from S3)
-   ├─→ Log download_token.used_at
-   └─→ Increment use_count
+5. Landing page displays download button with S3 URL
 ```
 
 ### Technology Stack
 
-- **Frontend:** Nuxt 3 (existing stack)
-- **Backend:** Nuxt Server API routes
+- **Landing Page:** Repo externe (hors scope) - consomme les APIs
+- **API Backend:** Express (ingest-api) - expose les endpoints Lead Magnet
+- **Dashboard:** Nuxt 3 (ui-web) - analytics et gestion
 - **Database:** PostgreSQL with UUID primary keys
 - **Email Service:** Amazon SES
 - **File Storage:** Amazon S3 with signed URLs
-- **Analytics:** Database queries + optional Umami events
+- **Analytics:** Database queries via dashboard ui-web
 
 ### Database Schema
 
