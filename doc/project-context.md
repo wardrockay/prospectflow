@@ -1,7 +1,7 @@
 # ProspectFlow - Project Context
 
-**Version:** 1.1  
-**Last Updated:** January 12, 2026  
+**Version:** 1.2  
+**Last Updated:** February 2, 2026  
 **Status:** Active Development
 
 ---
@@ -12,6 +12,7 @@
 | ---------------- | ----------------------------------------------------------- |
 | **Logging**      | [Logging Standards](#logging-standards-mandatory)           |
 | **Multi-Tenant** | [Multi-Tenant Isolation](#multi-tenant-isolation-mandatory) |
+| **B2C Lead Mag** | [B2C Lead Magnet System](#b2c-lead-magnet-system)          |
 | **Errors**       | [Error Handling](#error-handling)                           |
 | **Tests**        | [Testing Standards](#testing-standards)                     |
 | **Deploy**       | [Deployment & Infrastructure](#deployment--infrastructure)  |
@@ -21,13 +22,25 @@
 
 ## Overview
 
-ProspectFlow is a multi-tenant B2B sales automation platform built with:
+ProspectFlow is a **dual-purpose platform** combining:
+
+### B2B Sales Automation (Core)
+Multi-tenant sales automation platform for prospect outreach and campaign management.
 
 - **Backend:** Express.js + TypeScript (Node 20)
 - **Database:** PostgreSQL 18 (multi-tenant with `organisation_id`)
 - **Queue:** RabbitMQ
 - **Cache/Sessions:** Redis
 - **Authentication:** AWS Cognito
+
+### B2C Lead Generation (New)
+RGPD-compliant lead magnet delivery system for capturing emails from Light & Shutter landing page.
+
+- **Backend:** Nuxt Server API routes
+- **Database:** PostgreSQL `public` schema with `lm_` prefix (tables: `lm_subscribers`, `lm_consent_events`, `lm_download_tokens`)
+- **Email:** Amazon SES (etienne.maillot@lightandshutter.fr)
+- **Storage:** Amazon S3 (lead-magnets bucket)
+- **Landing Page:** Separate Nuxt repo (connects via API)
 
 ---
 
@@ -101,10 +114,10 @@ When creating new files, use the templates:
 
 ### Multi-Tenant Isolation (MANDATORY)
 
-All database queries **MUST** include `organisation_id` filtering:
+**B2B Context:** All database queries **MUST** include `organisation_id` filtering:
 
 ```typescript
-// ✅ ALWAYS include organisation_id
+// ✅ ALWAYS include organisation_id for B2B tables
 const results = await db.query('SELECT * FROM crm.companies WHERE organisation_id = $1', [
   req.organisationId,
 ]);
@@ -112,6 +125,244 @@ const results = await db.query('SELECT * FROM crm.companies WHERE organisation_i
 // ❌ NEVER query without tenant isolation
 const results = await db.query('SELECT * FROM crm.companies');
 ```
+
+**B2C Context:** Lead magnet tables in `public` schema use `lm_` prefix and **DO NOT** require `organisation_id`:
+
+```typescript
+// ✅ B2C lead magnet queries (no organisation_id)
+const subscriber = await db.query('SELECT * FROM public.lm_subscribers WHERE email = $1', [
+  email,
+]);
+
+// ✅ B2C tables are isolated by purpose, not tenant
+const tokens = await db.query('SELECT * FROM public.lm_download_tokens WHERE subscriber_id = $1', [
+  subscriberId,
+]);
+```
+
+---
+
+## B2C Lead Magnet System
+
+### Architecture Overview
+
+```
+Landing Page (Nuxt, separate repo)
+    ↓ CORS enabled API calls
+ProspectFlow Nuxt Server API (/api/lead-magnet/*)
+    ↓
+PostgreSQL public schema
+    - lm_subscribers (email list with status)
+    - lm_consent_events (RGPD audit log, immutable)
+    - lm_download_tokens (access control, SHA-256 hashed)
+    ↓
+AWS Services (Terraform managed in /infra)
+    - S3: lightandshutter-lead-magnets bucket
+    - SES: etienne.maillot@lightandshutter.fr (out of sandbox)
+```
+
+### Database Schema Conventions
+
+#### Table Naming: `lm_` Prefix
+All B2C lead magnet tables use the `lm_` namespace prefix:
+- `lm_subscribers` - Email list and subscriber state
+- `lm_consent_events` - RGPD compliance audit trail (append-only)
+- `lm_download_tokens` - Token-based access control
+
+**Rationale:** OVH managed PostgreSQL does not support custom schemas. Using `lm_` prefix in `public` schema provides logical separation from B2B tables.
+
+#### Schema Location
+All tables created in `public` schema:
+```sql
+CREATE TABLE public.lm_subscribers (...);
+CREATE TABLE public.lm_consent_events (...);
+CREATE TABLE public.lm_download_tokens (...);
+```
+
+#### Primary Keys & Foreign Keys
+- **UUIDs:** All tables use `UUID PRIMARY KEY DEFAULT gen_random_uuid()`
+- **Cascading Deletes:** `ON DELETE CASCADE` for RGPD right-to-be-forgotten compliance
+- **No organisation_id:** B2C tables are single-tenant by design
+
+### API Endpoints (Nuxt Server Routes)
+
+```typescript
+// apps/ui-web/server/api/lead-magnet/
+POST   /api/lead-magnet/submit           // Email submission + double opt-in email
+GET    /api/lead-magnet/confirm/:token   // Token validation + S3 signed URL generation
+GET    /api/lead-magnet/stats            // Analytics (protected)
+```
+
+### RGPD Compliance
+
+#### Double Opt-in Flow
+1. User submits email → `lm_subscribers.status = 'pending'`
+2. Confirmation email sent via SES
+3. User clicks link → `lm_subscribers.status = 'confirmed'`
+4. `lm_consent_events` logs all actions (signup, confirm, unsubscribe)
+
+#### Audit Trail
+- **Immutable logs:** `lm_consent_events` is append-only
+- **Captured data:** IP address, user agent, consent text, privacy policy version
+- **Right to be forgotten:** Cascading deletes remove all related data
+
+#### Token Security
+- **Storage:** SHA-256 hash only (never plain tokens)
+- **Expiry:** 48-hour window for downloads
+- **Reusability:** Tokens can be reused within 48h (tracked via `use_count`)
+
+### AWS Integration (Terraform)
+
+#### S3 Configuration
+```hcl
+# infra/aws-leadmagnet/s3.tf
+bucket: lightandshutter-lead-magnets
+path: /lead-magnets/guide-mariee-sereine.pdf
+access: Private (signed URLs only)
+cors: Enabled for download requests
+```
+
+#### SES Configuration
+```hcl
+# infra/aws-leadmagnet/ses.tf
+from: etienne.maillot@lightandshutter.fr
+domain: lightandshutter.fr (verified)
+status: Out of sandbox (production sending)
+dns: SPF + DKIM configured
+```
+
+#### IAM Permissions
+```hcl
+# Minimal permissions principle
+s3:GetObject (lead-magnets bucket only)
+ses:SendEmail
+```
+
+### Environment Variables
+
+```bash
+# apps/ui-web/.env or .env.example
+AWS_REGION=eu-west-3
+AWS_ACCESS_KEY_ID=xxx
+AWS_SECRET_ACCESS_KEY=xxx
+S3_BUCKET_NAME=lightandshutter-lead-magnets
+S3_FILE_KEY=lead-magnets/guide-mariee-sereine.pdf
+SES_FROM_EMAIL=etienne.maillot@lightandshutter.fr
+BASE_URL=https://lightandshutter.fr
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+```
+
+### File Structure (B2C)
+
+```
+apps/ui-web/
+├── server/
+│   ├── api/
+│   │   └── lead-magnet/
+│   │       ├── submit.post.ts       # Email capture endpoint
+│   │       ├── confirm/
+│   │       │   └── [token].get.ts   # Token validation + download
+│   │       └── stats.get.ts         # Analytics (admin)
+│   └── utils/
+│       ├── token.ts                 # Token generation + hashing
+│       ├── email.ts                 # SES integration
+│       └── s3.ts                    # S3 signed URL generation
+├── pages/
+│   └── lead-magnet/
+│       ├── succes.vue               # Download success page
+│       ├── expire.vue               # Token expired page
+│       └── invalide.vue             # Invalid token page
+
+infra/
+├── postgres/
+│   └── migrations/
+│       └── 002_lead_magnet_schema.sql  # lm_* tables
+└── aws-leadmagnet/                  # Terraform for S3 + SES
+    ├── main.tf
+    ├── s3.tf
+    ├── ses.tf
+    ├── iam.tf
+    └── variables.tf
+```
+
+### Migration Strategy
+
+**Migration File:** `infra/postgres/migrations/002_lead_magnet_schema.sql`
+
+```sql
+-- Create lm_subscribers table in public schema
+CREATE TABLE public.lm_subscribers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('pending','confirmed','unsubscribed','bounced')),
+  source TEXT,
+  tags JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  confirmed_at TIMESTAMPTZ,
+  unsubscribed_at TIMESTAMPTZ,
+  last_email_sent_at TIMESTAMPTZ
+);
+
+CREATE UNIQUE INDEX idx_lm_subscribers_email_lower ON public.lm_subscribers(LOWER(email));
+CREATE INDEX idx_lm_subscribers_status ON public.lm_subscribers(status);
+CREATE INDEX idx_lm_subscribers_created_at ON public.lm_subscribers(created_at DESC);
+
+-- Create lm_consent_events table (RGPD audit log)
+CREATE TABLE public.lm_consent_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  subscriber_id UUID NOT NULL REFERENCES public.lm_subscribers(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL CHECK (event_type IN ('signup','confirm','unsubscribe')),
+  consent_text TEXT,
+  privacy_policy_version TEXT,
+  ip INET,
+  user_agent TEXT,
+  occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_lm_consent_events_subscriber ON public.lm_consent_events(subscriber_id, occurred_at DESC);
+
+-- Create lm_download_tokens table
+CREATE TABLE public.lm_download_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  subscriber_id UUID NOT NULL REFERENCES public.lm_subscribers(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL UNIQUE,
+  purpose TEXT NOT NULL CHECK (purpose IN ('confirm_and_download','download_only')),
+  expires_at TIMESTAMPTZ NOT NULL,
+  max_uses INT NOT NULL DEFAULT 999,
+  use_count INT NOT NULL DEFAULT 0,
+  used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_lm_download_tokens_subscriber ON public.lm_download_tokens(subscriber_id, created_at DESC);
+CREATE INDEX idx_lm_download_tokens_expires ON public.lm_download_tokens(expires_at) WHERE use_count < max_uses;
+```
+
+### Success Metrics (KPIs)
+
+| Metric                     | Target   | Measurement                          |
+| -------------------------- | -------- | ------------------------------------ |
+| Email Capture Rate         | 15-25%   | Form submissions / Page visitors     |
+| Confirmation Rate          | 40-60%   | Confirmed / Total signups            |
+| Download Completion Rate   | 80-95%   | Downloaded / Confirmed               |
+| Time to Confirm            | < 2h     | Median `confirmed_at - created_at`   |
+| Overall Conversion         | 30-50%   | Downloaded / Total signups           |
+
+### Epic & Stories
+
+- **Epic:** EPIC-LM-001 (52 story points)
+- **Artifact:** `doc/lead-magnet-delivery-system-epic.md`
+- **Stories:**
+  - LM-001: Database Schema & Infrastructure (8 pts) - MUST
+  - LM-002: Email Capture & Double Opt-in (13 pts) - MUST
+  - LM-003: Download Delivery & Token Management (13 pts) - MUST
+  - LM-004: Analytics Dashboard (8 pts) - SHOULD
+  - LM-005: Email Template Design (5 pts) - SHOULD
+  - LM-006: Rate Limiting & Abuse Prevention (5 pts) - COULD
+
+---
+
+### Multi-Tenant Isolation (MANDATORY) - B2B Only
 
 ---
 
