@@ -53,9 +53,11 @@ app.use(loggerMiddleware);
 app.use(metricsMiddleware); // Metrics collection after logger, before routes
 app.use(sentryContextMiddleware);
 
+// CORS: Support multiple origins for landing page domains
+const corsOrigins = env.corsOrigin.split(',').map((o) => o.trim());
 app.use(
   cors({
-    origin: env.corsOrigin,
+    origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
     credentials: true,
   }),
 );

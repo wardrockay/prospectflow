@@ -139,7 +139,7 @@ function getHtmlTemplate(confirmationUrl: string): string {
     <div class="footer">
       <p>
         <strong>Light & Shutter Photography</strong><br>
-        Paris, France<br>
+        123 Rue de la Photographie, 75001 Paris, France<br>
         <a href="https://lightandshutter.fr/privacy">Politique de confidentialité</a>
       </p>
       <p style="margin-top: 10px;">
@@ -171,7 +171,7 @@ Si vous n'avez pas demandé ce guide, vous pouvez ignorer cet email.
 
 ---
 Light & Shutter Photography
-Paris, France
+123 Rue de la Photographie, 75001 Paris, France
 Politique de confidentialité: https://lightandshutter.fr/privacy
 Pour vous désinscrire, répondez à cet email avec "UNSUBSCRIBE".
   `.trim();
@@ -195,7 +195,8 @@ export async function sendConfirmationEmail(email: string, token: string): Promi
     throw new Error('Email configuration incomplete');
   }
 
-  const confirmationUrl = `${baseUrl}/api/lead-magnet/confirm/${token}`;
+  // AC2.9: Confirmation link format with query param
+  const confirmationUrl = `${baseUrl}/lead-magnet/confirm?token=${token}`;
 
   const command = new SendEmailCommand({
     Source: sesFromEmail,

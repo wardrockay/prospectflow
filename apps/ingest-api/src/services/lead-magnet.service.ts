@@ -64,27 +64,13 @@ class LeadMagnetService {
       throw new LeadMagnetError('Email invalide', 'INVALID_EMAIL', 400);
     }
 
-    // AC2.12: Check rate limiting (max 3 signups per email per 7 days)
-    const signupCount = await leadMagnetRepository.getSignupCountLast7Days(normalizedEmail);
-    if (signupCount >= 3) {
-      logger.warn(
-        { email: normalizedEmail.substring(0, 3) + '***', signupCount },
-        'Rate limit exceeded',
-      );
-      throw new LeadMagnetError(
-        'Vous avez déjà demandé ce guide récemment. Vérifiez votre boîte de réception ou contactez-nous.',
-        'RATE_LIMIT_EXCEEDED',
-        429,
-      );
-    }
-
-    // AC2.8: Check if email already exists
+    // AC2.8: Check if email already exists FIRST (before rate limiting for better UX)
     const existingSubscriber = await leadMagnetRepository.findSubscriberByEmail(normalizedEmail);
 
     if (existingSubscriber) {
       const { id: subscriberId, status } = existingSubscriber;
 
-      // SCENARIO C: Already confirmed
+      // SCENARIO C: Already confirmed - show friendly message immediately
       if (status === 'confirmed') {
         logger.info({ subscriberId }, 'Email already confirmed');
         throw new LeadMagnetError(
@@ -104,8 +90,21 @@ class LeadMagnetService {
         );
       }
 
-      // SCENARIO B: Pending subscriber
+      // SCENARIO B: Pending subscriber - check rate limit only for resends
       if (status === 'pending') {
+        // AC2.12: Check rate limiting for pending subscribers (max 3 per 7 days)
+        const signupCount = await leadMagnetRepository.getSignupCountLast7Days(normalizedEmail);
+        if (signupCount >= 3) {
+          logger.warn(
+            { email: normalizedEmail.substring(0, 3) + '***', signupCount },
+            'Rate limit exceeded for pending subscriber',
+          );
+          throw new LeadMagnetError(
+            'Vous avez déjà demandé ce guide récemment. Vérifiez votre boîte de réception ou contactez-nous.',
+            'RATE_LIMIT_EXCEEDED',
+            429,
+          );
+        }
         // Check if unexpired token exists
         const hasUnexpiredToken = await leadMagnetRepository.checkUnexpiredToken(subscriberId);
 
@@ -142,6 +141,20 @@ class LeadMagnetService {
     }
 
     // SCENARIO A: New email (happy path)
+    // AC2.12: Check rate limiting for new signups
+    const signupCount = await leadMagnetRepository.getSignupCountLast7Days(normalizedEmail);
+    if (signupCount >= 3) {
+      logger.warn(
+        { email: normalizedEmail.substring(0, 3) + '***', signupCount },
+        'Rate limit exceeded for new signup',
+      );
+      throw new LeadMagnetError(
+        'Vous avez déjà demandé ce guide récemment. Vérifiez votre boîte de réception ou contactez-nous.',
+        'RATE_LIMIT_EXCEEDED',
+        429,
+      );
+    }
+
     const { token, hash } = generateToken();
     const consentText = "J'accepte de recevoir des emails de Light & Shutter";
 
