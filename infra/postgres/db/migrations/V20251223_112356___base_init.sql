@@ -9,8 +9,13 @@
 -- 2) backfill
 -- 3) add NOT NULL / constraints in a later migration
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-CREATE EXTENSION IF NOT EXISTS citext;
+-- OVH CloudDB: Extensions must be enabled by database admin, not via Flyway
+-- If these fail, connect with admin user and run:
+-- CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- CREATE EXTENSION IF NOT EXISTS citext;
+-- Then uncomment these lines:
+-- CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- CREATE EXTENSION IF NOT EXISTS citext;
 
 -- OVH CloudDB: Cannot create custom schemas, use table prefixes instead
 -- CREATE SCHEMA IF NOT EXISTS iam;
