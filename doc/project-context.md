@@ -348,6 +348,56 @@ CREATE INDEX idx_lm_download_tokens_expires ON public.lm_download_tokens(expires
 | Time to Confirm            | < 2h     | Median `confirmed_at - created_at`   |
 | Overall Conversion         | 30-50%   | Downloaded / Total signups           |
 
+### Token Security Standards (CRITICAL)
+
+**For B2C Lead Magnet download tokens:**
+
+#### ✅ Required Security Practices
+
+```typescript
+// 1. Generate cryptographically secure tokens
+import crypto from 'crypto';
+const plainToken = crypto.randomBytes(32).toString('base64url');  // ✅ CORRECT
+
+// 2. Always hash before storage (SHA-256)
+const tokenHash = crypto.createHash('sha256').update(plainToken).digest('hex');
+await db.query('INSERT INTO lm_download_tokens (token_hash) VALUES ($1)', [tokenHash]);
+
+// 3. Never log plain tokens (privacy breach)
+logger.info({ tokenHash }, 'Token created');  // ✅ CORRECT
+logger.debug({ token: plainToken });  // ❌ NEVER DO THIS
+```
+
+#### ❌ Forbidden Practices
+
+```typescript
+// NEVER use Math.random() - not cryptographically secure
+const badToken = Math.random().toString(36);  // ❌ CRITICAL SECURITY FLAW
+
+// NEVER store plain tokens in database
+await db.query('INSERT INTO lm_download_tokens (token) VALUES ($1)', [plainToken]);  // ❌ 
+
+// NEVER log plain tokens (even in debug mode)
+console.log('Generated token:', plainToken);  // ❌ SECURITY BREACH
+logger.info({ token: plainToken }, 'Token created');  // ❌ PRIVACY VIOLATION
+```
+
+#### Token Lifecycle
+
+1. **Generation:** `crypto.randomBytes(32)` → base64url encode
+2. **Hashing:** SHA-256 hash for database storage
+3. **Distribution:** Plain token sent ONCE in email, never stored
+4. **Verification:** Hash incoming token, compare with DB hash
+5. **Expiry:** Check `expires_at` and `use_count < max_uses`
+
+#### CI/CD Token Security Check
+
+Add to pre-commit or CI pipeline:
+```bash
+# Detect plain token logging (fails if found)
+grep -rn "logger.*\btoken[^H]" src/ && echo "❌ Plain token logging detected" && exit 1
+```
+
 ### Epic & Stories
 
 - **Epic:** EPIC-LM-001 (52 story points)

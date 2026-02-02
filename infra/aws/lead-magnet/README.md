@@ -5,16 +5,72 @@
 
 ---
 
+## � Quick Start (Terraform - RECOMMENDED)
+
+**Automate everything with Terraform:**
+
+```bash
+cd infra/aws/lead-magnet
+
+# 1. Copy and edit variables
+cp terraform.tfvars.example terraform.tfvars
+vim terraform.tfvars
+
+# 2. Initialize and apply
+make init
+make plan
+make apply
+
+# 3. Get DNS records to add
+make dns
+
+# 4. Get credentials
+make credentials
+```
+
+📚 **Full Guide:** See [TERRAFORM-GUIDE.md](./TERRAFORM-GUIDE.md) for complete instructions.
+
+---
+
 ## 📋 Overview
 
-This guide walks through setting up AWS infrastructure for the B2C Lead Magnet Delivery System:
+This directory contains infrastructure-as-code for the B2C Lead Magnet Delivery System:
 - **S3 Bucket** - Secure storage for PDF lead magnet
 - **Amazon SES** - Email delivery (double opt-in)
 - **IAM User** - Minimal permissions for service access
 
+### Setup Options
+
+1. **Terraform (Recommended)** - Automated, reproducible, version-controlled
+2. **Manual AWS Console** - Step-by-step instructions below
+
 ---
 
-## 🪣 S3 Bucket Setup
+## 🎯 Terraform Setup (Recommended)
+
+See [TERRAFORM-GUIDE.md](./TERRAFORM-GUIDE.md) for complete Terraform setup instructions.
+
+### Terraform Files
+
+| File | Purpose |
+|------|---------|
+| `main.tf` | Provider configuration |
+| `variables.tf` | Input variables |
+| `ses.tf` | SES domain/email verification |
+| `s3.tf` | S3 bucket configuration |
+| `iam.tf` | IAM user and policies |
+| `outputs.tf` | Output values (credentials, DNS records) |
+| `backend.tf` | S3 backend for state (optional) |
+| `Makefile` | Convenient shortcuts |
+| `TERRAFORM-GUIDE.md` | Complete setup guide |
+
+---
+
+## 🖐️ Manual Setup (AWS Console)
+
+**Only use this if you cannot use Terraform.**
+
+### 🪣 S3 Bucket Setup
 
 ### Create Bucket
 

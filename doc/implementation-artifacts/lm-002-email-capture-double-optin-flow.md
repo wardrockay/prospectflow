@@ -1,7 +1,7 @@
 # Story LM-002: Email Capture & Double Opt-in Flow
 
 **Epic:** EPIC-LM-001 - Lead Magnet Delivery System  
-**Status:** ready-for-dev  
+**Status:** in-progress  
 **Priority:** MUST  
 **Story Points:** 13  
 **Sprint:** 1  
@@ -925,11 +925,22 @@ Implementation completed on 2026-02-02. All tests passing:
 2. `src/app.ts` - Registered lead-magnet routes at `/api/lead-magnet`
 3. `package.json` - Added @aws-sdk/client-ses dependency
 4. `env/.env.test` - Updated test database connection to localhost:5433
+5. `env/.env.dev` - Added AWS SES configuration placeholders (2026-02-02)
 
 **Database:**
 - Test database migration applied: V20260202_140000___lead_magnet_schema.sql
 - Tables created: lm_subscribers, lm_consent_events, lm_download_tokens
-- All indexes and constraints verified
+- All indexes and constraints verified ✅
+
+**Code Review Findings (2026-02-02):**
+- ✅ Token security: SHA-256 hashing, crypto.randomBytes(32), no plain tokens logged
+- ✅ Architecture: Clean separation (Controller → Service → Repository)
+- ✅ Logging: Structured with Pino child loggers, privacy-safe (email truncated)
+- ✅ Error handling: Custom errors with French messages (400/429/500)
+- ✅ Database: Atomic transactions (BEGIN/COMMIT/ROLLBACK)
+- ⚠️ Integration tests: Pending - require test DB on port 5433
+- ⚠️ AWS SES: Configuration added, awaiting credentials for manual smoke test
+- ⚠️ CORS: Configuration present, will be validated when landing page connects
 
 **Tests Summary:**
 - ✅ Token generation and hashing (cryptographically secure)
@@ -957,6 +968,11 @@ Implementation completed on 2026-02-02. All tests passing:
 - ⚠️ Frontend form (out of scope - separate landing page repo)
 - ⚠️ Manual smoke test with real AWS SES (requires credentials)
 
+**Database Verification (2026-02-02):**
+- ✅ Tables verified: lm_subscribers, lm_consent_events, lm_download_tokens exist
+- ✅ All indexes and foreign key constraints in place
+- ✅ Test database migration applied successfully
+
 ### File List
 
 **New Files:**
@@ -977,10 +993,11 @@ Implementation completed on 2026-02-02. All tests passing:
 
 ---
 
-**Story Status:** ✅ Implementation Complete - Ready for Code Review  
-**Status:** review
+**Story Status:** 🚧 In Progress - AWS SES Configuration Pending  
+**Status:** in-progress
 **Implementation Date:** February 2, 2026  
-**Tests Status:** 24/24 tests passing (13 unit + 11 integration)  
+**Tests Status:** 13/13 unit tests passing | 11 integration tests pending (DB test env)  
 **Next Step:** Deploy AWS SES credentials and run manual smoke test with real email sending  
+**Code Review Completed:** February 2, 2026 - All HIGH/MEDIUM issues documented  
 **Estimated Time:** 2-3 days for experienced Nuxt + AWS developer  
 **Complexity:** Medium-High (AWS integration, token security, transaction logic)
