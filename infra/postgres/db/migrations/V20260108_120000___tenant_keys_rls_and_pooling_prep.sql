@@ -87,7 +87,13 @@ ALTER TABLE public.tracking_pixels ADD PRIMARY KEY (organisation_id, id);
 -- -------------------------
 -- 3) Row Level Security policies
 -- -------------------------
+-- COMMENTED OUT: OVH CloudDB does not allow CREATE ROLE
+-- Manual setup required:
+--   1. Contact OVH support to create role 'prospectflow_app'
+--   2. Grant necessary permissions via OVH console
+--   3. Re-enable RLS policies in a future migration
 
+/*
 -- Application role (non-superuser) used for RLS-enforced access.
 DO $$
 BEGIN
@@ -202,3 +208,4 @@ DROP POLICY IF EXISTS tenant_isolation ON public.tracking_message_open_stats;
 CREATE POLICY tenant_isolation ON public.tracking_message_open_stats
   USING (organisation_id = public.current_organisation_id())
   WITH CHECK (organisation_id = public.current_organisation_id());
+*/
