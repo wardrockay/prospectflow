@@ -79,7 +79,7 @@ ALTER TABLE public.outreach_messages DROP CONSTRAINT IF EXISTS outreach_messages
 ALTER TABLE public.outreach_messages ADD PRIMARY KEY (organisation_id, id);
 
 -- Tracking
-ALTER TABLE public.tracking_pixels DROP CONSTRAINT IF EXISTS pixels_pkey;
+ALTER TABLE public.tracking_pixels DROP CONSTRAINT IF EXISTS tracking_pixels_pkey;
 ALTER TABLE public.tracking_pixels ADD PRIMARY KEY (organisation_id, id);
 
 -- public.tracking_message_open_stats already uses (organisation_id, message_id)
