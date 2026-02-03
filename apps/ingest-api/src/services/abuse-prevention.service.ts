@@ -110,6 +110,7 @@ export async function validateTurnstile(
         response: token,
         remoteip: ip,
       }),
+      signal: AbortSignal.timeout(5000), // 5s timeout to fail-open quickly
     });
 
     // Fail-open on timeout (don't block legitimate users)

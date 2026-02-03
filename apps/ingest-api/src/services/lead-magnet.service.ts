@@ -110,7 +110,7 @@ class LeadMagnetService {
       throw new LeadMagnetError('Email invalide', 'INVALID_EMAIL', 400);
     }
 
-    // AC6.7: Disposable email check (if enabled)
+    // AC6.7: Disposable email check (if enabled) - BEFORE DB query to save resources
     const disposableResult = checkDisposableEmail(normalizedEmail);
     if (!disposableResult.allowed) {
       throw new LeadMagnetError(
@@ -120,7 +120,7 @@ class LeadMagnetService {
       );
     }
 
-    // AC2.8: Check if email already exists FIRST (before rate limiting for better UX)
+    // AC2.8: Check if email already exists (after cheap validations)
     const existingSubscriber = await leadMagnetRepository.findSubscriberByEmail(normalizedEmail);
 
     if (existingSubscriber) {

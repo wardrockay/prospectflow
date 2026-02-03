@@ -80,7 +80,7 @@ development_status:
   lm-002-email-capture-double-optin-flow: done
   lm-003-download-delivery-token-management: done
   lm-004-analytics-dashboard-reporting: done
-  lm-006-rate-limiting-abuse-prevention: review
+  lm-006-rate-limiting-abuse-prevention: done
   lm-007-dashboard-lead-magnet: done
   epic-lm-001-retrospective: optional
 
