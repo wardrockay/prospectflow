@@ -60,7 +60,7 @@
       <div class="stat-card">
         <div class="stat-icon">⏱️</div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.avg_hours_to_confirm.toFixed(1) }}h</div>
+          <div class="stat-value">{{ formatAvgHours(stats.avg_hours_to_confirm) }}</div>
           <div class="stat-label">Temps moyen de confirmation</div>
         </div>
       </div>
@@ -78,6 +78,16 @@ interface Props {
 }
 
 defineProps<Props>();
+
+/**
+ * Format avg_hours_to_confirm safely (handles null/NaN/undefined)
+ */
+function formatAvgHours(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return '—';
+  }
+  return `${value.toFixed(1)}h`;
+}
 </script>
 
 <style scoped>

@@ -48,6 +48,18 @@
           <span class="link-title">Subscribers</span>
           <span class="link-description">Gérer la liste des inscrits</span>
         </NuxtLink>
+        
+        <NuxtLink to="/lead-magnet/nurture-sequences" class="link-card">
+          <span class="link-icon">📧</span>
+          <span class="link-title">Séquences de Nurturing</span>
+          <span class="link-description">Planifier les séquences d'emails</span>
+        </NuxtLink>
+        
+        <NuxtLink to="/lead-magnet/email-templates" class="link-card">
+          <span class="link-icon">📝</span>
+          <span class="link-title">Templates d'Email</span>
+          <span class="link-description">Gérer les modèles d'emails</span>
+        </NuxtLink>
       </div>
     </div>
   </div>

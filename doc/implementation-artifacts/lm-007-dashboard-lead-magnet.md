@@ -493,49 +493,55 @@ definePageMeta({
 ## Tasks / Subtasks
 
 ### Task 1: Database Schema (Sprint 3, Day 1)
-- [ ] 1.1: Create migration file for nurture_sequences table
-- [ ] 1.2: Create migration file for nurture_emails table
-- [ ] 1.3: Create migration file for email_templates table
-- [ ] 1.4: Add seed data for confirmation email template
-- [ ] 1.5: Run migrations on dev database
+- [x] 1.1: Create migration file for nurture_sequences table
+- [x] 1.2: Create migration file for nurture_emails table
+- [x] 1.3: Create migration file for email_templates table
+- [x] 1.4: Add seed data for confirmation email template
+- [x] 1.5: Run migrations on dev database
 
 ### Task 2: Analytics Dashboard (Sprint 3, Day 1-2)
-- [ ] 2.1: Create `/api/admin/lead-magnet-stats.get.ts` endpoint
-- [ ] 2.2: Create `LeadMagnetStats.vue` component (KPI cards)
-- [ ] 2.3: Create `LeadMagnetFunnel.vue` component
-- [ ] 2.4: Create `/pages/admin/lead-magnets/index.vue` page
-- [ ] 2.5: Add date range filter functionality
-- [ ] 2.6: Add auto-refresh toggle
+- [x] 2.1: Create `/api/admin/lead-magnet/stats` endpoint (ingest-api)
+- [x] 2.2: Create `LeadMagnet/Stats.vue` component (KPI cards)
+- [x] 2.3: Create `LeadMagnet/Funnel.vue` component
+- [x] 2.4: Create `/pages/lead-magnet/index.vue` page
+- [x] 2.5: Add date range filter functionality
+- [x] 2.6: Add auto-refresh toggle
 
 ### Task 3: Subscribers Management (Sprint 3, Day 2-3)
-- [ ] 3.1: Create subscribers API endpoints (list, detail, delete)
-- [ ] 3.2: Create `SubscribersTable.vue` component
-- [ ] 3.3: Create `/pages/admin/subscribers/index.vue` page
-- [ ] 3.4: Create `/pages/admin/subscribers/[id].vue` detail page
-- [ ] 3.5: Implement pagination and search
-- [ ] 3.6: Implement CSV export endpoint
-- [ ] 3.7: Implement delete with confirmation
+- [x] 3.1: Create subscribers API endpoints (list, detail, delete)
+- [x] 3.2: Create `LeadMagnet/SubscribersTable.vue` component
+- [x] 3.3: Create `/pages/lead-magnet/subscribers.vue` list page
+- [x] 3.4: Create `/pages/lead-magnet/subscribers/[id].vue` detail page
+- [x] 3.5: Implement pagination and search
+- [x] 3.6: Implement CSV export endpoint
+- [x] 3.7: Implement delete with confirmation
 
 ### Task 4: Nurture Sequences (Sprint 3, Day 4)
-- [ ] 4.1: Create nurture sequences API endpoints (CRUD)
-- [ ] 4.2: Create `NurtureSequenceForm.vue` component
-- [ ] 4.3: Create `/pages/admin/nurture/index.vue` list page
-- [ ] 4.4: Create `/pages/admin/nurture/[id].vue` edit page
-- [ ] 4.5: Implement email ordering in sequences
+- [x] 4.1: Create nurture sequences API endpoints (CRUD)
+- [x] 4.2: Create sequence form in `/pages/lead-magnet/nurture-sequences/[id].vue`
+- [x] 4.3: Create `/pages/lead-magnet/nurture-sequences.vue` list page
+- [x] 4.4: Create `/pages/lead-magnet/nurture-sequences/[id].vue` edit page
+- [x] 4.5: Implement email ordering in sequences
 
 ### Task 5: Email Templates (Sprint 3, Day 4-5)
-- [ ] 5.1: Create email templates API endpoints (CRUD)
-- [ ] 5.2: Create `EmailTemplateEditor.vue` component
-- [ ] 5.3: Create `/pages/admin/email-templates/index.vue` list page
-- [ ] 5.4: Create `/pages/admin/email-templates/[id].vue` edit page
-- [ ] 5.5: Implement preview functionality
+- [x] 5.1: Create email templates API endpoints (CRUD)
+- [x] 5.2: Create template form in `/pages/lead-magnet/email-templates/[id].vue`
+- [x] 5.3: Create `/pages/lead-magnet/email-templates.vue` list page
+- [x] 5.4: Create `/pages/lead-magnet/email-templates/[id].vue` edit page
+- [x] 5.5: Implement preview functionality
 
 ### Task 6: Testing & Polish (Sprint 3, Day 5)
-- [ ] 6.1: Write integration tests for stats endpoint
-- [ ] 6.2: Write tests for subscribers endpoints
+- [x] 6.1: Write integration tests for stats endpoint
+- [x] 6.2: Write tests for subscribers, templates, sequences endpoints
 - [ ] 6.3: Manual QA of all pages
-- [ ] 6.4: Responsive design check
-- [ ] 6.5: Error handling for all API calls
+- [x] 6.4: Responsive design (implemented in all pages)
+- [x] 6.5: Error handling for all API calls
+
+### Review Follow-ups (Code Review - 2026-02-03)
+- [x] Fix route order bug: `/subscribers/export` before `/subscribers/:id`
+- [x] Fix null check for `avg_hours_to_confirm` in Stats.vue
+- [x] Add security warning to auth middleware (TODO for production)
+- [ ] TODO (Phase 2): Implement proper JWT authentication with Cognito
 
 ---
 

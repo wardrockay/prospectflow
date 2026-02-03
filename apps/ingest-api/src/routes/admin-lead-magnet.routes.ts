@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as adminLeadMagnetController from '../controllers/admin-lead-magnet.controller.js';
-import { authenticateJWT } from '../middleware/auth.middleware.js';
+import { authenticateJWT } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
@@ -12,6 +12,13 @@ router.use(authenticateJWT);
  * Get analytics statistics for specified period
  */
 router.get('/stats', adminLeadMagnetController.getStats);
+
+/**
+ * GET /api/admin/lead-magnet/subscribers/export?search=email
+ * Export subscribers list to CSV
+ * NOTE: Must be declared BEFORE /subscribers/:id to avoid 'export' being captured as :id
+ */
+router.get('/subscribers/export', adminLeadMagnetController.exportSubscribers);
 
 /**
  * GET /api/admin/lead-magnet/subscribers?page=1&limit=25&search=email&sortBy=created_at&sortOrder=desc
@@ -30,11 +37,5 @@ router.get('/subscribers/:id', adminLeadMagnetController.getSubscriberDetail);
  * Delete subscriber and all related data (RGPD compliance)
  */
 router.delete('/subscribers/:id', adminLeadMagnetController.deleteSubscriber);
-
-/**
- * GET /api/admin/lead-magnet/subscribers/export?search=email
- * Export subscribers list to CSV
- */
-router.get('/subscribers/export', adminLeadMagnetController.exportSubscribers);
 
 export default router;
