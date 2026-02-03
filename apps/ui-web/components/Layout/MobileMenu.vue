@@ -27,6 +27,11 @@
       to: '/prospects',
       icon: 'i-heroicons-users',
     },
+    {
+      label: 'Lead Magnet',
+      to: '/lead-magnet',
+      icon: 'i-heroicons-gift',
+    },
   ];
 
   /**

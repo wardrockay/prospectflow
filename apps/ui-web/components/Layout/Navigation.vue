@@ -16,6 +16,11 @@
       icon: 'i-heroicons-users',
       badge: computed(() => pendingImportsCount.value),
     },
+    {
+      label: 'Lead Magnet',
+      to: '/lead-magnet',
+      icon: 'i-heroicons-gift',
+    },
   ];
 
   /**
