@@ -15,6 +15,8 @@ const signupSchema = z.object({
   email: z.string().email('Email invalide'),
   consentGiven: z.boolean(),
   source: z.string().optional(),
+  website: z.string().optional(), // Honeypot field
+  'cf-turnstile-response': z.string().optional(), // Cloudflare Turnstile token
 });
 
 /**
@@ -63,6 +65,8 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     }
 
     const { email, consentGiven, source } = validationResult.data;
+    const website = validationResult.data.website;
+    const turnstileToken = validationResult.data['cf-turnstile-response'];
 
     // Get client metadata
     const ipAddress = getClientIP(req);
@@ -80,6 +84,8 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
       ipAddress,
       userAgent,
       source,
+      website,
+      turnstileToken,
     });
 
     requestLogger.info({ email: email.substring(0, 3) + '***' }, 'Signup successful');

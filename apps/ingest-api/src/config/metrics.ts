@@ -183,3 +183,47 @@ export const duplicateCheckDuration = new promClient.Histogram({
   buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5],
   registers: [register],
 });
+
+/**
+ * Lead Magnet Abuse Prevention Metrics (Story LM-006)
+ */
+
+/**
+ * IP rate limit hits counter (AC6.9)
+ */
+export const leadMagnetIpRateLimitHitsTotal = new promClient.Counter({
+  name: 'lead_magnet_ip_rate_limit_hits_total',
+  help: 'Total number of IP rate limit hits',
+  labelNames: [],
+  registers: [register],
+});
+
+/**
+ * Honeypot detections counter (AC6.9)
+ */
+export const leadMagnetHoneypotDetectionsTotal = new promClient.Counter({
+  name: 'lead_magnet_honeypot_detections_total',
+  help: 'Total number of honeypot field detections',
+  labelNames: [],
+  registers: [register],
+});
+
+/**
+ * Turnstile validation failures counter (AC6.9)
+ */
+export const leadMagnetTurnstileFailuresTotal = new promClient.Counter({
+  name: 'lead_magnet_turnstile_failures_total',
+  help: 'Total number of Turnstile validation failures',
+  labelNames: [],
+  registers: [register],
+});
+
+/**
+ * Disposable email blocks counter (AC6.9)
+ */
+export const leadMagnetDisposableEmailBlocksTotal = new promClient.Counter({
+  name: 'lead_magnet_disposable_email_blocks_total',
+  help: 'Total number of disposable email blocks',
+  labelNames: [],
+  registers: [register],
+});

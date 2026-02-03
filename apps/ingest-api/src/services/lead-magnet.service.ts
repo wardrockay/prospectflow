@@ -4,6 +4,11 @@ import { sendConfirmationEmail } from './email.service.js';
 import { generateToken, hashToken } from '../utils/token.utils.js';
 import { getLeadMagnetDownloadUrl } from '../utils/s3.utils.js';
 import { getPool } from '../config/database.js';
+import {
+  checkHoneypot,
+  checkDisposableEmail,
+  validateTurnstile,
+} from './abuse-prevention.service.js';
 import type { PoolClient } from 'pg';
 
 const logger = createChildLogger('lead-magnet-service');
@@ -28,6 +33,8 @@ export interface SignupRequest {
   ipAddress: string;
   userAgent: string;
   source?: string;
+  website?: string; // Honeypot field
+  turnstileToken?: string; // Cloudflare Turnstile token
 }
 
 export interface SignupResponse {
@@ -52,9 +59,37 @@ class LeadMagnetService {
    * Implements all business rules from AC2.4-AC2.12
    */
   async handleSignup(request: SignupRequest): Promise<SignupResponse> {
-    const { email, consentGiven, ipAddress, userAgent, source = 'landing_page' } = request;
+    const {
+      email,
+      consentGiven,
+      ipAddress,
+      userAgent,
+      source = 'landing_page',
+      website,
+      turnstileToken,
+    } = request;
 
     logger.info({ email: email.substring(0, 3) + '***', source }, 'Processing signup request');
+
+    // AC6.4: Honeypot check (silent failure - return success without processing)
+    const honeypotResult = checkHoneypot(website);
+    if (!honeypotResult.allowed) {
+      // Return fake success to not reveal detection to bot
+      return {
+        success: true,
+        message: 'Email envoyé',
+      };
+    }
+
+    // AC6.5: Turnstile validation (if enabled)
+    const turnstileResult = await validateTurnstile(turnstileToken, ipAddress);
+    if (!turnstileResult.allowed) {
+      throw new LeadMagnetError(
+        'Vérification de sécurité échouée. Veuillez réessayer.',
+        turnstileResult.code || 'CAPTCHA_FAILED',
+        400,
+      );
+    }
 
     // AC2.5: Validate consent
     if (!consentGiven) {
@@ -73,6 +108,16 @@ class LeadMagnetService {
     if (!normalizedEmail.includes('@')) {
       logger.warn({ email: normalizedEmail.substring(0, 3) + '***' }, 'Invalid email format');
       throw new LeadMagnetError('Email invalide', 'INVALID_EMAIL', 400);
+    }
+
+    // AC6.7: Disposable email check (if enabled)
+    const disposableResult = checkDisposableEmail(normalizedEmail);
+    if (!disposableResult.allowed) {
+      throw new LeadMagnetError(
+        'Veuillez utiliser une adresse email permanente.',
+        'DISPOSABLE_EMAIL_BLOCKED',
+        400,
+      );
     }
 
     // AC2.8: Check if email already exists FIRST (before rate limiting for better UX)
