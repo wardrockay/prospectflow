@@ -129,7 +129,7 @@ function getHtmlTemplate(confirmationUrl: string, unsubscribeUrl: string): strin
     <div class="content">
       <p><strong>Bonjour,</strong></p>
       
-      <p>Merci de votre intérêt pour le <strong>Guide de la Mariée Sereine</strong> !</p>
+      <p>Merci de votre intérêt pour le <strong>LE GUIDE ULTIME DU PLANNING PHOTO MARIAGE</strong> !</p>
       
       <p>Cliquez sur le bouton ci-dessous pour télécharger votre guide gratuit :</p>
       
@@ -174,7 +174,7 @@ function getTextTemplate(confirmationUrl: string, unsubscribeUrl: string): strin
   return `
 Bonjour,
 
-Merci de votre intérêt pour le Guide de la Mariée Sereine!
+Merci de votre intérêt pour le LE GUIDE ULTIME DU PLANNING PHOTO MARIAGE!
 
 Cliquez sur le lien ci-dessous pour télécharger votre guide gratuit:
 
