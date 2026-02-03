@@ -9,4 +9,10 @@ const router = Router();
  */
 router.post('/signup', leadMagnetController.signup);
 
+/**
+ * GET /api/lead-magnet/confirm/:token
+ * Confirm email and return download URL (JSON response)
+ */
+router.get('/confirm/:token', leadMagnetController.confirmToken);
+
 export default router;

@@ -23,7 +23,9 @@
     "clean_install": "rm -r node_modules/ pnpm-lock.yaml dist/ && pnpm i && tsc "
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.981.0",
     "@aws-sdk/client-ses": "^3.980.0",
+    "@aws-sdk/s3-request-presigner": "^3.981.0",
     "@prospectflow/auth-core": "workspace:*",
     "@sentry/node": "^10.33.0",
     "@types/cookie-parser": "^1.4.8",

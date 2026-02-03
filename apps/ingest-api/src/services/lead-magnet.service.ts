@@ -1,7 +1,10 @@
 import { createChildLogger } from '../utils/logger.js';
 import { leadMagnetRepository } from '../repositories/lead-magnet.repository.js';
 import { sendConfirmationEmail } from './email.service.js';
-import { generateToken } from '../utils/token.utils.js';
+import { generateToken, hashToken } from '../utils/token.utils.js';
+import { getLeadMagnetDownloadUrl } from '../utils/s3.utils.js';
+import { getPool } from '../config/database.js';
+import type { PoolClient } from 'pg';
 
 const logger = createChildLogger('LeadMagnetService');
 
@@ -29,6 +32,14 @@ export interface SignupRequest {
 
 export interface SignupResponse {
   success: boolean;
+  message: string;
+}
+
+export interface ConfirmTokenResult {
+  success: boolean;
+  status: 'confirmed' | 'already_confirmed' | 'expired' | 'invalid' | 'limit_reached' | 'error';
+  downloadUrl?: string;
+  error?: string;
   message: string;
 }
 
@@ -198,6 +209,144 @@ class LeadMagnetService {
         'INTERNAL_ERROR',
         500,
       );
+    }
+  }
+
+  /**
+   * Confirm token and generate download URL
+   * Implements all business rules from AC3.4-AC3.11
+   */
+  async confirmToken(
+    plainToken: string,
+    ipAddress: string,
+    userAgent: string,
+  ): Promise<ConfirmTokenResult> {
+    const tokenHash = hashToken(plainToken);
+    const pool = getPool();
+
+    logger.info({ tokenHashPrefix: tokenHash.substring(0, 8) }, 'Processing token confirmation');
+
+    // Step 1: Validate token
+    const tokenResult = await pool.query(
+      `SELECT dt.id, dt.subscriber_id, dt.expires_at, dt.use_count, dt.max_uses, dt.used_at,
+              s.email, s.status
+       FROM lm_download_tokens dt
+       JOIN lm_subscribers s ON s.id = dt.subscriber_id
+       WHERE dt.token_hash = $1 AND dt.purpose = 'confirm_and_download'`,
+      [tokenHash],
+    );
+
+    if (tokenResult.rows.length === 0) {
+      logger.warn({ tokenHashPrefix: tokenHash.substring(0, 8) }, 'Invalid token attempted');
+      return {
+        success: false,
+        status: 'invalid',
+        error: 'TOKEN_INVALID',
+        message: "Ce lien n'est pas valide",
+      };
+    }
+
+    const tokenData = tokenResult.rows[0];
+
+    // Step 2: Check expiration (48h from creation)
+    if (new Date(tokenData.expires_at) < new Date()) {
+      logger.info({ subscriberId: tokenData.subscriber_id }, 'Expired token used');
+      return {
+        success: false,
+        status: 'expired',
+        error: 'TOKEN_EXPIRED',
+        message: 'Ce lien a expiré après 48 heures',
+      };
+    }
+
+    // Step 3: Check usage limit (currently 999, effectively unlimited)
+    if (tokenData.use_count >= tokenData.max_uses) {
+      logger.warn({ subscriberId: tokenData.subscriber_id }, 'Token usage limit reached');
+      return {
+        success: false,
+        status: 'limit_reached',
+        error: 'USAGE_LIMIT',
+        message: 'Limite de téléchargements atteinte',
+      };
+    }
+
+    // Step 4: Begin database transaction
+    const client: PoolClient = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const isFirstConfirmation = tokenData.status === 'pending';
+
+      // Step 5: Update subscriber status if pending
+      if (isFirstConfirmation) {
+        await client.query(
+          `UPDATE lm_subscribers 
+           SET status = 'confirmed', confirmed_at = NOW()
+           WHERE id = $1`,
+          [tokenData.subscriber_id],
+        );
+
+        // Log consent confirmation event (RGPD audit trail)
+        await client.query(
+          `INSERT INTO lm_consent_events 
+           (subscriber_id, event_type, ip, user_agent, occurred_at)
+           VALUES ($1, 'confirm', $2, $3, NOW())`,
+          [tokenData.subscriber_id, ipAddress, userAgent],
+        );
+
+        logger.info(
+          { subscriberId: tokenData.subscriber_id, email: tokenData.email.substring(0, 3) + '***' },
+          'Subscriber confirmed',
+        );
+      }
+
+      // Step 6: Update token usage
+      const isFirstDownload = !tokenData.used_at;
+      if (isFirstDownload) {
+        await client.query(
+          `UPDATE lm_download_tokens 
+           SET use_count = use_count + 1, used_at = NOW() 
+           WHERE id = $1`,
+          [tokenData.id],
+        );
+      } else {
+        await client.query(
+          `UPDATE lm_download_tokens 
+           SET use_count = use_count + 1 
+           WHERE id = $1`,
+          [tokenData.id],
+        );
+      }
+
+      await client.query('COMMIT');
+
+      // Step 7: Generate S3 signed URL (after successful DB transaction)
+      const downloadUrl = await getLeadMagnetDownloadUrl();
+
+      logger.info(
+        {
+          subscriberId: tokenData.subscriber_id,
+          useCount: tokenData.use_count + 1,
+          isFirstConfirmation,
+        },
+        'Download URL generated',
+      );
+
+      return {
+        success: true,
+        status: isFirstConfirmation ? 'confirmed' : 'already_confirmed',
+        downloadUrl,
+        message: isFirstConfirmation
+          ? 'Email confirmé, téléchargement prêt'
+          : 'Nouveau lien de téléchargement généré',
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error({ error, subscriberId: tokenData.subscriber_id }, 'Transaction failed');
+      throw error;
+    } finally {
+      client.release();
     }
   }
 }

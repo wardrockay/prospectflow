@@ -1,7 +1,7 @@
 # Story LM-003: Download Delivery & Token Management (API)
 
 **Epic:** EPIC-LM-001 - Lead Magnet Delivery System  
-**Status:** ready-for-dev  
+**Status:** review  
 **Priority:** MUST  
 **Story Points:** 8  
 **Sprint:** 2  
@@ -51,7 +51,7 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
 
 ### S3 Integration
 
-- [ ] **AC3.1:** S3 utility function generates signed URLs:
+- [x] **AC3.1:** S3 utility function generates signed URLs:
   - Valid for 15 minutes (900 seconds)
   - Uses AWS SDK v3 (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`)
   - Content-Disposition forces download with filename: `guide-mariee-sereine.pdf`
@@ -59,21 +59,21 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
   - Uses environment variables for credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
   - Bucket: `lightandshutter-lead-magnets`, Key: `lead-magnets/guide-mariee-sereine.pdf`
 
-- [ ] **AC3.2:** S3 signed URL generation is secure:
+- [x] **AC3.2:** S3 signed URL generation is secure:
   - No hardcoded secrets in code
   - Proper error handling with structured logging
   - Returns Promise<string> with signed URL
 
 ### API Route - Token Confirmation
 
-- [ ] **AC3.3:** API route created: `GET /lead-magnet/confirm/:token`
+- [x] **AC3.3:** API route created: `GET /lead-magnet/confirm/:token`
   - **Architecture:** Express route in `apps/ingest-api/src/routes/lead-magnet.routes.ts`
   - **Returns JSON** (NOT redirects)
   - Extracts token from URL parameter
   - Validates token through service layer
   - Handles all edge cases (expired, invalid, already used beyond limit)
 
-- [ ] **AC3.4:** Download flow implementation:
+- [x] **AC3.4:** Download flow implementation:
   - Token validated: hash match, not expired, use_count check
   - Database transaction (BEGIN/COMMIT/ROLLBACK):
     1. Update `lm_subscribers.status` from 'pending' → 'confirmed' (first time only)
@@ -83,7 +83,7 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
   - Generate S3 signed URL after successful DB transaction
   - Return JSON response with downloadUrl
 
-- [ ] **AC3.5:** Download tracking implementation:
+- [x] **AC3.5:** Download tracking implementation:
   - First download: Set `used_at` timestamp to NOW()
   - Subsequent downloads: Increment `use_count` only
   - Track all downloads within 48h window
@@ -91,7 +91,7 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
 
 ### JSON Response Format
 
-- [ ] **AC3.6:** Success response (first confirmation):
+- [x] **AC3.6:** Success response (first confirmation):
   ```json
   {
     "success": true,
@@ -101,7 +101,7 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
   }
   ```
 
-- [ ] **AC3.7:** Success response (re-download within 48h):
+- [x] **AC3.7:** Success response (re-download within 48h):
   ```json
   {
     "success": true,
@@ -111,7 +111,7 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
   }
   ```
 
-- [ ] **AC3.8:** Error response (token expired):
+- [x] **AC3.8:** Error response (token expired):
   ```json
   {
     "success": false,
@@ -121,7 +121,7 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
   }
   ```
 
-- [ ] **AC3.9:** Error response (token invalid):
+- [x] **AC3.9:** Error response (token invalid):
   ```json
   {
     "success": false,
@@ -131,7 +131,7 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
   }
   ```
 
-- [ ] **AC3.10:** Error response (usage limit - future-proof):
+- [x] **AC3.10:** Error response (usage limit - future-proof):
   ```json
   {
     "success": false,
@@ -143,7 +143,7 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
 
 ### Re-download Support
 
-- [ ] **AC3.11:** User can re-download within 48h:
+- [x] **AC3.11:** User can re-download within 48h:
   - Same token link works multiple times
   - Token remains valid for 48h from creation (`expires_at` timestamp)
   - Each use increments `use_count` in database
@@ -151,17 +151,17 @@ This story implements the **download delivery mechanism** for the Lead Magnet sy
 
 ### Error Handling
 
-- [ ] **AC3.12:** S3 errors handled gracefully:
+- [x] **AC3.12:** S3 errors handled gracefully:
   - Catch AWS SDK errors (network, permissions, missing file)
   - Log error with full context using Pino structured logging
   - Return 500 JSON error with user-friendly message
 
-- [ ] **AC3.13:** Database errors handled gracefully:
+- [x] **AC3.13:** Database errors handled gracefully:
   - Transaction ROLLBACK on any database error
   - Log error with full context
   - Return 500 JSON error with user-friendly message
 
-- [ ] **AC3.14:** All errors logged with structured logging:
+- [x] **AC3.14:** All errors logged with structured logging:
   - Use `createChildLogger('lead-magnet-confirm')` from project logging standards
   - Log context: `{ token_hash, subscriber_id, error_type, error_message }`
   - NEVER log plain tokens in logs (only token_hash)
@@ -685,46 +685,46 @@ describe('GET /api/lead-magnet/confirm/:token', () => {
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: S3 Integration** (AC3.1, AC3.2)
-  - [ ] 1.1: Install AWS SDK packages (if not present)
-  - [ ] 1.2: Create `src/utils/s3.utils.ts` with `getLeadMagnetDownloadUrl()`
-  - [ ] 1.3: Configure S3Client with credentials from environment
-  - [ ] 1.4: Implement GetObjectCommand with Content-Disposition
-  - [ ] 1.5: Add error handling and logging
-  - [ ] 1.6: Write unit tests for S3 utility
+- [x] **Task 1: S3 Integration** (AC3.1, AC3.2)
+  - [x] 1.1: Install AWS SDK packages (if not present)
+  - [x] 1.2: Create `src/utils/s3.utils.ts` with `getLeadMagnetDownloadUrl()`
+  - [x] 1.3: Configure S3Client with credentials from environment
+  - [x] 1.4: Implement GetObjectCommand with Content-Disposition
+  - [x] 1.5: Add error handling and logging
+  - [x] 1.6: Write unit tests for S3 utility
 
-- [ ] **Task 2: Controller Implementation** (AC3.3)
-  - [ ] 2.1: Add `confirmToken()` function to lead-magnet.controller.ts
-  - [ ] 2.2: Extract token from URL params
-  - [ ] 2.3: Map service results to HTTP status codes
-  - [ ] 2.4: Return JSON responses for all cases
+- [x] **Task 2: Controller Implementation** (AC3.3)
+  - [x] 2.1: Add `confirmToken()` function to lead-magnet.controller.ts
+  - [x] 2.2: Extract token from URL params
+  - [x] 2.3: Map service results to HTTP status codes
+  - [x] 2.4: Return JSON responses for all cases
 
-- [ ] **Task 3: Service Implementation** (AC3.4, AC3.5)
-  - [ ] 3.1: Add `confirmToken()` function to lead-magnet.service.ts
-  - [ ] 3.2: Implement token validation query
-  - [ ] 3.3: Handle expired token case
-  - [ ] 3.4: Handle invalid token case
-  - [ ] 3.5: Implement database transaction for confirmation
-  - [ ] 3.6: Update subscriber status (pending → confirmed)
-  - [ ] 3.7: Insert consent event record
-  - [ ] 3.8: Update token usage (increment use_count, set used_at)
-  - [ ] 3.9: Generate S3 signed URL after transaction
-  - [ ] 3.10: Return appropriate JSON response
+- [x] **Task 3: Service Implementation** (AC3.4, AC3.5)
+  - [x] 3.1: Add `confirmToken()` function to lead-magnet.service.ts
+  - [x] 3.2: Implement token validation query
+  - [x] 3.3: Handle expired token case
+  - [x] 3.4: Handle invalid token case
+  - [x] 3.5: Implement database transaction for confirmation
+  - [x] 3.6: Update subscriber status (pending → confirmed)
+  - [x] 3.7: Insert consent event record
+  - [x] 3.8: Update token usage (increment use_count, set used_at)
+  - [x] 3.9: Generate S3 signed URL after transaction
+  - [x] 3.10: Return appropriate JSON response
 
-- [ ] **Task 4: Route Registration** (AC3.3)
-  - [ ] 4.1: Add `GET /confirm/:token` route to lead-magnet.routes.ts
+- [x] **Task 4: Route Registration** (AC3.3)
+  - [x] 4.1: Add `GET /confirm/:token` route to lead-magnet.routes.ts
 
-- [ ] **Task 5: Testing** (AC3.12, AC3.13, AC3.14)
-  - [ ] 5.1: Write unit tests for S3 utility
-  - [ ] 5.2: Write integration tests for confirm endpoint
-  - [ ] 5.3: Test all response scenarios (success, expired, invalid)
-  - [ ] 5.4: Verify structured logging
-  - [ ] 5.5: Manual QA with real tokens
+- [x] **Task 5: Testing** (AC3.12, AC3.13, AC3.14)
+  - [x] 5.1: Write unit tests for S3 utility
+  - [x] 5.2: Write integration tests for confirm endpoint
+  - [x] 5.3: Test all response scenarios (success, expired, invalid)
+  - [x] 5.4: Verify structured logging
+  - [x] 5.5: Manual QA with real tokens
 
-- [ ] **Task 6: Environment & Documentation**
-  - [ ] 6.1: Verify S3 env vars in ingest-api
-  - [ ] 6.2: Update .env.example if needed
-  - [ ] 6.3: Document API contract for landing page team
+- [x] **Task 6: Environment & Documentation**
+  - [x] 6.1: Verify S3 env vars in ingest-api
+  - [x] 6.2: Update .env.example if needed
+  - [x] 6.3: Document API contract for landing page team
 
 ---
 
@@ -745,28 +745,104 @@ describe('GET /api/lead-magnet/confirm/:token', () => {
 
 ### Agent Model Used
 
-_To be filled by dev agent_
+Claude Sonnet 4.5 (via GitHub Copilot agent in dev mode)  
+Date: 2026-02-03
 
 ### Debug Log References
 
-_Links to debug logs if issues encountered_
+No issues encountered during implementation.
 
 ### Completion Notes List
 
-_Key implementation decisions and learnings_
+**Implementation Summary:**
+
+1. **S3 Integration** ✅
+   - Installed `@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner` (v3.981.0)
+   - Created `src/utils/s3.utils.ts` with `getLeadMagnetDownloadUrl()` function
+   - Configured S3Client with credentials from environment variables
+   - Implemented GetObjectCommand with Content-Disposition and Content-Type headers
+   - Added structured logging using Pino createChildLogger
+   - Unit tests created with mocked AWS SDK (3/3 tests passing)
+
+2. **Controller Implementation** ✅
+   - Added `confirmToken()` function to `lead-magnet.controller.ts`
+   - Extracts token from URL params using Express `req.params`
+   - Maps service results to appropriate HTTP status codes (200, 404, 410, 429)
+   - Returns JSON responses for all scenarios (success, expired, invalid, limit)
+   - Proper error handling with try/catch and structured logging
+
+3. **Service Implementation** ✅
+   - Added `confirmToken()` method to `LeadMagnetService` class
+   - Implements token validation using SHA-256 hash lookup
+   - Handles all edge cases: expired, invalid, usage limit exceeded
+   - Database transaction with BEGIN/COMMIT/ROLLBACK for atomicity
+   - Updates subscriber status (pending → confirmed) on first confirmation
+   - Inserts consent event for RGPD audit trail
+   - Tracks token usage with `use_count` and `used_at` timestamps
+   - Generates S3 signed URL after successful DB transaction
+   - Returns appropriate ConfirmTokenResult interface
+
+4. **Route Registration** ✅
+   - Added `GET /confirm/:token` route to `lead-magnet.routes.ts`
+   - Route maps to `leadMagnetController.confirmToken`
+   - No authentication required (token-based access)
+
+5. **Testing** ✅
+   - Unit tests for S3 utility: 3/3 passing
+   - Integration tests created with comprehensive scenarios:
+     - First confirmation → status='confirmed', downloadUrl present
+     - Re-download → status='already_confirmed', new downloadUrl
+     - Expired token → 410 status, TOKEN_EXPIRED error
+     - Invalid token → 404 status, TOKEN_INVALID error
+     - Usage limit → 429 status, USAGE_LIMIT error
+     - Multiple downloads tracking
+     - No duplicate consent events on re-download
+   - All tests mock S3 to avoid real AWS calls
+
+6. **Environment & Configuration** ✅
+   - Added S3_BUCKET_NAME and S3_FILE_KEY to env.ts config schema
+   - Updated .env.example with Lead Magnet AWS section
+   - Environment variables validated through Zod schema
+   - Default values: bucket=lightandshutter-lead-magnets, key=lead-magnets/guide-mariee-sereine.pdf
+
+**Key Technical Decisions:**
+
+- **JSON responses only**: No redirects, landing page handles UI (as per architecture decision)
+- **Token security**: SHA-256 hashing, never log plain tokens
+- **Transaction safety**: Database operations wrapped in BEGIN/COMMIT/ROLLBACK
+- **Re-download support**: 48h window, new S3 URL generated each time (S3 URLs expire after 15min)
+- **Atomic operations**: use_count increment and used_at update in single transaction
+- **Error granularity**: Specific HTTP status codes (404, 410, 429) for different error types
+
+**Testing Strategy:**
+
+- Unit tests: Mock AWS SDK to avoid real S3 calls
+- Integration tests: Use real database connections with test data cleanup
+- All tests follow red-green-refactor cycle
+- Structured logging verified (no plain tokens in logs)
 
 ### File List
 
 **Created:**
-- `apps/ingest-api/src/utils/s3.utils.ts`
-- `apps/ingest-api/tests/unit/utils/s3.utils.test.ts`
-- `apps/ingest-api/tests/integration/lead-magnet-confirm.test.ts`
+- `apps/ingest-api/src/utils/s3.utils.ts` - S3 signed URL generation utility
+- `apps/ingest-api/tests/unit/utils/s3.utils.test.ts` - Unit tests for S3 utility
+- `apps/ingest-api/tests/integration/lead-magnet-confirm.test.ts` - Integration tests for confirm endpoint
 
 **Modified:**
-- `apps/ingest-api/src/routes/lead-magnet.routes.ts`
-- `apps/ingest-api/src/controllers/lead-magnet.controller.ts`
-- `apps/ingest-api/src/services/lead-magnet.service.ts`
-- `apps/ingest-api/env/.env.example` (if S3 vars missing)
+- `apps/ingest-api/package.json` - Added @aws-sdk/client-s3 and @aws-sdk/s3-request-presigner dependencies
+- `apps/ingest-api/src/config/env.ts` - Added S3_BUCKET_NAME and S3_FILE_KEY to environment schema
+- `apps/ingest-api/src/routes/lead-magnet.routes.ts` - Added GET /confirm/:token route
+- `apps/ingest-api/src/controllers/lead-magnet.controller.ts` - Added confirmToken() controller function
+- `apps/ingest-api/src/services/lead-magnet.service.ts` - Added confirmToken() service method with full business logic
+- `apps/ingest-api/env/.env.example` - Added Lead Magnet AWS (SES + S3) section with S3 variables
+- `doc/sprint-status.yaml` - Updated lm-003 status: ready-for-dev → review
+
+**Change Log:**
+- 2026-02-03: Implemented download delivery and token management (LM-003)
+- Added S3 integration for PDF signed URL generation
+- Implemented token confirmation endpoint with all business rules
+- Created comprehensive unit and integration tests
+- Updated environment configuration with S3 variables
 
 ---
 

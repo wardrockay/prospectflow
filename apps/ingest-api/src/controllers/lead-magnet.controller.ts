@@ -106,3 +106,66 @@ export const signup = async (req: Request, res: Response, next: NextFunction): P
     });
   }
 };
+
+/**
+ * GET /api/lead-magnet/confirm/:token
+ * Confirm email and return download URL (JSON response)
+ */
+export const confirmToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  const { token } = req.params;
+  const requestId = req.headers['x-request-id'] as string;
+  const requestLogger = logger.child({ requestId });
+
+  requestLogger.info({ tokenPrefix: token?.substring(0, 8) }, 'Token confirmation request received');
+
+  if (!token) {
+    requestLogger.warn('Token missing in request');
+    res.status(400).json({
+      success: false,
+      status: 'invalid',
+      error: 'TOKEN_MISSING',
+      message: 'Token requis',
+    });
+    return;
+  }
+
+  try {
+    // Get client metadata
+    const ipAddress = getClientIP(req);
+    const userAgent = getUserAgent(req);
+
+    // Call service layer
+    const result = await leadMagnetService.confirmToken(token, ipAddress, userAgent);
+
+    if (result.success) {
+      requestLogger.info({ status: result.status }, 'Token confirmation successful');
+      res.status(200).json(result);
+    } else {
+      // Map error status to HTTP status code
+      const statusCode =
+        result.error === 'TOKEN_INVALID'
+          ? 404
+          : result.error === 'TOKEN_EXPIRED'
+            ? 410
+            : result.error === 'USAGE_LIMIT'
+              ? 429
+              : 400;
+
+      requestLogger.warn({ error: result.error, status: result.status }, 'Token validation failed');
+      res.status(statusCode).json(result);
+    }
+  } catch (error) {
+    requestLogger.error({ err: error, tokenPrefix: token.substring(0, 8) }, 'Token confirmation failed');
+    res.status(500).json({
+      success: false,
+      status: 'error',
+      error: 'INTERNAL_ERROR',
+      message: 'Erreur lors de la confirmation. Veuillez réessayer.',
+    });
+  }
+};
+

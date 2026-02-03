@@ -33,11 +33,13 @@ const envSchema = z.object({
   COGNITO_CLIENT_ID: z.string(),
   COGNITO_ISSUER: z.string(),
 
-  // Lead Magnet AWS (SES)
+  // Lead Magnet AWS (SES + S3)
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   SES_FROM_EMAIL: z.string().optional(),
   BASE_URL: z.string().optional(),
+  S3_BUCKET_NAME: z.string().optional(),
+  S3_FILE_KEY: z.string().optional(),
 
   // Sentry
   SENTRY_DSN: z.string().optional(),
@@ -78,6 +80,8 @@ const parsedEnv = envSchema.parse({
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
   SES_FROM_EMAIL: process.env.SES_FROM_EMAIL,
   BASE_URL: process.env.BASE_URL,
+  S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
+  S3_FILE_KEY: process.env.S3_FILE_KEY,
 
   // Sentry
   SENTRY_DSN: process.env.SENTRY_DSN,
@@ -111,13 +115,15 @@ export const env = {
     issuer: parsedEnv.COGNITO_ISSUER,
   },
 
-  // Lead Magnet AWS (SES)
+  // Lead Magnet AWS (SES + S3)
   leadMagnet: {
     awsRegion: parsedEnv.AWS_REGION,
     awsAccessKeyId: parsedEnv.AWS_ACCESS_KEY_ID,
     awsSecretAccessKey: parsedEnv.AWS_SECRET_ACCESS_KEY,
     sesFromEmail: parsedEnv.SES_FROM_EMAIL,
     baseUrl: parsedEnv.BASE_URL,
+    s3BucketName: parsedEnv.S3_BUCKET_NAME,
+    s3FileKey: parsedEnv.S3_FILE_KEY,
   },
 
   // Sentry configuration
