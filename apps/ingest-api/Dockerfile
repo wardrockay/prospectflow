@@ -47,6 +47,8 @@ COPY --from=builder /usr/src/app/packages/auth-core/dist ./packages/auth-core/di
 # Copy ingest-api built application
 COPY --from=builder /usr/src/app/apps/ingest-api/package.json ./apps/ingest-api/
 COPY --from=builder /usr/src/app/apps/ingest-api/dist ./apps/ingest-api/dist
+# Copy data files (JSON assets not compiled by TypeScript)
+COPY --from=builder /usr/src/app/apps/ingest-api/src/data ./apps/ingest-api/dist/data
 
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
