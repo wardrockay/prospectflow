@@ -82,6 +82,7 @@ development_status:
   lm-004-analytics-dashboard-reporting: ready-for-dev
   lm-005-email-template-design-copy: backlog
   lm-006-rate-limiting-abuse-prevention: backlog
+  lm-007-dashboard-lead-magnet: in-progress
   epic-lm-001-retrospective: optional
 
   # Epic E1: Campaign Management Foundation
