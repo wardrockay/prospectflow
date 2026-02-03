@@ -9,33 +9,29 @@
 -- GRANT PERMISSIONS ON EXISTING TABLES
 -- ============================================================================
 
--- lm_subscribers
+-- lm_subscribers (from V20260202_140000)
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_subscribers TO prospectflow;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_subscribers TO postgres;
 
--- lm_consent_events
+-- lm_consent_events (from V20260202_140000)
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_consent_events TO prospectflow;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_consent_events TO postgres;
 
--- lm_download_tokens
+-- lm_download_tokens (from V20260202_140000)
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_download_tokens TO prospectflow;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_download_tokens TO postgres;
 
--- lm_nurture_sequences (if exists from V20260203_140000)
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_nurture_sequences TO prospectflow;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_nurture_sequences TO postgres;
-
--- lm_nurture_steps (if exists)
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_nurture_steps TO prospectflow;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_nurture_steps TO postgres;
-
--- lm_email_templates (if exists)
+-- lm_email_templates (from V20260203_140000)
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_email_templates TO prospectflow;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_email_templates TO postgres;
 
--- lm_subscriber_sequence_state (if exists)
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_subscriber_sequence_state TO prospectflow;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_subscriber_sequence_state TO postgres;
+-- lm_nurture_sequences (from V20260203_140000)
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_nurture_sequences TO prospectflow;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_nurture_sequences TO postgres;
+
+-- lm_nurture_emails (from V20260203_140000)
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_nurture_emails TO prospectflow;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.lm_nurture_emails TO postgres;
 
 -- ============================================================================
 -- GRANT PERMISSIONS ON SEQUENCES (for auto-increment if any)
