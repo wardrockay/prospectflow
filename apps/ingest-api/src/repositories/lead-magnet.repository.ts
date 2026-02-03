@@ -215,6 +215,85 @@ class LeadMagnetRepository {
       throw new DatabaseError('Failed to check rate limit');
     }
   }
+
+  /**
+   * Find subscriber by ID
+   */
+  async findSubscriberById(subscriberId: string): Promise<LmSubscriber | null> {
+    logger.debug({ subscriberId }, 'Finding subscriber by ID');
+
+    try {
+      const result = await timeOperation(logger, 'db.lm_subscribers.findById', async () => {
+        return this.pool.query<LmSubscriber>(
+          `SELECT * FROM lm_subscribers WHERE id = $1`,
+          [subscriberId],
+        );
+      });
+
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to find subscriber by ID');
+      throw new DatabaseError('Failed to find subscriber');
+    }
+  }
+
+  /**
+   * Unsubscribe a subscriber (update status and log consent event)
+   */
+  async unsubscribeSubscriber(
+    subscriberId: string,
+    ip?: string,
+    userAgent?: string,
+  ): Promise<void> {
+    logger.debug({ subscriberId }, 'Unsubscribing subscriber');
+
+    const client = await this.pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Update subscriber status
+      await timeOperation(logger, 'db.lm_subscribers.unsubscribe', async () => {
+        return client.query(
+          `UPDATE lm_subscribers 
+           SET status = 'unsubscribed', 
+               unsubscribed_at = NOW() 
+           WHERE id = $1`,
+          [subscriberId],
+        );
+      });
+
+      // Log consent event
+      await timeOperation(logger, 'db.lm_consent_events.logUnsubscribe', async () => {
+        return client.query(
+          `INSERT INTO lm_consent_events 
+           (subscriber_id, event_type, ip, user_agent, occurred_at)
+           VALUES ($1, 'unsubscribe', $2, $3, NOW())`,
+          [subscriberId, ip, userAgent],
+        );
+      });
+
+      await client.query('COMMIT');
+      logger.info({ subscriberId }, 'Subscriber unsubscribed successfully');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error({ err: error }, 'Failed to unsubscribe subscriber');
+      throw new DatabaseError('Failed to unsubscribe subscriber');
+    } finally {
+      client.release();
+    }
+  }
 }
 
 export const leadMagnetRepository = new LeadMagnetRepository();
+
+/**
+ * Get singleton instance of LeadMagnetRepository
+ */
+export function getLeadMagnetRepository(): LeadMagnetRepository {
+  return leadMagnetRepository;
+}

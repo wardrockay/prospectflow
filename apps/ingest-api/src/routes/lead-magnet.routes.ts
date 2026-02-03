@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as leadMagnetController from '../controllers/lead-magnet.controller.js';
+import * as leadMagnetUnsubscribeController from '../controllers/lead-magnet-unsubscribe.controller.js';
 import { leadMagnetIpRateLimit } from '../middlewares/rate-limit.middleware.js';
 
 const router = Router();
@@ -16,5 +17,11 @@ router.post('/signup', leadMagnetIpRateLimit, leadMagnetController.signup);
  * Confirm email and return download URL (JSON response)
  */
 router.get('/confirm/:token', leadMagnetController.confirmToken);
+
+/**
+ * GET /api/lead-magnet/unsubscribe?token=xxx
+ * Unsubscribe a subscriber from all emails
+ */
+router.get('/unsubscribe', leadMagnetUnsubscribeController.handleUnsubscribe);
 
 export default router;

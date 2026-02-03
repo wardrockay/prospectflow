@@ -1,6 +1,7 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { createChildLogger } from '../utils/logger.js';
 import { env } from '../config/env.js';
+import { createHmac } from 'crypto';
 
 const logger = createChildLogger('EmailService');
 
@@ -25,9 +26,23 @@ const getSESClient = (): SESClient | null => {
 const sesClient = getSESClient();
 
 /**
+ * Generate unsubscribe token from subscriber ID
+ * Format: {subscriberId}.{signature}
+ */
+function generateUnsubscribeToken(subscriberId: string): string {
+  // Use AWS secret or fallback - this is secure enough for unsubscribe tokens
+  const secret = env.leadMagnet.awsSecretAccessKey || process.env.POSTGRES_PASSWORD || 'fallback-unsubscribe-secret';
+  const signature = createHmac('sha256', secret)
+    .update(subscriberId)
+    .digest('base64url');
+  
+  return `${subscriberId}.${signature}`;
+}
+
+/**
  * Get HTML email template for confirmation email
  */
-function getHtmlTemplate(confirmationUrl: string): string {
+function getHtmlTemplate(confirmationUrl: string, unsubscribeUrl: string): string {
   return `
 <!DOCTYPE html>
 <html lang="fr">
@@ -116,10 +131,10 @@ function getHtmlTemplate(confirmationUrl: string): string {
       
       <p>Merci de votre intérêt pour le <strong>Guide de la Mariée Sereine</strong> !</p>
       
-      <p>Cliquez sur le bouton ci-dessous pour confirmer votre email et télécharger le guide :</p>
+      <p>Cliquez sur le bouton ci-dessous pour télécharger votre guide gratuit :</p>
       
       <div style="text-align: center;">
-        <a href="${confirmationUrl}" class="cta-button">Confirmer mon inscription</a>
+        <a href="${confirmationUrl}" class="cta-button">📥 Télécharger le Guide</a>
       </div>
       
       <p class="fallback-link">
@@ -140,10 +155,10 @@ function getHtmlTemplate(confirmationUrl: string): string {
       <p>
         <strong>Light & Shutter Photography</strong><br>
         123 Rue de la Photographie, 75001 Paris, France<br>
-        <a href="https://lightandshutter.fr/privacy">Politique de confidentialité</a>
+        <a href="https://lightandshutter.fr/politique-confidentialite">Politique de confidentialité</a>
       </p>
       <p style="margin-top: 10px;">
-        Pour vous désinscrire, répondez à cet email avec "UNSUBSCRIBE".
+        <a href="${unsubscribeUrl}" style="color: #999; text-decoration: underline;">Se désinscrire de tous les emails</a>
       </p>
     </div>
   </div>
@@ -155,13 +170,13 @@ function getHtmlTemplate(confirmationUrl: string): string {
 /**
  * Get plain text email template
  */
-function getTextTemplate(confirmationUrl: string): string {
+function getTextTemplate(confirmationUrl: string, unsubscribeUrl: string): string {
   return `
 Bonjour,
 
 Merci de votre intérêt pour le Guide de la Mariée Sereine!
 
-Cliquez sur le lien ci-dessous pour confirmer votre email et télécharger le guide:
+Cliquez sur le lien ci-dessous pour télécharger votre guide gratuit:
 
 ${confirmationUrl}
 
@@ -173,7 +188,7 @@ Si vous n'avez pas demandé ce guide, vous pouvez ignorer cet email.
 Light & Shutter Photography
 123 Rue de la Photographie, 75001 Paris, France
 Politique de confidentialité: https://lightandshutter.fr/privacy
-Pour vous désinscrire, répondez à cet email avec "UNSUBSCRIBE".
+Pour vous désinscrire: ${unsubscribeUrl}
   `.trim();
 }
 
@@ -181,8 +196,9 @@ Pour vous désinscrire, répondez à cet email avec "UNSUBSCRIBE".
  * Send confirmation email via AWS SES
  * @param email Recipient email address
  * @param token Plain token for confirmation URL
+ * @param subscriberId Subscriber ID for generating unsubscribe token
  */
-export async function sendConfirmationEmail(email: string, token: string): Promise<void> {
+export async function sendConfirmationEmail(email: string, token: string, subscriberId: string): Promise<void> {
   if (!sesClient) {
     logger.error('SES client not initialized - cannot send email');
     throw new Error('Email service not configured');
@@ -197,6 +213,10 @@ export async function sendConfirmationEmail(email: string, token: string): Promi
 
   // AC2.9: Confirmation link format with query param
   const confirmationUrl = `${baseUrl}/lead-magnet/confirm?token=${token}`;
+  
+  // Generate unsubscribe URL
+  const unsubscribeToken = generateUnsubscribeToken(subscriberId);
+  const unsubscribeUrl = `${baseUrl}/api/lead-magnet/unsubscribe?token=${unsubscribeToken}`;
 
   const command = new SendEmailCommand({
     Source: sesFromEmail,
@@ -210,11 +230,11 @@ export async function sendConfirmationEmail(email: string, token: string): Promi
       },
       Body: {
         Html: {
-          Data: getHtmlTemplate(confirmationUrl),
+          Data: getHtmlTemplate(confirmationUrl, unsubscribeUrl),
           Charset: 'UTF-8',
         },
         Text: {
-          Data: getTextTemplate(confirmationUrl),
+          Data: getTextTemplate(confirmationUrl, unsubscribeUrl),
           Charset: 'UTF-8',
         },
       },

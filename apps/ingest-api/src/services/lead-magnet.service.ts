@@ -178,7 +178,7 @@ class LeadMagnetService {
         await leadMagnetRepository.createTokenForExistingSubscriber(subscriberId, hash);
 
         try {
-          await sendConfirmationEmail(normalizedEmail, token);
+          await sendConfirmationEmail(normalizedEmail, token, subscriberId);
           logger.info({ subscriberId }, 'Token regenerated and email resent');
 
           return {
@@ -228,7 +228,7 @@ class LeadMagnetService {
       logger.info({ subscriberId }, 'New subscriber created');
 
       // AC2.9: Send confirmation email
-      await sendConfirmationEmail(normalizedEmail, token);
+      await sendConfirmationEmail(normalizedEmail, token, subscriberId);
 
       logger.info({ subscriberId }, 'Confirmation email sent successfully');
 
