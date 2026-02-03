@@ -225,7 +225,7 @@ export async function sendConfirmationEmail(email: string, token: string, subscr
     },
     Message: {
       Subject: {
-        Data: 'Confirmez votre inscription - Guide de la Mariée Sereine',
+        Data: 'Voici votre GUIDE ULTIME DU PLANNING PHOTO MARIAGE',
         Charset: 'UTF-8',
       },
       Body: {
