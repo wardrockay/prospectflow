@@ -306,7 +306,7 @@ class AdminLeadMagnetRepository {
         );
       });
 
-      const deleted = result.rowCount && result.rowCount > 0;
+      const deleted = (result.rowCount ?? 0) > 0;
       
       if (deleted) {
         logger.info({ subscriberId }, 'Subscriber deleted successfully (cascaded to related tables)');
