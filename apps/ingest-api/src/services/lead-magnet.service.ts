@@ -6,7 +6,7 @@ import { getLeadMagnetDownloadUrl } from '../utils/s3.utils.js';
 import { getPool } from '../config/database.js';
 import type { PoolClient } from 'pg';
 
-const logger = createChildLogger('LeadMagnetService');
+const logger = createChildLogger('lead-magnet-service');
 
 /**
  * Custom error types for lead magnet operations

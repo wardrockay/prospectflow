@@ -1,9 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
 import { createChildLogger } from '../utils/logger.js';
 import { leadMagnetService, LeadMagnetError } from '../services/lead-magnet.service.js';
 
-const logger = createChildLogger('LeadMagnetController');
+const logger = createChildLogger('lead-magnet-controller');
+
+// Token format validation (base64url: alphanumeric, -, _)
+const TOKEN_REGEX = /^[A-Za-z0-9_-]+$/;
 
 /**
  * Zod schema for signup request validation
@@ -36,7 +39,7 @@ function getUserAgent(req: Request): string {
  * POST /api/lead-magnet/signup
  * Handle email signup with double opt-in flow
  */
-export const signup = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const signup = async (req: Request, res: Response): Promise<void> => {
   const requestId = req.headers['x-request-id'] as string;
   const requestLogger = logger.child({ requestId });
 
@@ -111,11 +114,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction): P
  * GET /api/lead-magnet/confirm/:token
  * Confirm email and return download URL (JSON response)
  */
-export const confirmToken = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+export const confirmToken = async (req: Request, res: Response): Promise<void> => {
   const { token } = req.params;
   const requestId = req.headers['x-request-id'] as string;
   const requestLogger = logger.child({ requestId });
@@ -129,6 +128,18 @@ export const confirmToken = async (
       status: 'invalid',
       error: 'TOKEN_MISSING',
       message: 'Token requis',
+    });
+    return;
+  }
+
+  // Validate token format (security: prevent injection)
+  if (!TOKEN_REGEX.test(token)) {
+    requestLogger.warn({ tokenLength: token.length }, 'Invalid token format');
+    res.status(400).json({
+      success: false,
+      status: 'invalid',
+      error: 'TOKEN_INVALID',
+      message: "Ce lien n'est pas valide",
     });
     return;
   }

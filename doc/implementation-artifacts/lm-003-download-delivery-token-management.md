@@ -1,7 +1,7 @@
 # Story LM-003: Download Delivery & Token Management (API)
 
 **Epic:** EPIC-LM-001 - Lead Magnet Delivery System  
-**Status:** review  
+**Status:** done  
 **Priority:** MUST  
 **Story Points:** 8  
 **Sprint:** 2  
@@ -761,15 +761,18 @@ No issues encountered during implementation.
    - Created `src/utils/s3.utils.ts` with `getLeadMagnetDownloadUrl()` function
    - Configured S3Client with credentials from environment variables
    - Implemented GetObjectCommand with Content-Disposition and Content-Type headers
-   - Added structured logging using Pino createChildLogger
-   - Unit tests created with mocked AWS SDK (3/3 tests passing)
+   - Added structured logging using Pino createChildLogger (kebab-case: `s3-utils`)
+   - Unit tests created with mocked AWS SDK (7/7 tests passing after code review)
+   - **Code Review Fix:** Added credentials validation (throws if AWS keys missing)
 
 2. **Controller Implementation** ✅
    - Added `confirmToken()` function to `lead-magnet.controller.ts`
    - Extracts token from URL params using Express `req.params`
    - Maps service results to appropriate HTTP status codes (200, 404, 410, 429)
    - Returns JSON responses for all scenarios (success, expired, invalid, limit)
-   - Proper error handling with try/catch and structured logging
+   - Proper error handling with try/catch and structured logging (kebab-case: `lead-magnet-controller`)
+   - **Code Review Fix:** Added token format validation (base64url regex) to prevent injection
+   - **Code Review Fix:** Removed unused NextFunction import
 
 3. **Service Implementation** ✅
    - Added `confirmToken()` method to `LeadMagnetService` class
@@ -781,6 +784,7 @@ No issues encountered during implementation.
    - Tracks token usage with `use_count` and `used_at` timestamps
    - Generates S3 signed URL after successful DB transaction
    - Returns appropriate ConfirmTokenResult interface
+   - **Code Review Fix:** Logger naming convention updated to kebab-case (`lead-magnet-service`)
 
 4. **Route Registration** ✅
    - Added `GET /confirm/:token` route to `lead-magnet.routes.ts`
@@ -804,6 +808,7 @@ No issues encountered during implementation.
    - Updated .env.example with Lead Magnet AWS section
    - Environment variables validated through Zod schema
    - Default values: bucket=lightandshutter-lead-magnets, key=lead-magnets/guide-mariee-sereine.pdf
+   - **Code Review Fix:** Fixed S3_FILE_KEY in .env.example to match AC3.1 specification
 
 **Key Technical Decisions:**
 
@@ -838,6 +843,13 @@ No issues encountered during implementation.
 - `doc/sprint-status.yaml` - Updated lm-003 status: ready-for-dev → review
 
 **Change Log:**
+- 2026-02-03: Code review completed - all issues fixed
+  - Fixed logger naming convention (kebab-case) in s3.utils.ts, lead-magnet.service.ts, lead-magnet.controller.ts
+  - Added AWS credentials validation at runtime in s3.utils.ts
+  - Added token format validation (base64url regex) in controller
+  - Fixed S3_FILE_KEY in .env.example to match AC3.1
+  - Added 4 new unit tests for credentials validation (7/7 passing)
+  - Removed unused NextFunction import
 - 2026-02-03: Implemented download delivery and token management (LM-003)
 - Added S3 integration for PDF signed URL generation
 - Implemented token confirmation endpoint with all business rules
@@ -846,4 +858,4 @@ No issues encountered during implementation.
 
 ---
 
-**🎯 Story ready for development! API returns JSON, landing page handles UI.**
+**✅ Story DONE - Code review passed, all fixes applied.**
