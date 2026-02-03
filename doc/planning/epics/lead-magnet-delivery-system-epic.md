@@ -29,11 +29,11 @@ Build a complete lead magnet delivery system that captures emails, implements RG
 | LM-001 | Database Schema & Infrastructure Setup | MUST | 8 pts | None | infra |
 | LM-002 | Email Capture & Double Opt-in Flow | MUST | 13 pts | LM-001 | ingest-api |
 | LM-003 | Download Delivery & Token Management (API) | MUST | 8 pts | LM-001, LM-002 | ingest-api |
-| LM-005 | Email Template Design & Copy | SHOULD | 5 pts | LM-002 | ingest-api |
+| ~~LM-005~~ | ~~Email Template Design & Copy~~ | ~~SHOULD~~ | ~~5 pts~~ | - | **OUT OF SCOPE** |
 | LM-006 | Rate Limiting & Abuse Prevention | COULD | 5 pts | LM-002, LM-003 | ingest-api |
 | LM-007 | Dashboard Lead Magnet | SHOULD | 13 pts | LM-001, LM-002, LM-003 | ui-web |
 
-**Total Estimate:** 52 story points
+**Total Estimate:** 47 story points (excl. LM-005)
 
 > **Note Architecture (2026-02-02):** 
 > - Les APIs Lead Magnet sont exposées via **ingest-api** (Express) pour la landing page externe
@@ -1447,34 +1447,9 @@ export default defineEventHandler(async (event) => {
 
 ---
 
-## Story LM-005: Email Template Design & Copy
+## ~~Story LM-005: Email Template Design & Copy~~ — OUT OF SCOPE
 
-**Priority:** SHOULD  
-**Estimate:** 5 story points  
-**Sprint:** 2-3  
-**Dependencies:** LM-002
-
-### User Story
-
-**As a** subscriber  
-**I want to** receive professional, branded emails  
-**So that** I trust the source and take action
-
-### Acceptance Criteria
-
-- [ ] **AC5.1:** Confirmation email uses brand colors and typography
-- [ ] **AC5.2:** Email is mobile-responsive
-- [ ] **AC5.3:** Copy is clear, friendly, and professional (in French)
-- [ ] **AC5.4:** CTA button is prominent and action-oriented
-- [ ] **AC5.5:** Email tested across major clients (Gmail, Outlook, Apple Mail, mobile)
-- [ ] **AC5.6:** Plain text fallback provided
-
-### Definition of Done
-
-- ✅ Email template designed and approved
-- ✅ Copy reviewed by stakeholder
-- ✅ Cross-client testing passed
-- ✅ Implemented in codebase
+> ⚠️ **Cette story a été retirée du scope de l'Epic.** Les templates email basiques sont implémentés dans LM-002.
 
 ---
 
