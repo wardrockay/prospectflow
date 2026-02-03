@@ -214,9 +214,9 @@ export async function sendConfirmationEmail(email: string, token: string, subscr
   // AC2.9: Confirmation link format with query param
   const confirmationUrl = `${baseUrl}/lead-magnet/confirm?token=${token}`;
   
-  // Generate unsubscribe URL
+  // Generate unsubscribe URL - points to UI page which calls the API
   const unsubscribeToken = generateUnsubscribeToken(subscriberId);
-  const unsubscribeUrl = `${baseUrl}/api/lead-magnet/unsubscribe?token=${unsubscribeToken}`;
+  const unsubscribeUrl = `${baseUrl}/lead-magnet/unsubscribe?token=${unsubscribeToken}`;
 
   const command = new SendEmailCommand({
     Source: sesFromEmail,

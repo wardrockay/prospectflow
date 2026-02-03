@@ -30,7 +30,6 @@
 
 <script setup lang="ts">
 const route = useRoute();
-const config = useRuntimeConfig();
 
 const loading = ref(true);
 const success = ref(false);
@@ -50,24 +49,26 @@ onMounted(async () => {
   }
 
   try {
-    // Call backend API to unsubscribe
-    const backendUrl = config.public.apiBase || 'http://localhost:4000';
-    const response = await fetch(`${backendUrl}/api/lead-magnet/unsubscribe?token=${encodeURIComponent(token)}`, {
-      method: 'GET',
-    });
+    // Call Nuxt server proxy which forwards to ingest-api
+    const response = await $fetch<{ success: boolean; email?: string; error?: string }>(
+      `/api/lead-magnet/unsubscribe?token=${encodeURIComponent(token)}`,
+    );
 
-    const data = await response.json();
-
-    if (response.ok && data.success) {
+    if (response.success) {
       success.value = true;
-      email.value = data.email || '';
+      email.value = response.email || '';
     } else {
       error.value = true;
-      errorMessage.value = data.error || 'Une erreur est survenue';
+      errorMessage.value = response.error || 'Une erreur est survenue';
     }
-  } catch (err) {
+  } catch (err: unknown) {
     error.value = true;
-    errorMessage.value = 'Erreur de connexion au serveur';
+    if (err && typeof err === 'object' && 'data' in err) {
+      const fetchError = err as { data?: { message?: string } };
+      errorMessage.value = fetchError.data?.message || 'Erreur de connexion au serveur';
+    } else {
+      errorMessage.value = 'Erreur de connexion au serveur';
+    }
   } finally {
     loading.value = false;
   }
