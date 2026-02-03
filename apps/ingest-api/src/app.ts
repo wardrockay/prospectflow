@@ -68,6 +68,9 @@ app.use('/api/v1', router);
 // B2C Lead Magnet routes (no auth required)
 app.use('/api/lead-magnet', leadMagnetRouter);
 
+// Admin routes for lead magnet (authenticated)
+app.use('/api', router);
+
 // Health check (no auth required)
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
