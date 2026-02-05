@@ -13,6 +13,7 @@ services:
       - ./www/certbot:/var/www/certbot:ro
     networks:
       - net_public
+      - net_private
     healthcheck:
       test: ['CMD', 'nginx', '-t']
       interval: 30s
@@ -38,3 +39,6 @@ networks:
   net_public:
     external: true
     name: net_public
+  net_private:
+    external: true
+    name: net_private
