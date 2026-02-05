@@ -16,9 +16,9 @@ services:
       start_period: 30s
     restart: unless-stopped
     networks:
-      - prospectflow-network
+      - net_private
 
 networks:
-  prospectflow-network:
+  net_private:
     external: true
-    name: prospectflow-network
+    name: net_private
