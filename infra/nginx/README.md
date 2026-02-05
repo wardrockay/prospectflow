@@ -98,6 +98,95 @@ make nginx-init-ssl-staging
 ./scripts/init-letsencrypt.sh --staging
 ```
 
+### Step 4b: Create Additional SSL Certificates (Manual Method)
+
+When adding a new domain (e.g., `www.lightandshutter.fr`), use the following procedure:
+
+#### Prerequisites
+
+1. **DNS configured**: Verify DNS points to your VPS
+   ```bash
+   dig www.lightandshutter.fr +short
+   ```
+
+2. **HTTP-only config active**: Nginx must be running with HTTP config for ACME challenge
+   ```bash
+   # Temporarily use HTTP-only config if needed
+   mv conf.d/www.conf conf.d/www.conf.backup
+   cp conf.d/www.http-only.conf.template conf.d/www.conf
+   docker compose exec nginx nginx -s reload
+   ```
+
+#### Run Certbot
+
+```bash
+docker run --rm -it \
+  -v ~/starlightcoder/prospectflow/infra/nginx/certbot/conf:/etc/letsencrypt \
+  -v ~/starlightcoder/prospectflow/infra/nginx/www/certbot:/var/www/certbot \
+  --network net_public \
+  certbot/certbot certonly \
+  --webroot \
+  -w /var/www/certbot \
+  -d www.lightandshutter.fr \
+  --email admin@lightandshutter.fr \
+  --agree-tos \
+  --no-eff-email \
+  --non-interactive \
+  -v
+```
+
+**Parameters explained:**
+| Parameter | Description |
+|-----------|-------------|
+| `-v .../certbot/conf:/etc/letsencrypt` | Mount certificate storage |
+| `-v .../www/certbot:/var/www/certbot` | Mount ACME challenge directory |
+| `--network net_public` | Connect to Docker network for nginx access |
+| `--webroot` | Use webroot authentication method |
+| `-w /var/www/certbot` | Webroot path for ACME challenge |
+| `-d www.lightandshutter.fr` | Domain to certify (add multiple `-d` for SANs) |
+| `--non-interactive` | Don't prompt for input |
+| `-v` | Verbose output |
+
+**For multiple domains (SAN certificate):**
+```bash
+docker run --rm -it \
+  -v ~/starlightcoder/prospectflow/infra/nginx/certbot/conf:/etc/letsencrypt \
+  -v ~/starlightcoder/prospectflow/infra/nginx/www/certbot:/var/www/certbot \
+  --network net_public \
+  certbot/certbot certonly \
+  --webroot \
+  -w /var/www/certbot \
+  -d www.lightandshutter.fr \
+  -d lightandshutter.fr \
+  --email admin@lightandshutter.fr \
+  --agree-tos \
+  --no-eff-email \
+  --non-interactive \
+  -v
+```
+
+#### After Certificate Creation
+
+1. **Verify certificate exists:**
+   ```bash
+   ls -la infra/nginx/certbot/conf/live/www.lightandshutter.fr/
+   ```
+
+2. **Restore HTTPS config:**
+   ```bash
+   mv conf.d/www.conf.backup conf.d/www.conf
+   ```
+
+3. **Reload nginx:**
+   ```bash
+   docker compose exec nginx nginx -s reload
+   ```
+
+4. **Test HTTPS:**
+   ```bash
+   curl -I https://www.lightandshutter.fr
+   ```
+
 ### Step 5: Start NGINX
 
 ```bash
