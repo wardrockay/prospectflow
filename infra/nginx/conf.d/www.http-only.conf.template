@@ -1,0 +1,19 @@
+# HTTP-only configuration for initial SSL certificate provisioning
+# Use this temporarily before certificates exist
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.lightandshutter.fr lightandshutter.fr;
+
+    # Let's Encrypt ACME challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        allow all;
+    }
+
+    # Temporary: serve a simple response
+    location / {
+        return 200 'Certificate provisioning in progress...';
+        add_header Content-Type text/plain;
+    }
+}
