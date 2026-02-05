@@ -27,13 +27,13 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_logs:/var/log/rabbitmq
     networks:
-      - prospectflow-network
+      - net_private
 
 volumes:
   rabbitmq_data:
   rabbitmq_logs:
 
 networks:
-  prospectflow-network:
+  net_private:
     external: true
-    name: prospectflow-network
+    name: net_private
