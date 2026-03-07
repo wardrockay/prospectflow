@@ -59,72 +59,10 @@ export interface OnboardingEmailVariables {
   numeroWhatsApp?: string;
 }
 
-// CSS custom properties used in the templates → resolved values
-const CSS_VARS: Record<string, string> = {
-  'var(--cream)': '#F4F2EF',
-  'var(--navy)': '#213E60',
-  'var(--amber)': '#E68C3A',
-  'var(--sky)': '#94B6EF',
-  'var(--body)': '#2C3E50',
-  'var(--muted)': '#5A6B7A',
-  'var(--border)': '#DDD8D1',
-  'var(--white)': '#FFFFFF',
-  "var(--serif)": "'Cormorant Garamond', Georgia, serif",
-  "var(--sans)": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-};
-
-/**
- * Prepare a template for sending:
- * - Resolve CSS custom properties (not supported by most email clients)
- * - Strip preview-only chrome (.file-label, .subject-bar, outer .wrap)
- * - Keep only the .card div as the email body
- */
+// Templates are already email-client-compatible (table layout, inline styles, no CSS vars).
+// No processing needed beyond variable substitution done by applyVariables().
 function prepareForSending(raw: string): string {
-  // 1. Resolve all CSS variable references
-  let html = raw;
-  for (const [variable, value] of Object.entries(CSS_VARS)) {
-    html = html.replaceAll(variable, value);
-  }
-
-  // 2. Remove the :root { } block (now empty, confuses some parsers)
-  html = html.replace(/:root\s*\{[^}]*\}/s, '');
-
-  // 3. Extract just the <div class="card"> content — strip preview chrome
-  const cardStart = html.indexOf('<div class="card">');
-  const wrapClose = html.lastIndexOf('</div>');         // closing </div> of .wrap
-  const cardClose = html.lastIndexOf('</div>', wrapClose - 1); // closing of .card
-
-  if (cardStart !== -1 && cardClose !== -1) {
-    const cardHtml = html.slice(cardStart, cardClose + 6); // +6 = "</div>".length
-
-    // 4. Extract the <style> block (already CSS-var-resolved)
-    const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
-    const style = styleMatch ? styleMatch[1] : '';
-
-    // 5. Rebuild a clean email HTML document
-    const titleMatch = html.match(/<title>([^<]*)<\/title>/);
-    const title = titleMatch ? titleMatch[1] : 'Light & Shutter';
-
-    html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
-  <style>
-    body { margin: 0; padding: 0; background: #E8E4DF; }
-${style}
-  </style>
-</head>
-<body>
-<div class="wrap">
-${cardHtml}
-</div>
-</body>
-</html>`;
-  }
-
-  return html;
+  return raw;
 }
 
 function loadTemplate(emailId: number): string {

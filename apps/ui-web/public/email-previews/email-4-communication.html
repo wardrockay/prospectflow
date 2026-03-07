@@ -1,298 +1,170 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email 4 — Communication &amp; Retours · Light &amp; Shutter</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    /* ═══════════════════════════════════════
-       BASE = MOBILE
-       ═══════════════════════════════════════ */
-    :root {
-      --cream: #F4F2EF;
-      --navy:  #213E60;
-      --amber: #E68C3A;
-      --sky:   #94B6EF;
-      --body:  #2C3E50;
-      --muted: #5A6B7A;
-      --border:#DDD8D1;
-      --white: #FFFFFF;
-      --serif: 'Cormorant Garamond', Georgia, serif;
-      --sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: var(--sans);
-      background: #E8E4DF;
-      color: var(--body);
-      line-height: 1.6;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    .wrap { max-width: 640px; margin: 0 auto; padding: 12px 8px 48px; }
-
-    .file-label {
-      font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 8px; padding: 0 4px;
-    }
-
-    .subject-bar {
-      background: var(--white); border: 1px solid var(--border); border-bottom: none;
-      border-radius: 6px 6px 0 0; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start;
-    }
-    .subject-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-    .subject-line { font-size: 13px; color: var(--muted); line-height: 1.5; }
-    .subject-line + .subject-line { margin-top: 4px; }
-    .subject-line strong { color: var(--navy); }
-
-    .card {
-      background: var(--white); border: 1px solid var(--border); border-radius: 0 0 6px 6px;
-      overflow: hidden; box-shadow: 0 4px 20px rgba(33,62,96,0.08);
-    }
-
-    .e-header { background: var(--navy); padding: 28px 20px 22px; text-align: center; }
-    .e-header::after { content: ''; display: block; width: 36px; height: 2px; background: var(--amber); margin: 12px auto 0; }
-    .brand-name { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--cream); letter-spacing: 0.08em; }
-    .brand-sub  { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244,242,239,0.5); margin-top: 4px; }
-
-    .e-body { background: var(--cream); padding: 24px 18px; }
-    .greeting { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--navy); margin-bottom: 16px; }
-    .e-body p { font-size: 15px; line-height: 1.75; color: var(--body); margin-bottom: 14px; }
-    .hr { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
-
-    /* RULE BLOCK */
-    .rule { margin-bottom: 0; }
-
-    .rule-title {
-      font-family: var(--serif);
-      font-size: 19px;
-      font-weight: 600;
-      color: var(--navy);
-      margin-bottom: 12px;
-      line-height: 1.3;
-    }
-
-    /* INFO BOX */
-    .info-box {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 16px;
-      margin: 14px 0;
-    }
-    .info-box h3 {
-      font-family: var(--serif);
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--navy);
-      margin-bottom: 8px;
-    }
-    .info-box p {
-      font-size: 14px !important;
-      color: var(--muted) !important;
-      margin-bottom: 0 !important;
-      line-height: 1.7 !important;
-    }
-
-    /* HIGHLIGHT BOX */
-    .hl-box {
-      background: rgba(230,140,58,0.06);
-      border: 1px solid rgba(230,140,58,0.25);
-      border-radius: 4px;
-      padding: 12px 14px;
-      font-size: 14px;
-      color: var(--body);
-      line-height: 1.7;
-      margin: 12px 0;
-    }
-    .hl-box strong { color: var(--navy); }
-
-    /* QUOTE EXAMPLE */
-    .quote {
-      background: var(--white);
-      border-left: 3px solid var(--sky);
-      border-radius: 0 4px 4px 0;
-      padding: 10px 14px;
-      margin: 8px 0;
-      font-size: 14px;
-      color: var(--muted);
-      font-style: italic;
-      line-height: 1.5;
-    }
-
-    /* LIST */
-    .e-body ul {
-      padding-left: 18px;
-      margin: 10px 0 14px;
-    }
-    .e-body ul li {
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--body);
-      margin-bottom: 8px;
-    }
-    .e-body ul li:last-child { margin-bottom: 0; }
-
-    /* CLOSING ITALIC */
-    .closing-italic {
-      font-family: var(--serif);
-      font-size: 17px;
-      font-style: italic;
-      color: var(--navy);
-      line-height: 1.65;
-      margin-bottom: 14px !important;
-    }
-
-    /* SIGNATURE */
-    .sig { padding: 16px; background: var(--white); border-radius: 4px; border-left: 3px solid var(--navy); margin-top: 8px; }
-    .sig-name { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
-    .sig-brand { font-size: 11px; letter-spacing: 0.10em; color: var(--amber); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
-    .sig-links { display: flex; flex-direction: column; gap: 10px; }
-    .sig-links a { font-size: 14px; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 6px; min-height: 36px; }
-
-    /* FOOTER */
-    .e-footer { background: var(--navy); padding: 20px 18px; text-align: center; }
-    .footer-brand { font-family: var(--serif); font-size: 15px; color: rgba(244,242,239,0.7); margin-bottom: 6px; letter-spacing: 0.06em; }
-    .e-footer p { font-size: 12px; color: rgba(244,242,239,0.4); margin-bottom: 3px; }
-    .e-footer a { color: rgba(244,242,239,0.5); text-decoration: none; }
-
-    /* VAR TAG */
-    .v {
-      background: rgba(148,182,239,0.2); border: 1px solid rgba(148,182,239,0.5);
-      color: #2A5080; font-family: var(--sans); font-size: 11px; font-weight: 600;
-      padding: 1px 6px; border-radius: 3px; white-space: nowrap;
-    }
-
-    /* ═══════════════════════════════════════
-       DESKTOP ENHANCEMENTS (min-width: 600px)
-       ═══════════════════════════════════════ */
-    @media (min-width: 600px) {
-      .wrap { padding: 24px 20px 56px; }
-      .subject-bar { padding: 12px 20px; }
-      .e-header { padding: 36px 48px 30px; }
-      .e-header::after { width: 48px; margin: 18px auto 0; }
-      .brand-name { font-size: 30px; }
-      .e-body { padding: 40px 48px; }
-      .greeting { font-size: 22px; }
-      .info-box { padding: 20px 24px; }
-      .sig { padding: 20px 24px; }
-      .sig-links { flex-direction: row; flex-wrap: wrap; gap: 8px 20px; }
-      .sig-links a { min-height: auto; font-size: 13px; }
-      .e-footer { padding: 24px 48px; }
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email 4 &#8212; Communication &amp; Retours · Light &amp; Shutter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" type="text/css" />
+  <style type="text/css">
+    @media only screen and (max-width: 600px) {
+      .w600 { width: 100% !important; }
+      .body-td { padding: 24px 18px !important; }
+      .header-td { padding: 28px 20px 0 !important; }
+      .brand-name { font-size: 22px !important; }
+      .footer-td { padding: 20px 18px !important; }
     }
   </style>
 </head>
-<body>
-<div class="wrap">
+<body style="margin: 0; padding: 0; background-color: #E8E4DF; -webkit-text-size-adjust: 100%; mso-line-height-rule: exactly;">
 
-  <p class="file-label">Email 4 · Après les emails 2 et 3 (peut être combiné avec l'email 3)</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#E8E4DF" style="background-color: #E8E4DF;">
+  <tr>
+    <td align="center" valign="top" style="padding: 24px 16px 56px;">
 
-  <div class="subject-bar">
-    <span class="subject-icon">✉️</span>
-    <div>
-      <p class="subject-line"><strong>Objet A :</strong> Comment on travaille ensemble — communication et retours</p>
-      <p class="subject-line"><strong>Objet B :</strong> Pour que tout se passe bien — voici comment je fonctionne</p>
-    </div>
-  </div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="w600" style="width: 600px; max-width: 600px;">
 
-  <div class="card">
+        <!-- ── HEADER ── -->
+        <tr>
+          <td class="header-td" bgcolor="#213E60" align="center" style="padding: 36px 48px 0; background-color: #213E60;">
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 400; color: #F4F2EF; letter-spacing: 5px; margin: 0; line-height: 1.2;" class="brand-name">Light &amp; Shutter</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #8AA0B8; margin: 6px 0 0; line-height: 1.4;">Photographie de mariage &middot; Nord, France</p>
+          </td>
+        </tr>
+        <tr>
+          <td bgcolor="#213E60" align="center" style="padding: 16px 0 28px; background-color: #213E60;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="48" style="width: 48px;">
+              <tr><td bgcolor="#E68C3A" height="2" style="background-color: #E68C3A; height: 2px; font-size: 2px; line-height: 2px; mso-line-height-rule: exactly;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
 
-    <div class="e-header">
-      <div class="brand-name">Light &amp; Shutter</div>
-      <div class="brand-sub">Photographie de mariage · Nord, France</div>
-    </div>
+        <!-- ── BODY ── -->
+        <tr>
+          <td class="body-td" bgcolor="#F4F2EF" style="padding: 40px 48px; background-color: #F4F2EF;">
 
-    <div class="e-body">
+            <!-- Greeting -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 400; color: #213E60; margin: 0 0 16px; line-height: 1.4;">[Prénom(s)],</p>
 
-      <p class="greeting"><span class="v">[Prénom(s)]</span>,</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">Un mariage, &#231;a g&#233;n&#232;re des questions. Des id&#233;es &#224; 23h. Des &#171;&nbsp;et si on ajoutait &#231;a&nbsp;?&nbsp;&#187; le vendredi soir. C'est compl&#232;tement normal &#8212; et c'est signe que vous tenez &#224; chaque d&#233;tail.</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 22px;">Pour qu'on travaille bien ensemble et que la communication soit la plus fluide possible pour vous comme pour moi, voici comment je fonctionne.</p>
 
-      <p>Un mariage, ça génère des questions. Des idées à 23h. Des "et si on ajoutait ça ?" le vendredi soir. C'est complètement normal — et c'est signe que vous tenez à chaque détail.</p>
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <p>Pour qu'on travaille bien ensemble et que la communication soit la plus fluide possible pour vous comme pour moi, voici comment je fonctionne.</p>
+            <!-- ── RULE 1 : EMAIL ── -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600; color: #213E60; margin: 0 0 12px; line-height: 1.3;">&#128236; Canal principal&nbsp;: l'email</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">Mon adresse&nbsp;: <strong>[EMAIL]</strong></p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">L'email me permet de garder une trace de tout ce qu'on s'est dit, de ne rien oublier, et de vous r&#233;pondre de fa&#231;on pr&#233;cise et r&#233;fl&#233;chie.</p>
 
-      <hr class="hr">
+            <!-- Info box -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px; background-color: #FFFFFF; margin: 14px 0;">
+              <tr>
+                <td style="padding: 20px 24px;">
+                  <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 600; color: #213E60; margin: 0 0 8px; line-height: 1.3;">WhatsApp [NUMÉRO]</p>
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0; line-height: 1.7;">Possible pour les &#233;changes rapides et informels. Mais tout ce qui est important &#8212; changement de planning, demande sp&#233;cifique, ajout d'option &#8212; <strong style="color: #2C3E50;">passe par email</strong>. Ce n'est pas une question de formalit&#233;&nbsp;: c'est pour que rien ne se perde entre deux messages.</p>
+                </td>
+              </tr>
+            </table>
 
-      <!-- RÈGLE 1 : EMAIL -->
-      <div class="rule">
-        <div class="rule-title">📬 Canal principal : l'email</div>
-        <p>Mon adresse : <strong><span class="v">[EMAIL]</span></strong></p>
-        <p>L'email me permet de garder une trace de tout ce qu'on s'est dit, de ne rien oublier, et de vous répondre de façon précise et réfléchie.</p>
-        <div class="info-box">
-          <h3>WhatsApp <span class="v">[NUMÉRO]</span></h3>
-          <p>Possible pour les échanges rapides et informels. Mais tout ce qui est important — changement de planning, demande spécifique, ajout d'option — <strong>passe par email</strong>. Ce n'est pas une question de formalité : c'est pour que rien ne se perde entre deux messages.</p>
-        </div>
-      </div>
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 22px 0;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <hr class="hr">
+            <!-- ── RULE 2 : DELAI ── -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600; color: #213E60; margin: 0 0 12px; line-height: 1.3;">&#9201;&#65039; D&#233;lai de r&#233;ponse&nbsp;: 24h ouvrées</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">Je r&#233;ponds aux emails dans les 24h ouvrées. En dehors de cette fen&#234;tre (week-ends, jours f&#233;ri&#233;s, et les jours o&#249; je photographie un mariage), ma r&#233;ponse attendra le prochain jour ouvr&#233;.</p>
 
-      <!-- RÈGLE 2 : DÉLAI -->
-      <div class="rule">
-        <div class="rule-title">⏱️ Délai de réponse : 24h ouvrées</div>
-        <p>Je réponds aux emails dans les 24h ouvrées. En dehors de cette fenêtre (week-ends, jours fériés, et les jours où je photographie un mariage), ma réponse attendra le prochain jour ouvré.</p>
-        <div class="hl-box">
-          Un email envoyé le vendredi soir reçoit une réponse le <strong>lundi matin</strong>.
-        </div>
-      </div>
+            <!-- Highlight box -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #F0C890; border-radius: 4px; background-color: #FDF5EE; margin: 12px 0 22px;">
+              <tr>
+                <td style="padding: 12px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; line-height: 1.7;">
+                  Un email envoy&#233; le vendredi soir re&#231;oit une r&#233;ponse le <strong style="color: #213E60;">lundi matin</strong>.
+                </td>
+              </tr>
+            </table>
 
-      <hr class="hr">
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <!-- RÈGLE 3 : FORMAT RETOURS -->
-      <div class="rule">
-        <div class="rule-title">📋 Format des retours (retouches spécifiques)</div>
-        <p>Si vous souhaitez une retouche sur une photo de votre galerie, envoyez-moi un email avec :</p>
-        <ul>
-          <li>Le <strong>numéro de la photo</strong> (visible dans votre galerie)</li>
-          <li>Ce que vous souhaitez modifier</li>
-          <li>Le contexte si utile <em style="color:var(--muted);">(ex : "cette photo est destinée à l'impression en grand format")</em></li>
-        </ul>
-        <p>Ça me permet de traiter votre demande rapidement, sans aller-retour inutile.</p>
-      </div>
+            <!-- ── RULE 3 : FORMAT RETOURS ── -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600; color: #213E60; margin: 0 0 12px; line-height: 1.3;">&#128203; Format des retours (retouches sp&#233;cifiques)</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">Si vous souhaitez une retouche sur une photo de votre galerie, envoyez-moi un email avec&nbsp;:</p>
 
-      <hr class="hr">
+            <!-- List -->
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.7; color: #2C3E50; margin: 0 0 8px; padding-left: 16px;">&#8226;&nbsp;&nbsp;Le <strong>num&#233;ro de la photo</strong> (visible dans votre galerie)</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.7; color: #2C3E50; margin: 0 0 8px; padding-left: 16px;">&#8226;&nbsp;&nbsp;Ce que vous souhaitez modifier</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.7; color: #2C3E50; margin: 0 0 14px; padding-left: 16px;">&#8226;&nbsp;&nbsp;Le contexte si utile <em style="color: #5A6B7A;">(ex&nbsp;: &#171;&nbsp;cette photo est destin&#233;e &#224; l'impression en grand format&nbsp;&#187;)</em></p>
 
-      <!-- RÈGLE 4 : CHANGEMENTS -->
-      <div class="rule">
-        <div class="rule-title">🔔 Changements dans votre planning</div>
-        <p>Votre programme évolue au fil des mois — c'est normal. Mais j'ai besoin d'être informé de tout changement important : heure de début, changement de lieu, ajout ou suppression d'une étape dans la journée.</p>
-        <div class="hl-box">
-          <strong>Règle simple : tout changement important = un email.</strong><br>
-          Pas besoin d'un long message. Un mot suffit :
-        </div>
-        <div class="quote">"On a décalé la cérémonie à 16h au lieu de 15h."</div>
-        <div class="quote">"On ajoute une session photo au coucher de soleil vers 20h30."</div>
-        <p style="margin-top:12px;">Plus je suis informé tôt, mieux je peux préparer la journée pour capturer exactement ce que vous souhaitez.</p>
-      </div>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 22px;">&#199;a me permet de traiter votre demande rapidement, sans aller-retour inutile.</p>
 
-      <hr class="hr">
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <p class="closing-italic">Je suis là pour que cette expérience soit aussi simple que possible. Si quelque chose n'est pas clair ou si vous avez une question, répondez à cet email — c'est exactement pour ça qu'il existe.</p>
+            <!-- ── RULE 4 : CHANGEMENTS ── -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600; color: #213E60; margin: 0 0 12px; line-height: 1.3;">&#128276; Changements dans votre planning</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">Votre programme &#233;volue au fil des mois &#8212; c'est normal. Mais j'ai besoin d'&#234;tre inform&#233; de tout changement important&nbsp;: heure de d&#233;but, changement de lieu, ajout ou suppression d'une &#233;tape dans la journ&#233;e.</p>
 
-      <p style="margin-bottom:18px;">À très bientôt,</p>
+            <!-- Highlight box -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #F0C890; border-radius: 4px; background-color: #FDF5EE; margin: 12px 0;">
+              <tr>
+                <td style="padding: 12px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; line-height: 1.7;">
+                  <strong style="color: #213E60;">R&#232;gle simple&nbsp;: tout changement important = un email.</strong><br />
+                  Pas besoin d'un long message. Un mot suffit&nbsp;:
+                </td>
+              </tr>
+            </table>
 
-      <div class="sig">
-        <div class="sig-name">Tolliam</div>
-        <div class="sig-brand">Light &amp; Shutter</div>
-        <div class="sig-links">
-          <a href="#">📧 <span class="v">[EMAIL]</span></a>
-          <a href="#">📱 <span class="v">[TÉLÉPHONE]</span></a>
-          <a href="https://lightandshutter.fr">🌐 lightandshutter.fr</a>
-        </div>
-      </div>
+            <!-- Quote examples -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-left: 3px solid #94B6EF; border-radius: 0 4px 4px 0; background-color: #FFFFFF; margin: 8px 0;">
+              <tr><td style="padding: 10px 14px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 14px; color: #5A6B7A; font-style: italic; line-height: 1.5;">&#171;&nbsp;On a d&#233;cal&#233; la c&#233;r&#233;monie &#224; 16h au lieu de 15h.&nbsp;&#187;</td></tr>
+            </table>
 
-    </div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-left: 3px solid #94B6EF; border-radius: 0 4px 4px 0; background-color: #FFFFFF; margin: 8px 0 14px;">
+              <tr><td style="padding: 10px 14px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 14px; color: #5A6B7A; font-style: italic; line-height: 1.5;">&#171;&nbsp;On ajoute une session photo au coucher de soleil vers 20h30.&nbsp;&#187;</td></tr>
+            </table>
 
-    <div class="e-footer">
-      <p class="footer-brand">Light &amp; Shutter</p>
-      <p>© 2026 · Photographie de mariage · Nord, France</p>
-      <p><a href="https://lightandshutter.fr">lightandshutter.fr</a></p>
-    </div>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 22px;">Plus je suis inform&#233; t&#244;t, mieux je peux pr&#233;parer la journ&#233;e pour capturer exactement ce que vous souhaitez.</p>
 
-  </div>
-</div>
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
+
+            <!-- Closing italic -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-style: italic; color: #213E60; line-height: 1.65; margin: 0 0 14px;">Je suis l&#224; pour que cette exp&#233;rience soit aussi simple que possible. Si quelque chose n'est pas clair ou si vous avez une question, r&#233;pondez &#224; cet email &#8212; c'est exactement pour &#231;a qu'il existe.</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 18px;">&#192; tr&#232;s bient&#244;t,</p>
+
+            <!-- SIGNATURE -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px;">
+              <tr>
+                <td width="3" bgcolor="#213E60" style="background-color: #213E60; width: 3px; font-size: 0; line-height: 0;">&nbsp;</td>
+                <td style="padding: 20px 24px; background-color: #FFFFFF; border-radius: 0 4px 4px 0;">
+                  <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 600; color: #213E60; margin: 0 0 2px; line-height: 1.2;">Tolliam</p>
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 11px; letter-spacing: 2px; color: #E68C3A; text-transform: uppercase; font-weight: 600; margin: 0 0 12px; line-height: 1.4;">Light &amp; Shutter</p>
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td style="padding-right: 20px;"><a href="mailto:[EMAIL]" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #5A6B7A; text-decoration: none;">&#128231; [EMAIL]</a></td>
+                      <td style="padding-right: 20px;"><a href="tel:[TÉLÉPHONE]" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #5A6B7A; text-decoration: none;">&#128241; [TÉLÉPHONE]</a></td>
+                      <td><a href="https://lightandshutter.fr" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #5A6B7A; text-decoration: none;">&#127760; lightandshutter.fr</a></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+          </td>
+        </tr>
+
+        <!-- ── FOOTER ── -->
+        <tr>
+          <td class="footer-td" bgcolor="#213E60" align="center" style="padding: 24px 48px; background-color: #213E60;">
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; color: #B8C8D8; margin: 0 0 6px; letter-spacing: 2px; line-height: 1.3;">Light &amp; Shutter</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; color: #6B7F90; margin: 0 0 3px; line-height: 1.4;">&#169; 2026 &middot; Photographie de mariage &middot; Nord, France</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; margin: 0; line-height: 1.4;"><a href="https://lightandshutter.fr" style="color: #7A939F; text-decoration: none;">lightandshutter.fr</a></p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
 </body>
 </html>

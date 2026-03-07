@@ -1,526 +1,261 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email 2 — Périmètre de prestation · Light &amp; Shutter</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    /* ═══════════════════════════════════════
-       BASE = MOBILE
-       ═══════════════════════════════════════ */
-    :root {
-      --cream: #F4F2EF;
-      --navy:  #213E60;
-      --amber: #E68C3A;
-      --sky:   #94B6EF;
-      --body:  #2C3E50;
-      --muted: #5A6B7A;
-      --border:#DDD8D1;
-      --white: #FFFFFF;
-      --serif: 'Cormorant Garamond', Georgia, serif;
-      --sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: var(--sans);
-      background: #E8E4DF;
-      color: var(--body);
-      line-height: 1.6;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    .wrap {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 12px 8px 48px;
-    }
-
-    .file-label {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
-      padding: 0 4px;
-    }
-
-    .subject-bar {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-bottom: none;
-      border-radius: 6px 6px 0 0;
-      padding: 12px 16px;
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
-    .subject-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-    .subject-line { font-size: 13px; color: var(--muted); line-height: 1.5; }
-    .subject-line + .subject-line { margin-top: 4px; }
-    .subject-line strong { color: var(--navy); }
-
-    .card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 0 0 6px 6px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(33,62,96,0.08);
-    }
-
-    .e-header {
-      background: var(--navy);
-      padding: 28px 20px 22px;
-      text-align: center;
-    }
-    .e-header::after {
-      content: '';
-      display: block;
-      width: 36px;
-      height: 2px;
-      background: var(--amber);
-      margin: 12px auto 0;
-    }
-    .brand-name { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--cream); letter-spacing: 0.08em; }
-    .brand-sub  { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244,242,239,0.5); margin-top: 4px; }
-
-    .e-body { background: var(--cream); padding: 24px 18px; }
-
-    .greeting { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--navy); margin-bottom: 16px; }
-
-    .e-body p { font-size: 15px; line-height: 1.75; color: var(--body); margin-bottom: 14px; }
-
-    .hr { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
-
-    /* SECTION HEADING */
-    .s-heading {
-      font-family: var(--serif);
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--navy);
-      margin: 26px 0 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      line-height: 1.3;
-    }
-    .s-heading .sub {
-      font-size: 13px;
-      font-weight: 400;
-      color: var(--muted);
-      font-family: var(--sans);
-    }
-
-    /* EDITOR NOTE */
-    .editor-note {
-      background: rgba(230,140,58,0.06);
-      border: 1px dashed rgba(230,140,58,0.4);
-      border-radius: 3px;
-      padding: 10px 14px;
-      font-size: 12px;
-      color: var(--muted);
-      font-style: italic;
-      margin-bottom: 14px;
-      line-height: 1.5;
-    }
-
-    /* FORMULA BLOCK */
-    .formula-block {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 16px;
-      margin: 10px 0;
-    }
-    /* MOBILE: name then price stacked */
-    .formula-header {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .formula-name {
-      font-family: var(--serif);
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--navy);
-    }
-    .formula-price {
-      display: inline-block;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--amber);
-      background: rgba(230,140,58,0.1);
-      padding: 3px 10px;
-      border-radius: 20px;
-      align-self: flex-start;
-    }
-    .formula-list { list-style: none; padding: 0; }
-    .formula-list li {
-      padding: 7px 0;
-      font-size: 14px;
-      color: var(--body);
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      border-bottom: 1px solid #F0EDEB;
-      line-height: 1.5;
-    }
-    .formula-list li:last-child { border-bottom: none; }
-    .formula-list li::before {
-      content: '✓';
-      color: var(--amber);
-      font-weight: 700;
-      flex-shrink: 0;
-      font-size: 12px;
-      margin-top: 2px;
-    }
-
-    /* OPTIONS BOX */
-    .options-box {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 14px 16px;
-      margin: 14px 0;
-    }
-    .options-box h3 {
-      font-family: var(--serif);
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--navy);
-      margin-bottom: 8px;
-    }
-    .options-box p {
-      font-size: 14px !important;
-      color: var(--muted) !important;
-      margin-bottom: 4px !important;
-      line-height: 1.6 !important;
-    }
-
-    /* HIGHLIGHT BOX */
-    .hl-box {
-      background: rgba(230,140,58,0.06);
-      border: 1px solid rgba(230,140,58,0.25);
-      border-radius: 4px;
-      padding: 12px 14px;
-      font-size: 14px;
-      color: var(--body);
-      line-height: 1.7;
-      margin: 12px 0;
-    }
-    .hl-box strong { color: var(--navy); }
-
-    /* EXCLUDED BOX */
-    .excluded-box {
-      background: #FAFAFA;
-      border: 1px solid #E0DFDB;
-      border-left: 3px solid var(--muted);
-      border-radius: 4px;
-      padding: 14px 16px;
-      margin: 14px 0;
-    }
-    .excluded-box ul { padding-left: 18px; margin-top: 8px; }
-    .excluded-box ul li {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 6px;
-      line-height: 1.5;
-    }
-    .excluded-box .note {
-      font-size: 12px;
-      color: var(--muted);
-      font-style: italic;
-      margin-top: 10px;
-    }
-
-    /* TABLE (wrapped for mobile scroll) */
-    .table-wrap {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      margin: 14px 0;
-    }
-    /* Mobile: hint that table scrolls */
-    .table-scroll-hint {
-      font-size: 11px;
-      color: var(--muted);
-      font-style: italic;
-      text-align: center;
-      padding: 5px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(244,242,239,0.9);
-    }
-    .sched-table {
-      width: 100%;
-      min-width: 380px;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    .sched-table th {
-      background: var(--navy);
-      color: var(--cream);
-      padding: 10px 12px;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .sched-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-      color: var(--body);
-      vertical-align: top;
-      line-height: 1.5;
-    }
-    .sched-table tr:last-child td { border-bottom: none; }
-    .sched-table tr:nth-child(even) td { background: rgba(244,242,239,0.6); }
-    .sched-table em { font-size: 11px; color: var(--muted); }
-
-    /* SIGNATURE */
-    .sig { padding: 16px; background: var(--white); border-radius: 4px; border-left: 3px solid var(--navy); margin-top: 8px; }
-    .sig-name { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
-    .sig-brand { font-size: 11px; letter-spacing: 0.10em; color: var(--amber); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
-    .sig-links { display: flex; flex-direction: column; gap: 10px; }
-    .sig-links a { font-size: 14px; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 6px; min-height: 36px; }
-
-    /* FOOTER */
-    .e-footer { background: var(--navy); padding: 20px 18px; text-align: center; }
-    .footer-brand { font-family: var(--serif); font-size: 15px; color: rgba(244,242,239,0.7); margin-bottom: 6px; letter-spacing: 0.06em; }
-    .e-footer p { font-size: 12px; color: rgba(244,242,239,0.4); margin-bottom: 3px; }
-    .e-footer a { color: rgba(244,242,239,0.5); text-decoration: none; }
-
-    /* VAR TAG */
-    .v {
-      background: rgba(148,182,239,0.2);
-      border: 1px solid rgba(148,182,239,0.5);
-      color: #2A5080;
-      font-family: var(--sans);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 1px 6px;
-      border-radius: 3px;
-      white-space: nowrap;
-    }
-
-    /* ═══════════════════════════════════════
-       DESKTOP ENHANCEMENTS (min-width: 600px)
-       ═══════════════════════════════════════ */
-    @media (min-width: 600px) {
-      .wrap { padding: 24px 20px 56px; }
-      .subject-bar { padding: 12px 20px; }
-      .e-header { padding: 36px 48px 30px; }
-      .e-header::after { width: 48px; margin: 18px auto 0; }
-      .brand-name { font-size: 30px; }
-      .e-body { padding: 40px 48px; }
-      .greeting { font-size: 22px; }
-      /* Desktop: formula header side by side */
-      .formula-header { flex-direction: row; align-items: baseline; justify-content: space-between; gap: 12px; }
-      .formula-price { align-self: auto; }
-      .formula-block { padding: 20px 24px; }
-      .options-box { padding: 18px 24px; }
-      .table-scroll-hint { display: none; }
-      .sched-table { font-size: 14px; }
-      .sched-table th, .sched-table td { padding: 10px 14px; }
-      .sig { padding: 20px 24px; }
-      .sig-links { flex-direction: row; flex-wrap: wrap; gap: 8px 20px; }
-      .sig-links a { min-height: auto; font-size: 13px; }
-      .e-footer { padding: 24px 48px; }
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email 2 — P&#233;rim&#232;tre de prestation · Light &amp; Shutter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" type="text/css" />
+  <style type="text/css">
+    @media only screen and (max-width: 600px) {
+      .w600 { width: 100% !important; }
+      .body-td { padding: 24px 18px !important; }
+      .header-td { padding: 28px 20px 0 !important; }
+      .brand-name { font-size: 22px !important; }
+      .footer-td { padding: 20px 18px !important; }
+      .formula-price-td { display: block !important; padding-top: 4px !important; }
     }
   </style>
 </head>
-<body>
-<div class="wrap">
+<body style="margin: 0; padding: 0; background-color: #E8E4DF; -webkit-text-size-adjust: 100%; mso-line-height-rule: exactly;">
 
-  <p class="file-label">Email 2 · À envoyer 2–3 jours après l'email 1</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#E8E4DF" style="background-color: #E8E4DF;">
+  <tr>
+    <td align="center" valign="top" style="padding: 24px 16px 56px;">
 
-  <div class="subject-bar">
-    <span class="subject-icon">✉️</span>
-    <div>
-      <p class="subject-line"><strong>Objet A :</strong> Ce qui est inclus dans votre formule <span class="v">[NOM FORMULE]</span> — et ce qui ne l'est pas</p>
-      <p class="subject-line"><strong>Objet B :</strong> Votre formule en détail — tout ce qu'on a convenu ensemble</p>
-    </div>
-  </div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="w600" style="width: 600px; max-width: 600px;">
 
-  <div class="card">
+        <!-- ── HEADER ── -->
+        <tr>
+          <td class="header-td" bgcolor="#213E60" align="center" style="padding: 36px 48px 0; background-color: #213E60;">
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 400; color: #F4F2EF; letter-spacing: 5px; margin: 0; line-height: 1.2;" class="brand-name">Light &amp; Shutter</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #8AA0B8; margin: 6px 0 0; line-height: 1.4;">Photographie de mariage &middot; Nord, France</p>
+          </td>
+        </tr>
+        <tr>
+          <td bgcolor="#213E60" align="center" style="padding: 16px 0 28px; background-color: #213E60;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="48" style="width: 48px;">
+              <tr><td bgcolor="#E68C3A" height="2" style="background-color: #E68C3A; height: 2px; font-size: 2px; line-height: 2px; mso-line-height-rule: exactly;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
 
-    <div class="e-header">
-      <div class="brand-name">Light &amp; Shutter</div>
-      <div class="brand-sub">Photographie de mariage · Nord, France</div>
-    </div>
+        <!-- ── BODY ── -->
+        <tr>
+          <td class="body-td" bgcolor="#F4F2EF" style="padding: 40px 48px; background-color: #F4F2EF;">
 
-    <div class="e-body">
+            <!-- Greeting -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 400; color: #213E60; margin: 0 0 16px; line-height: 1.4;">[Prénom(s)],</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 22px;">Avant de d&#233;marrer le travail ensemble, je veux qu'on soit parfaitement align&#233;s sur ce qu'on a convenu. Pas de mauvaises surprises de part et d'autre.</p>
 
-      <p class="greeting"><span class="v">[Prénom(s)]</span>,</p>
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <p>Avant de démarrer le travail ensemble, je veux qu'on soit parfaitement alignés sur ce qu'on a convenu. Pas de mauvaises surprises de part et d'autre.</p>
+            <!-- Section: CE QUI EST INCLUS -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 10px;">
+              <tr>
+                <td style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 600; color: #213E60; line-height: 1.3; padding: 26px 0 0;">&#10003; Ce qui est inclus &#8212; <span style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; font-weight: 400; color: #5A6B7A;">formule [NOM FORMULE] / [PRIX TOTAL] &#8364;</span></td>
+              </tr>
+            </table>
 
-      <hr class="hr">
+            <!-- Editor note -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px dashed #F0C890; border-radius: 3px; background-color: #FEF8EE; margin: 0 0 14px;">
+              <tr>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; color: #5A6B7A; font-style: italic; line-height: 1.5;">&#9888;&#65039; Note &#233;ditoriale&nbsp;: utiliser le bloc correspondant &#224; la formule choisie &#8212; supprimer les deux autres avant d'envoyer.</td>
+              </tr>
+            </table>
 
-      <!-- ── CE QUI EST INCLUS ── -->
-      <div class="s-heading">
-        <span>✅ Ce qui est inclus</span>
-        <span class="sub">— formule <span class="v">[NOM FORMULE]</span> / <span class="v">[PRIX TOTAL]</span> €</span>
-      </div>
+            <!-- FORMULE ESSENTIEL -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px; background-color: #FFFFFF; margin: 10px 0;">
+              <tr>
+                <td style="padding: 20px 24px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 14px;">
+                    <tr>
+                      <td style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 600; color: #213E60; vertical-align: baseline;">Formule Essentiel</td>
+                      <td class="formula-price-td" align="right" style="vertical-align: baseline; text-align: right;"><span style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #E68C3A; background-color: #FEF0E4; padding: 3px 10px; border-radius: 20px;">690 &#8364;</span></td>
+                    </tr>
+                  </table>
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>4 heures de couverture photo le jour J</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>300 photos haute r&#233;solution, retouch&#233;es individuellement</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>Galerie en ligne priv&#233;e pendant 6 mois</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>S&#233;ance engagement pr&#233;-mariage (~1h30 &#8212; environ 50 photos retouch&#233;es incluses)</td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
 
-      <p class="editor-note">⚠️ Note éditoriale : utiliser le bloc correspondant à la formule choisie — supprimer les deux autres avant d'envoyer.</p>
+            <!-- FORMULE SIGNATURE -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px; background-color: #FFFFFF; margin: 10px 0;">
+              <tr>
+                <td style="padding: 20px 24px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 14px;">
+                    <tr>
+                      <td style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 600; color: #213E60; vertical-align: baseline;">Formule Signature</td>
+                      <td class="formula-price-td" align="right" style="vertical-align: baseline; text-align: right;"><span style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #E68C3A; background-color: #FEF0E4; padding: 3px 10px; border-radius: 20px;">1&nbsp;090 &#8364;</span></td>
+                    </tr>
+                  </table>
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>8 heures de couverture photo le jour J</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>400 photos haute r&#233;solution, retouch&#233;es individuellement</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>Reportage vid&#233;o de 10 minutes</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>Galerie en ligne priv&#233;e pendant 12 mois</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>Best-of 20 photos livr&#233; en 72h apr&#232;s le mariage</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>S&#233;ance engagement pr&#233;-mariage (~1h30 &#8212; environ 50 photos retouch&#233;es incluses)</td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
 
-      <!-- Formule Essentiel -->
-      <div class="formula-block">
-        <div class="formula-header">
-          <span class="formula-name">Formule Essentiel</span>
-          <span class="formula-price">690 €</span>
-        </div>
-        <ul class="formula-list">
-          <li>4 heures de couverture photo le jour J</li>
-          <li>300 photos haute résolution, retouchées individuellement</li>
-          <li>Galerie en ligne privée pendant 6 mois</li>
-          <li>Séance engagement pré-mariage (~1h30 — environ 50 photos retouchées incluses)</li>
-        </ul>
-      </div>
+            <!-- FORMULE HERITAGE -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px; background-color: #FFFFFF; margin: 10px 0;">
+              <tr>
+                <td style="padding: 20px 24px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 14px;">
+                    <tr>
+                      <td style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 600; color: #213E60; vertical-align: baseline;">Formule H&#233;ritage</td>
+                      <td class="formula-price-td" align="right" style="vertical-align: baseline; text-align: right;"><span style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #E68C3A; background-color: #FEF0E4; padding: 3px 10px; border-radius: 20px;">1&nbsp;590 &#8364;</span></td>
+                    </tr>
+                  </table>
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>Journ&#233;e compl&#232;te de couverture photo</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>600 photos haute r&#233;solution, retouch&#233;es individuellement</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>Reportage vid&#233;o de 10 minutes</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>Galerie en ligne priv&#233;e pendant 24 mois</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; border-bottom: 1px solid #F0EDEB; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>Best-of 20 photos livr&#233; en 72h apr&#232;s le mariage</td></tr>
+                    <tr><td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; padding: 7px 0; line-height: 1.5; vertical-align: top;"><span style="color: #E68C3A; font-weight: 700; padding-right: 8px;">&#10003;</span>S&#233;ance engagement pr&#233;-mariage (~1h30 &#8212; environ 50 photos retouch&#233;es incluses)</td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
 
-      <!-- Formule Signature -->
-      <div class="formula-block">
-        <div class="formula-header">
-          <span class="formula-name">Formule Signature</span>
-          <span class="formula-price">1 090 €</span>
-        </div>
-        <ul class="formula-list">
-          <li>8 heures de couverture photo le jour J</li>
-          <li>400 photos haute résolution, retouchées individuellement</li>
-          <li>Reportage vidéo de 10 minutes</li>
-          <li>Galerie en ligne privée pendant 12 mois</li>
-          <li>Best-of 20 photos livré en 72h après le mariage</li>
-          <li>Séance engagement pré-mariage (~1h30 — environ 50 photos retouchées incluses)</li>
-        </ul>
-      </div>
+            <!-- OPTIONS BOX -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px; background-color: #FFFFFF; margin: 14px 0;">
+              <tr>
+                <td style="padding: 18px 24px;">
+                  <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; font-weight: 600; color: #213E60; margin: 0 0 8px; line-height: 1.3;">Options ajout&#233;es <span style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; font-weight: 400; color: #5A6B7A;">(supprimer si aucune)</span></p>
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0 0 4px; line-height: 1.6;">&middot; [OPTION 1] &#8212; [PRIX] &#8364;</p>
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0; line-height: 1.6;">&middot; [OPTION 2] &#8212; [PRIX] &#8364;</p>
+                </td>
+              </tr>
+            </table>
 
-      <!-- Formule Héritage -->
-      <div class="formula-block">
-        <div class="formula-header">
-          <span class="formula-name">Formule Héritage</span>
-          <span class="formula-price">1 590 €</span>
-        </div>
-        <ul class="formula-list">
-          <li>Journée complète de couverture photo</li>
-          <li>600 photos haute résolution, retouchées individuellement</li>
-          <li>Reportage vidéo de 10 minutes</li>
-          <li>Galerie en ligne privée pendant 24 mois</li>
-          <li>Best-of 20 photos livré en 72h après le mariage</li>
-          <li>Séance engagement pré-mariage (~1h30 — environ 50 photos retouchées incluses)</li>
-        </ul>
-      </div>
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 22px 0;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <!-- Options -->
-      <div class="options-box">
-        <h3>Options ajoutées <span style="font-weight:400;font-size:12px;color:var(--muted);">(supprimer si aucune)</span></h3>
-        <p>· <span class="v">[OPTION 1]</span> — <span class="v">[PRIX]</span> € <em style="font-size:12px;">(ex : Album 30×30 50 pages)</em></p>
-        <p>· <span class="v">[OPTION 2]</span> — <span class="v">[PRIX]</span> € <em style="font-size:12px;">(ex : Drone, Photobooth…)</em></p>
-      </div>
+            <!-- Section: RETOUCHES -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 600; color: #213E60; margin: 0 0 14px; line-height: 1.3;">&#128260; Retouches sp&#233;cifiques</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">Un round de retouches est inclus pour jusqu'&#224; <strong>50 photos</strong> de votre galerie finale.</p>
 
-      <hr class="hr">
+            <!-- Highlight box -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #F0C890; border-radius: 4px; background-color: #FDF5EE; margin: 12px 0;">
+              <tr>
+                <td style="padding: 12px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #2C3E50; line-height: 1.7;">
+                  <strong style="color: #213E60;">Ce que &#231;a couvre&nbsp;:</strong> une correction pr&#233;cise sur une photo que vous souhaitez imprimer ou encadrer &#8212; supprimer un &#233;l&#233;ment g&#234;nant en arri&#232;re-plan, ajuster l'exposition, recadrer.<br /><br />
+                  <strong style="color: #213E60;">Ce que &#231;a ne couvre pas&nbsp;:</strong> une r&#233;vision esth&#233;tique compl&#232;te de la galerie ou un changement de style de traitement sur l'ensemble des photos.
+                </td>
+              </tr>
+            </table>
 
-      <!-- ── RETOUCHES ── -->
-      <div class="s-heading">🔄 Retouches spécifiques</div>
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 22px 0;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <p>Un round de retouches est inclus pour jusqu'à <strong>50 photos</strong> de votre galerie finale.</p>
+            <!-- Section: NON INCLUS -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 600; color: #213E60; margin: 0 0 14px; line-height: 1.3;">&#10060; Ce qui n'est pas inclus</p>
 
-      <div class="hl-box">
-        <strong>Ce que ça couvre :</strong> une correction précise sur une photo que vous souhaitez imprimer ou encadrer — supprimer un élément gênant en arrière-plan, ajuster l'exposition, recadrer.<br><br>
-        <strong>Ce que ça ne couvre pas :</strong> une révision esthétique complète de la galerie ou un changement de style de traitement sur l'ensemble des photos.
-      </div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #E0DFDB; border-radius: 4px; background-color: #FAFAFA; margin: 14px 0;">
+              <tr>
+                <!-- Muted left border -->
+                <td width="3" bgcolor="#5A6B7A" style="background-color: #5A6B7A; width: 3px; font-size: 0; line-height: 0;">&nbsp;</td>
+                <td style="padding: 14px 16px;">
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0 0 6px; line-height: 1.5; padding-left: 16px;">&#8226;&nbsp;&nbsp;Fichiers RAW (n&#233;gatifs num&#233;riques bruts non trait&#233;s)</p>
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0 0 6px; line-height: 1.5; padding-left: 16px;">&#8226;&nbsp;&nbsp;Rush vid&#233;o ou vid&#233;o non mont&#233;e</p>
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0 0 10px; line-height: 1.5; padding-left: 16px;">&#8226;&nbsp;&nbsp;Aucun fichier source</p>
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; color: #5A6B7A; font-style: italic; margin: 0; line-height: 1.5;">Ces &#233;l&#233;ments ne sont pas disponibles &#224; la vente et ne font pas partie de la prestation.</p>
+                </td>
+              </tr>
+            </table>
 
-      <hr class="hr">
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 22px 0;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <!-- ── NON INCLUS ── -->
-      <div class="s-heading">❌ Ce qui n'est pas inclus</div>
+            <!-- Section: CALENDRIER -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 600; color: #213E60; margin: 0 0 14px; line-height: 1.3;">&#128197; Calendrier pr&#233;vu</p>
 
-      <div class="excluded-box">
-        <ul>
-          <li>Fichiers RAW (négatifs numériques bruts non traités)</li>
-          <li>Rush vidéo ou vidéo non montée</li>
-          <li>Aucun fichier source</li>
-        </ul>
-        <p class="note">Ces éléments ne sont pas disponibles à la vente et ne font pas partie de la prestation.</p>
-      </div>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px; margin: 14px 0; border-collapse: collapse;">
+              <!-- Table header -->
+              <tr>
+                <td bgcolor="#213E60" style="background-color: #213E60; padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 11px; font-weight: 600; color: #F4F2EF; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px 0 0 0; width: 55%;">&#201;tape</td>
+                <td bgcolor="#213E60" style="background-color: #213E60; padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 11px; font-weight: 600; color: #F4F2EF; letter-spacing: 1px; text-transform: uppercase; border-radius: 0 4px 0 0; width: 45%;">Timing</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; border-bottom: 1px solid #DDD8D1; vertical-align: top; line-height: 1.5;">S&#233;ance engagement</td>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; border-bottom: 1px solid #DDD8D1; vertical-align: top; line-height: 1.5;">&#192; planifier ensemble</td>
+              </tr>
+              <tr bgcolor="#F7F5F3">
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; background-color: #F7F5F3; border-bottom: 1px solid #DDD8D1; vertical-align: top; line-height: 1.5;">Point de pr&#233;paration</td>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; background-color: #F7F5F3; border-bottom: 1px solid #DDD8D1; vertical-align: top; line-height: 1.5;">2&#8211;3 semaines avant le mariage</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; border-bottom: 1px solid #DDD8D1; vertical-align: top; line-height: 1.5;">Best-of 20 photos <em style="font-size: 11px; color: #5A6B7A;">(Signature &amp; H&#233;ritage, ou si Aper&#231;u command&#233;)</em></td>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; border-bottom: 1px solid #DDD8D1; vertical-align: top; line-height: 1.5;">Sous 72h apr&#232;s le mariage</td>
+              </tr>
+              <tr bgcolor="#F7F5F3">
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; background-color: #F7F5F3; border-bottom: 1px solid #DDD8D1; vertical-align: top; line-height: 1.5;">Livraison de la galerie compl&#232;te</td>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; background-color: #F7F5F3; border-bottom: 1px solid #DDD8D1; vertical-align: top; line-height: 1.5;">Sous 2&#8211;3 semaines apr&#232;s le mariage</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; vertical-align: top; line-height: 1.5; border-radius: 0 0 0 4px;">Album <em style="font-size: 11px; color: #5A6B7A;">(si command&#233;)</em></td>
+                <td style="padding: 10px 14px; font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #2C3E50; vertical-align: top; line-height: 1.5; border-radius: 0 0 4px 0;">Sur commande apr&#232;s livraison galerie</td>
+              </tr>
+            </table>
 
-      <hr class="hr">
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 22px 0;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <!-- ── CALENDRIER ── -->
-      <div class="s-heading">📅 Calendrier prévu</div>
+            <!-- Section: HORS PERIMETRE -->
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 600; color: #213E60; margin: 0 0 14px; line-height: 1.3;">&#9888;&#65039; Travaux hors p&#233;rim&#232;tre</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 22px;">Toute demande qui ne figure pas dans cette liste fait l'objet d'un devis s&#233;par&#233;, soumis &#224; votre accord <strong>avant</strong> toute r&#233;alisation. Pas de frais cach&#233;s, pas de mauvaise surprise.</p>
 
-      <div class="table-wrap">
-        <div class="table-scroll-hint">← Faire défiler →</div>
-        <table class="sched-table">
-          <thead>
-            <tr>
-              <th>Étape</th>
-              <th>Timing</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Séance engagement</td>
-              <td>À planifier ensemble</td>
-            </tr>
-            <tr>
-              <td>Point de préparation</td>
-              <td>2–3 semaines avant le mariage</td>
-            </tr>
-            <tr>
-              <td>Best-of 20 photos <em>(Signature &amp; Héritage, ou si Aperçu commandé)</em></td>
-              <td>Sous 72h après le mariage</td>
-            </tr>
-            <tr>
-              <td>Livraison de la galerie complète</td>
-              <td>Sous 2–3 semaines après le mariage</td>
-            </tr>
-            <tr>
-              <td>Album <em>(si commandé)</em></td>
-              <td>Sur commande après livraison galerie — voir Email 3</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            <!-- HR -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
 
-      <hr class="hr">
+            <!-- Closing -->
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">Si vous avez une question sur ce qui pr&#233;c&#232;de, r&#233;pondez &#224; cet email. Sinon, consid&#233;rez ce document comme notre cadre de travail commun &#8212; on construit &#224; partir de l&#224;.</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 18px;">&#192; bient&#244;t,</p>
 
-      <!-- ── HORS PÉRIMÈTRE ── -->
-      <div class="s-heading">⚠️ Travaux hors périmètre</div>
+            <!-- SIGNATURE -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px;">
+              <tr>
+                <td width="3" bgcolor="#213E60" style="background-color: #213E60; width: 3px; font-size: 0; line-height: 0;">&nbsp;</td>
+                <td style="padding: 20px 24px; background-color: #FFFFFF; border-radius: 0 4px 4px 0;">
+                  <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 600; color: #213E60; margin: 0 0 2px; line-height: 1.2;">Tolliam</p>
+                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 11px; letter-spacing: 2px; color: #E68C3A; text-transform: uppercase; font-weight: 600; margin: 0 0 12px; line-height: 1.4;">Light &amp; Shutter</p>
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td style="padding-right: 20px;"><a href="mailto:[EMAIL]" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #5A6B7A; text-decoration: none;">&#128231; [EMAIL]</a></td>
+                      <td><a href="tel:[TÉLÉPHONE]" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #5A6B7A; text-decoration: none;">&#128241; [TÉLÉPHONE]</a></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
 
-      <p>Toute demande qui ne figure pas dans cette liste fait l'objet d'un devis séparé, soumis à votre accord <strong>avant</strong> toute réalisation. Pas de frais cachés, pas de mauvaise surprise.</p>
+          </td>
+        </tr>
 
-      <hr class="hr">
+        <!-- ── FOOTER ── -->
+        <tr>
+          <td class="footer-td" bgcolor="#213E60" align="center" style="padding: 24px 48px; background-color: #213E60;">
+            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; color: #B8C8D8; margin: 0 0 6px; letter-spacing: 2px; line-height: 1.3;">Light &amp; Shutter</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; color: #6B7F90; margin: 0 0 3px; line-height: 1.4;">&#169; 2026 &middot; Photographie de mariage &middot; Nord, France</p>
+            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; margin: 0; line-height: 1.4;"><a href="https://lightandshutter.fr" style="color: #7A939F; text-decoration: none;">lightandshutter.fr</a></p>
+          </td>
+        </tr>
 
-      <p>Si vous avez une question sur ce qui précède, répondez à cet email. Sinon, considérez ce document comme notre cadre de travail commun — on construit à partir de là.</p>
-      <p style="margin-bottom:18px;">À bientôt,</p>
+      </table>
+    </td>
+  </tr>
+</table>
 
-      <div class="sig">
-        <div class="sig-name">Tolliam</div>
-        <div class="sig-brand">Light &amp; Shutter</div>
-        <div class="sig-links">
-          <a href="#">📧 <span class="v">[EMAIL]</span></a>
-          <a href="#">📱 <span class="v">[TÉLÉPHONE]</span></a>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="e-footer">
-      <p class="footer-brand">Light &amp; Shutter</p>
-      <p>© 2026 · Photographie de mariage · Nord, France</p>
-      <p><a href="https://lightandshutter.fr">lightandshutter.fr</a></p>
-    </div>
-
-  </div>
-</div>
 </body>
 </html>
