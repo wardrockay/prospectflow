@@ -162,6 +162,10 @@ export async function sendOnboardingEmail(
       Subject: { Data: subject, Charset: 'UTF-8' },
       Body: {
         Html: { Data: html, Charset: 'UTF-8' },
+        Text: {
+          Data: `Light & Shutter — Photographie de mariage\n\nBonjour ${vars.prenoms},\n\nCet email contient du contenu mis en forme (HTML). Si vous ne le voyez pas correctement, ouvrez-le dans votre application email ou contactez-nous à ${vars.emailPhotographe}.\n\n—\nTolliam\nLight & Shutter\n${vars.emailPhotographe} · ${vars.telephone}\nhttps://lightandshutter.fr`,
+          Charset: 'UTF-8',
+        },
       },
     },
   });
