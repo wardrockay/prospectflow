@@ -4,6 +4,12 @@
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
+
+  const idToken = getCookie(event, 'id_token');
+  if (!idToken) {
+    throw createError({ statusCode: 401, message: 'Non authentifié. Veuillez vous connecter.' });
+  }
+
   const body = await readBody(event);
 
   const backendUrl = config.ingestApiUrl || 'http://localhost:3000';
@@ -11,7 +17,10 @@ export default defineEventHandler(async (event) => {
   try {
     const response = await fetch(`${backendUrl}/api/onboarding/send-email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
       body: JSON.stringify(body),
     });
 
