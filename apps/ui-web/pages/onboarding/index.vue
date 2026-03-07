@@ -11,6 +11,91 @@ const toast = useToast();
 // ─── Email selection ───────────────────────────────────────────────────────
 const selectedEmailId = ref<1 | 2 | 3 | 4>(1);
 
+// ─── Preview ───────────────────────────────────────────────────────────────
+const templateFiles: Record<number, string> = {
+  1: '/email-previews/email-1-bienvenue.html',
+  2: '/email-previews/email-2-perimetre.html',
+  3: '/email-previews/email-3-planning.html',
+  4: '/email-previews/email-4-communication.html',
+};
+
+const rawTemplates = reactive<Record<number, string>>({});
+
+async function loadTemplate(id: number) {
+  if (rawTemplates[id]) return;
+  try {
+    rawTemplates[id] = await $fetch<string>(templateFiles[id], { responseType: 'text' });
+  } catch {
+    rawTemplates[id] = '<p style="padding:16px;color:red;">Erreur de chargement du template</p>';
+  }
+}
+
+// Load initial template on mount, and on email id change
+onMounted(() => loadTemplate(selectedEmailId.value));
+watch(selectedEmailId, (id) => loadTemplate(id));
+
+const previewHtml = computed(() => {
+  const raw = rawTemplates[selectedEmailId.value];
+  if (!raw) return '<p style="padding:24px;color:#999;font-family:sans-serif;">Chargement…</p>';
+
+  const f = form;
+  const id = selectedEmailId.value;
+
+  const common: Record<string, string> = {
+    '[Prénom(s)]': f.prenoms || '[Prénom(s)]',
+    '[EMAIL]': f.emailPhotographe || '[EMAIL]',
+    '[TÉLÉPHONE]': f.telephone || '[TÉLÉPHONE]',
+  };
+
+  const byEmail: Record<number, Record<string, string>> = {
+    1: {
+      '[NOM DE LA FORMULE]': f.nomFormule || '[NOM DE LA FORMULE]',
+      '[DATE DU MARIAGE]': f.dateMariage || '[DATE DU MARIAGE]',
+      '[LIEU DU MARIAGE]': f.lieuMariage || '[LIEU DU MARIAGE]',
+      '[MONTANT]': f.montantTotal || '[MONTANT]',
+      '[MONTANT SOLDE]': f.montantSolde || '[MONTANT SOLDE]',
+      '[X semaines]': f.semainesLivraison || '[X semaines]',
+    },
+    2: {
+      '[NOM FORMULE]': f.nomFormule || '[NOM FORMULE]',
+      '[PRIX TOTAL]': f.montantTotal || '[PRIX TOTAL]',
+      '[OPTION 1]': f.option1 || '[OPTION 1]',
+      '[OPTION 2]': f.option2 || '[OPTION 2]',
+    },
+    3: {
+      '[DATE]': f.dateEngagement || '[DATE]',
+      '[LIEU CHOISI]': f.lieuEngagement || '[LIEU CHOISI]',
+      '[X semaines]': f.semainesLivraison || '[X semaines]',
+      '[DATE 2–3 sem. avant]': f.dateBriefing || '[DATE 2–3 sem. avant]',
+      '[DATE DU MARIAGE]': f.dateMariage || '[DATE DU MARIAGE]',
+      '[DURÉE]': f.duree || '[DURÉE]',
+      '[HEURE DÉBUT]': f.heureDebut || '[HEURE DÉBUT]',
+      '[HEURE FIN]': f.heureFin || '[HEURE FIN]',
+      '[NOMBRE]': f.nombrePhotos || '[NOMBRE]',
+      '[6 / 12 / 24 mois]': f.dureeAcces || '[6 / 12 / 24 mois]',
+    },
+    4: {
+      '[NUMÉRO]': f.numeroWhatsApp || '[NUMÉRO]',
+    },
+  };
+
+  let html = raw;
+  const replacements = { ...common, ...(byEmail[id] ?? {}) };
+  for (const [k, v] of Object.entries(replacements)) {
+    html = html.replaceAll(k, v);
+  }
+
+  // Email 2: two [PRIX] — first for option1, second for option2
+  if (id === 2) {
+    html = html.replace('[PRIX]', f.prixOption1 || '[PRIX]');
+    html = html.replace('[PRIX]', f.prixOption2 || '[PRIX]');
+  }
+
+  return html;
+});
+
+const showPreview = ref(true);
+
 const emails = [
   {
     id: 1 as const,
@@ -138,17 +223,28 @@ async function sendEmail() {
 </script>
 
 <template>
-  <UContainer class="py-8 max-w-3xl mx-auto">
+  <!-- Full-width page, override default container -->
+  <div class="py-6 px-4 lg:px-8">
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-2xl font-bold text-gray-900">Onboarding client mariage</h1>
-      <p class="mt-1 text-sm text-gray-500">
-        Envoyez la séquence d'emails d'onboarding après signature du devis dans Odoo.
-      </p>
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Onboarding client mariage</h1>
+        <p class="mt-1 text-sm text-gray-500">
+          Envoyez la séquence d'emails d'onboarding après signature du devis dans Odoo.
+        </p>
+      </div>
+      <UButton
+        :icon="showPreview ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+        variant="soft"
+        size="sm"
+        @click="showPreview = !showPreview"
+      >
+        {{ showPreview ? 'Masquer prévisualisation' : 'Afficher prévisualisation' }}
+      </UButton>
     </div>
 
     <!-- Email selector -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
       <button
         v-for="email in emails"
         :key="email.id"
@@ -166,134 +262,158 @@ async function sendEmail() {
       </button>
     </div>
 
-    <form @submit.prevent="sendEmail" class="space-y-6">
+    <!-- Split: form + preview -->
+    <div class="flex gap-6 items-start">
 
-      <!-- Client info -->
-      <UCard>
-        <template #header>
-          <h2 class="font-semibold text-gray-900">Informations client</h2>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UFormGroup label="Prénom(s) du/des mariés" required>
-            <UInput v-model="form.prenoms" placeholder="Sophie & Thomas" />
-          </UFormGroup>
-          <UFormGroup label="Email du client (destinataire)" required>
-            <UInput v-model="form.emailClient" type="email" placeholder="couple@exemple.fr" />
-          </UFormGroup>
-        </div>
-      </UCard>
+      <!-- Form column -->
+      <div :class="showPreview ? 'w-full lg:w-2/5 flex-shrink-0' : 'w-full max-w-2xl'">
+        <form @submit.prevent="sendEmail" class="space-y-5">
 
-      <!-- Prestation (emails 1, 2, 3) -->
-      <UCard v-if="[1, 2, 3].includes(selectedEmailId)">
-        <template #header>
-          <h2 class="font-semibold text-gray-900">Détails de la prestation</h2>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UFormGroup label="Nom de la formule">
-            <UInput v-model="form.nomFormule" placeholder="Formule Intégrale" />
-          </UFormGroup>
-          <UFormGroup label="Date du mariage">
-            <UInput v-model="form.dateMariage" placeholder="14 juin 2026" />
-          </UFormGroup>
-          <UFormGroup v-if="selectedEmailId === 1" label="Lieu du mariage">
-            <UInput v-model="form.lieuMariage" placeholder="Château de Versailles" />
-          </UFormGroup>
-          <UFormGroup label="Montant total (€)">
-            <UInput v-model="form.montantTotal" placeholder="2 800" />
-          </UFormGroup>
-          <UFormGroup v-if="selectedEmailId === 1" label="Solde restant (€)">
-            <UInput v-model="form.montantSolde" placeholder="2 100" />
-          </UFormGroup>
-          <UFormGroup v-if="[1, 3].includes(selectedEmailId)" label="Délai de livraison">
-            <UInput v-model="form.semainesLivraison" placeholder="6 semaines" />
-          </UFormGroup>
-        </div>
-      </UCard>
+          <!-- Client info -->
+          <UCard>
+            <template #header>
+              <h2 class="font-semibold text-gray-900">Informations client</h2>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <UFormGroup label="Prénom(s) du/des mariés" required>
+                <UInput v-model="form.prenoms" placeholder="Sophie & Thomas" />
+              </UFormGroup>
+              <UFormGroup label="Email du client (destinataire)" required>
+                <UInput v-model="form.emailClient" type="email" placeholder="couple@exemple.fr" />
+              </UFormGroup>
+            </div>
+          </UCard>
 
-      <!-- Email 2 — Options upsell -->
-      <UCard v-if="selectedEmailId === 2">
-        <template #header>
-          <h2 class="font-semibold text-gray-900">Options & prestations complémentaires</h2>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UFormGroup label="Option 1">
-            <UInput v-model="form.option1" placeholder="Album 30×30 50 pages" />
-          </UFormGroup>
-          <UFormGroup label="Prix option 1 (€)">
-            <UInput v-model="form.prixOption1" placeholder="350" />
-          </UFormGroup>
-          <UFormGroup label="Option 2">
-            <UInput v-model="form.option2" placeholder="Séance drone" />
-          </UFormGroup>
-          <UFormGroup label="Prix option 2 (€)">
-            <UInput v-model="form.prixOption2" placeholder="250" />
-          </UFormGroup>
-        </div>
-      </UCard>
+          <!-- Prestation (emails 1, 2, 3) -->
+          <UCard v-if="[1, 2, 3].includes(selectedEmailId)">
+            <template #header>
+              <h2 class="font-semibold text-gray-900">Détails de la prestation</h2>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <UFormGroup label="Nom de la formule">
+                <UInput v-model="form.nomFormule" placeholder="Formule Intégrale" />
+              </UFormGroup>
+              <UFormGroup label="Date du mariage">
+                <UInput v-model="form.dateMariage" placeholder="14 juin 2026" />
+              </UFormGroup>
+              <UFormGroup v-if="selectedEmailId === 1" label="Lieu du mariage">
+                <UInput v-model="form.lieuMariage" placeholder="Château de Versailles" />
+              </UFormGroup>
+              <UFormGroup label="Montant total (€)">
+                <UInput v-model="form.montantTotal" placeholder="2 800" />
+              </UFormGroup>
+              <UFormGroup v-if="selectedEmailId === 1" label="Solde restant (€)">
+                <UInput v-model="form.montantSolde" placeholder="2 100" />
+              </UFormGroup>
+              <UFormGroup v-if="[1, 3].includes(selectedEmailId)" label="Délai de livraison">
+                <UInput v-model="form.semainesLivraison" placeholder="6 semaines" />
+              </UFormGroup>
+            </div>
+          </UCard>
 
-      <!-- Email 3 — Planning details -->
-      <UCard v-if="selectedEmailId === 3">
-        <template #header>
-          <h2 class="font-semibold text-gray-900">Planning & jalons</h2>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UFormGroup label="Date séance engagement">
-            <UInput v-model="form.dateEngagement" placeholder="15 mars 2026" />
-          </UFormGroup>
-          <UFormGroup label="Lieu séance engagement">
-            <UInput v-model="form.lieuEngagement" placeholder="Bois de Vincennes" />
-          </UFormGroup>
-          <UFormGroup label="Date point de préparation">
-            <UInput v-model="form.dateBriefing" placeholder="25 mai 2026" />
-          </UFormGroup>
-          <UFormGroup label="Durée de couverture">
-            <UInput v-model="form.duree" placeholder="10h" />
-          </UFormGroup>
-          <UFormGroup label="Heure début">
-            <UInput v-model="form.heureDebut" placeholder="10h00" />
-          </UFormGroup>
-          <UFormGroup label="Heure fin">
-            <UInput v-model="form.heureFin" placeholder="20h00" />
-          </UFormGroup>
-          <UFormGroup label="Nombre de photos livrées">
-            <UInput v-model="form.nombrePhotos" placeholder="400" />
-          </UFormGroup>
-          <UFormGroup label="Durée accès galerie">
-            <UInput v-model="form.dureeAcces" placeholder="12 mois" />
-          </UFormGroup>
-        </div>
-      </UCard>
+          <!-- Email 2 — Options upsell -->
+          <UCard v-if="selectedEmailId === 2">
+            <template #header>
+              <h2 class="font-semibold text-gray-900">Options & prestations complémentaires</h2>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <UFormGroup label="Option 1">
+                <UInput v-model="form.option1" placeholder="Album 30×30 50 pages" />
+              </UFormGroup>
+              <UFormGroup label="Prix option 1 (€)">
+                <UInput v-model="form.prixOption1" placeholder="350" />
+              </UFormGroup>
+              <UFormGroup label="Option 2">
+                <UInput v-model="form.option2" placeholder="Séance drone" />
+              </UFormGroup>
+              <UFormGroup label="Prix option 2 (€)">
+                <UInput v-model="form.prixOption2" placeholder="250" />
+              </UFormGroup>
+            </div>
+          </UCard>
 
-      <!-- Photographer contact -->
-      <UCard>
-        <template #header>
-          <h2 class="font-semibold text-gray-900">Vos coordonnées (photographe)</h2>
-        </template>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UFormGroup label="Votre email" required>
-            <UInput v-model="form.emailPhotographe" type="email" placeholder="etienne@lightandshutter.fr" />
-          </UFormGroup>
-          <UFormGroup label="Votre téléphone">
-            <UInput v-model="form.telephone" placeholder="+33 6 12 34 56 78" />
-          </UFormGroup>
-          <UFormGroup v-if="selectedEmailId === 4" label="Numéro WhatsApp">
-            <UInput v-model="form.numeroWhatsApp" placeholder="+33612345678" />
-          </UFormGroup>
-        </div>
-      </UCard>
+          <!-- Email 3 — Planning details -->
+          <UCard v-if="selectedEmailId === 3">
+            <template #header>
+              <h2 class="font-semibold text-gray-900">Planning & jalons</h2>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <UFormGroup label="Date séance engagement">
+                <UInput v-model="form.dateEngagement" placeholder="15 mars 2026" />
+              </UFormGroup>
+              <UFormGroup label="Lieu séance engagement">
+                <UInput v-model="form.lieuEngagement" placeholder="Bois de Vincennes" />
+              </UFormGroup>
+              <UFormGroup label="Date point de préparation">
+                <UInput v-model="form.dateBriefing" placeholder="25 mai 2026" />
+              </UFormGroup>
+              <UFormGroup label="Durée de couverture">
+                <UInput v-model="form.duree" placeholder="10h" />
+              </UFormGroup>
+              <UFormGroup label="Heure début">
+                <UInput v-model="form.heureDebut" placeholder="10h00" />
+              </UFormGroup>
+              <UFormGroup label="Heure fin">
+                <UInput v-model="form.heureFin" placeholder="20h00" />
+              </UFormGroup>
+              <UFormGroup label="Nombre de photos livrées">
+                <UInput v-model="form.nombrePhotos" placeholder="400" />
+              </UFormGroup>
+              <UFormGroup label="Durée accès galerie">
+                <UInput v-model="form.dureeAcces" placeholder="12 mois" />
+              </UFormGroup>
+            </div>
+          </UCard>
 
-      <!-- Submit -->
-      <div class="flex justify-end">
-        <UButton
-          type="submit"
-          size="lg"
-          :loading="sending"
-          icon="i-heroicons-paper-airplane"
-        >
-          Envoyer l'email {{ selectedEmailId }}
-        </UButton>
+          <!-- Photographer contact -->
+          <UCard>
+            <template #header>
+              <h2 class="font-semibold text-gray-900">Vos coordonnées (photographe)</h2>
+            </template>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <UFormGroup label="Votre email" required>
+                <UInput v-model="form.emailPhotographe" type="email" placeholder="etienne@lightandshutter.fr" />
+              </UFormGroup>
+              <UFormGroup label="Votre téléphone">
+                <UInput v-model="form.telephone" placeholder="+33 6 12 34 56 78" />
+              </UFormGroup>
+              <UFormGroup v-if="selectedEmailId === 4" label="Numéro WhatsApp">
+                <UInput v-model="form.numeroWhatsApp" placeholder="+33612345678" />
+              </UFormGroup>
+            </div>
+          </UCard>
+
+          <!-- Submit -->
+          <div class="flex justify-end">
+            <UButton
+              type="submit"
+              size="lg"
+              :loading="sending"
+              icon="i-heroicons-paper-airplane"
+            >
+              Envoyer l'email {{ selectedEmailId }}
+            </UButton>
+          </div>
+
+        </form>
       </div>
 
-    </form>
-  </UContainer>
+      <!-- Preview column -->
+      <div v-if="showPreview" class="hidden lg:flex flex-col flex-1 min-w-0 sticky top-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Prévisualisation</span>
+          <span class="text-xs text-gray-400">Les variables se mettent à jour en temps réel</span>
+        </div>
+        <div class="rounded-xl border border-gray-200 overflow-hidden bg-gray-50 shadow-sm" style="height: calc(100vh - 180px);">
+          <iframe
+            :srcdoc="previewHtml"
+            sandbox="allow-same-origin"
+            class="w-full h-full border-0"
+            title="Prévisualisation de l'email"
+          />
+        </div>
+      </div>
+
+    </div>
+  </div>
 </template>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email 4 — Communication &amp; Retours · Light &amp; Shutter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════
+       BASE = MOBILE
+       ═══════════════════════════════════════ */
+    :root {
+      --cream: #F4F2EF;
+      --navy:  #213E60;
+      --amber: #E68C3A;
+      --sky:   #94B6EF;
+      --body:  #2C3E50;
+      --muted: #5A6B7A;
+      --border:#DDD8D1;
+      --white: #FFFFFF;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--sans);
+      background: #E8E4DF;
+      color: var(--body);
+      line-height: 1.6;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .wrap { max-width: 640px; margin: 0 auto; padding: 12px 8px 48px; }
+
+    .file-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 8px; padding: 0 4px;
+    }
+
+    .subject-bar {
+      background: var(--white); border: 1px solid var(--border); border-bottom: none;
+      border-radius: 6px 6px 0 0; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .subject-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .subject-line { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .subject-line + .subject-line { margin-top: 4px; }
+    .subject-line strong { color: var(--navy); }
+
+    .card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 0 0 6px 6px;
+      overflow: hidden; box-shadow: 0 4px 20px rgba(33,62,96,0.08);
+    }
+
+    .e-header { background: var(--navy); padding: 28px 20px 22px; text-align: center; }
+    .e-header::after { content: ''; display: block; width: 36px; height: 2px; background: var(--amber); margin: 12px auto 0; }
+    .brand-name { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--cream); letter-spacing: 0.08em; }
+    .brand-sub  { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244,242,239,0.5); margin-top: 4px; }
+
+    .e-body { background: var(--cream); padding: 24px 18px; }
+    .greeting { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--navy); margin-bottom: 16px; }
+    .e-body p { font-size: 15px; line-height: 1.75; color: var(--body); margin-bottom: 14px; }
+    .hr { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+    /* RULE BLOCK */
+    .rule { margin-bottom: 0; }
+
+    .rule-title {
+      font-family: var(--serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    /* INFO BOX */
+    .info-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      margin: 14px 0;
+    }
+    .info-box h3 {
+      font-family: var(--serif);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .info-box p {
+      font-size: 14px !important;
+      color: var(--muted) !important;
+      margin-bottom: 0 !important;
+      line-height: 1.7 !important;
+    }
+
+    /* HIGHLIGHT BOX */
+    .hl-box {
+      background: rgba(230,140,58,0.06);
+      border: 1px solid rgba(230,140,58,0.25);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: var(--body);
+      line-height: 1.7;
+      margin: 12px 0;
+    }
+    .hl-box strong { color: var(--navy); }
+
+    /* QUOTE EXAMPLE */
+    .quote {
+      background: var(--white);
+      border-left: 3px solid var(--sky);
+      border-radius: 0 4px 4px 0;
+      padding: 10px 14px;
+      margin: 8px 0;
+      font-size: 14px;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    /* LIST */
+    .e-body ul {
+      padding-left: 18px;
+      margin: 10px 0 14px;
+    }
+    .e-body ul li {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--body);
+      margin-bottom: 8px;
+    }
+    .e-body ul li:last-child { margin-bottom: 0; }
+
+    /* CLOSING ITALIC */
+    .closing-italic {
+      font-family: var(--serif);
+      font-size: 17px;
+      font-style: italic;
+      color: var(--navy);
+      line-height: 1.65;
+      margin-bottom: 14px !important;
+    }
+
+    /* SIGNATURE */
+    .sig { padding: 16px; background: var(--white); border-radius: 4px; border-left: 3px solid var(--navy); margin-top: 8px; }
+    .sig-name { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+    .sig-brand { font-size: 11px; letter-spacing: 0.10em; color: var(--amber); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
+    .sig-links { display: flex; flex-direction: column; gap: 10px; }
+    .sig-links a { font-size: 14px; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 6px; min-height: 36px; }
+
+    /* FOOTER */
+    .e-footer { background: var(--navy); padding: 20px 18px; text-align: center; }
+    .footer-brand { font-family: var(--serif); font-size: 15px; color: rgba(244,242,239,0.7); margin-bottom: 6px; letter-spacing: 0.06em; }
+    .e-footer p { font-size: 12px; color: rgba(244,242,239,0.4); margin-bottom: 3px; }
+    .e-footer a { color: rgba(244,242,239,0.5); text-decoration: none; }
+
+    /* VAR TAG */
+    .v {
+      background: rgba(148,182,239,0.2); border: 1px solid rgba(148,182,239,0.5);
+      color: #2A5080; font-family: var(--sans); font-size: 11px; font-weight: 600;
+      padding: 1px 6px; border-radius: 3px; white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════
+       DESKTOP ENHANCEMENTS (min-width: 600px)
+       ═══════════════════════════════════════ */
+    @media (min-width: 600px) {
+      .wrap { padding: 24px 20px 56px; }
+      .subject-bar { padding: 12px 20px; }
+      .e-header { padding: 36px 48px 30px; }
+      .e-header::after { width: 48px; margin: 18px auto 0; }
+      .brand-name { font-size: 30px; }
+      .e-body { padding: 40px 48px; }
+      .greeting { font-size: 22px; }
+      .info-box { padding: 20px 24px; }
+      .sig { padding: 20px 24px; }
+      .sig-links { flex-direction: row; flex-wrap: wrap; gap: 8px 20px; }
+      .sig-links a { min-height: auto; font-size: 13px; }
+      .e-footer { padding: 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="file-label">Email 4 · Après les emails 2 et 3 (peut être combiné avec l'email 3)</p>
+
+  <div class="subject-bar">
+    <span class="subject-icon">✉️</span>
+    <div>
+      <p class="subject-line"><strong>Objet A :</strong> Comment on travaille ensemble — communication et retours</p>
+      <p class="subject-line"><strong>Objet B :</strong> Pour que tout se passe bien — voici comment je fonctionne</p>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="e-header">
+      <div class="brand-name">Light &amp; Shutter</div>
+      <div class="brand-sub">Photographie de mariage · Nord, France</div>
+    </div>
+
+    <div class="e-body">
+
+      <p class="greeting"><span class="v">[Prénom(s)]</span>,</p>
+
+      <p>Un mariage, ça génère des questions. Des idées à 23h. Des "et si on ajoutait ça ?" le vendredi soir. C'est complètement normal — et c'est signe que vous tenez à chaque détail.</p>
+
+      <p>Pour qu'on travaille bien ensemble et que la communication soit la plus fluide possible pour vous comme pour moi, voici comment je fonctionne.</p>
+
+      <hr class="hr">
+
+      <!-- RÈGLE 1 : EMAIL -->
+      <div class="rule">
+        <div class="rule-title">📬 Canal principal : l'email</div>
+        <p>Mon adresse : <strong><span class="v">[EMAIL]</span></strong></p>
+        <p>L'email me permet de garder une trace de tout ce qu'on s'est dit, de ne rien oublier, et de vous répondre de façon précise et réfléchie.</p>
+        <div class="info-box">
+          <h3>WhatsApp <span class="v">[NUMÉRO]</span></h3>
+          <p>Possible pour les échanges rapides et informels. Mais tout ce qui est important — changement de planning, demande spécifique, ajout d'option — <strong>passe par email</strong>. Ce n'est pas une question de formalité : c'est pour que rien ne se perde entre deux messages.</p>
+        </div>
+      </div>
+
+      <hr class="hr">
+
+      <!-- RÈGLE 2 : DÉLAI -->
+      <div class="rule">
+        <div class="rule-title">⏱️ Délai de réponse : 24h ouvrées</div>
+        <p>Je réponds aux emails dans les 24h ouvrées. En dehors de cette fenêtre (week-ends, jours fériés, et les jours où je photographie un mariage), ma réponse attendra le prochain jour ouvré.</p>
+        <div class="hl-box">
+          Un email envoyé le vendredi soir reçoit une réponse le <strong>lundi matin</strong>.
+        </div>
+      </div>
+
+      <hr class="hr">
+
+      <!-- RÈGLE 3 : FORMAT RETOURS -->
+      <div class="rule">
+        <div class="rule-title">📋 Format des retours (retouches spécifiques)</div>
+        <p>Si vous souhaitez une retouche sur une photo de votre galerie, envoyez-moi un email avec :</p>
+        <ul>
+          <li>Le <strong>numéro de la photo</strong> (visible dans votre galerie)</li>
+          <li>Ce que vous souhaitez modifier</li>
+          <li>Le contexte si utile <em style="color:var(--muted);">(ex : "cette photo est destinée à l'impression en grand format")</em></li>
+        </ul>
+        <p>Ça me permet de traiter votre demande rapidement, sans aller-retour inutile.</p>
+      </div>
+
+      <hr class="hr">
+
+      <!-- RÈGLE 4 : CHANGEMENTS -->
+      <div class="rule">
+        <div class="rule-title">🔔 Changements dans votre planning</div>
+        <p>Votre programme évolue au fil des mois — c'est normal. Mais j'ai besoin d'être informé de tout changement important : heure de début, changement de lieu, ajout ou suppression d'une étape dans la journée.</p>
+        <div class="hl-box">
+          <strong>Règle simple : tout changement important = un email.</strong><br>
+          Pas besoin d'un long message. Un mot suffit :
+        </div>
+        <div class="quote">"On a décalé la cérémonie à 16h au lieu de 15h."</div>
+        <div class="quote">"On ajoute une session photo au coucher de soleil vers 20h30."</div>
+        <p style="margin-top:12px;">Plus je suis informé tôt, mieux je peux préparer la journée pour capturer exactement ce que vous souhaitez.</p>
+      </div>
+
+      <hr class="hr">
+
+      <p class="closing-italic">Je suis là pour que cette expérience soit aussi simple que possible. Si quelque chose n'est pas clair ou si vous avez une question, répondez à cet email — c'est exactement pour ça qu'il existe.</p>
+
+      <p style="margin-bottom:18px;">À très bientôt,</p>
+
+      <div class="sig">
+        <div class="sig-name">Tolliam</div>
+        <div class="sig-brand">Light &amp; Shutter</div>
+        <div class="sig-links">
+          <a href="#">📧 <span class="v">[EMAIL]</span></a>
+          <a href="#">📱 <span class="v">[TÉLÉPHONE]</span></a>
+          <a href="https://lightandshutter.fr">🌐 lightandshutter.fr</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="e-footer">
+      <p class="footer-brand">Light &amp; Shutter</p>
+      <p>© 2026 · Photographie de mariage · Nord, France</p>
+      <p><a href="https://lightandshutter.fr">lightandshutter.fr</a></p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
