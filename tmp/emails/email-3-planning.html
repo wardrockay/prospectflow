@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email 3 — Planning &amp; Jalons · Light &amp; Shutter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════
+       BASE = MOBILE
+       ═══════════════════════════════════════ */
+    :root {
+      --cream: #F4F2EF;
+      --navy:  #213E60;
+      --amber: #E68C3A;
+      --sky:   #94B6EF;
+      --body:  #2C3E50;
+      --muted: #5A6B7A;
+      --border:#DDD8D1;
+      --white: #FFFFFF;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--sans);
+      background: #E8E4DF;
+      color: var(--body);
+      line-height: 1.6;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .wrap { max-width: 640px; margin: 0 auto; padding: 12px 8px 48px; }
+
+    .file-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 8px; padding: 0 4px;
+    }
+
+    .subject-bar {
+      background: var(--white); border: 1px solid var(--border); border-bottom: none;
+      border-radius: 6px 6px 0 0; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .subject-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .subject-line { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .subject-line + .subject-line { margin-top: 4px; }
+    .subject-line strong { color: var(--navy); }
+
+    .card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 0 0 6px 6px;
+      overflow: hidden; box-shadow: 0 4px 20px rgba(33,62,96,0.08);
+    }
+
+    .e-header { background: var(--navy); padding: 28px 20px 22px; text-align: center; }
+    .e-header::after { content: ''; display: block; width: 36px; height: 2px; background: var(--amber); margin: 12px auto 0; }
+    .brand-name { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--cream); letter-spacing: 0.08em; }
+    .brand-sub  { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244,242,239,0.5); margin-top: 4px; }
+
+    .e-body { background: var(--cream); padding: 24px 18px; }
+    .greeting { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--navy); margin-bottom: 16px; }
+    .e-body p { font-size: 15px; line-height: 1.75; color: var(--body); margin-bottom: 14px; }
+    .hr { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+    /* ── TIMELINE ── */
+    .timeline { margin: 20px 0; }
+
+    .tl-item {
+      display: flex;
+      gap: 0;
+      position: relative;
+    }
+
+    /* Left column: dot + vertical line */
+    .tl-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      width: 30px;
+    }
+    .tl-dot {
+      width: 12px;
+      height: 12px;
+      min-height: 12px;
+      background: var(--amber);
+      border-radius: 50%;
+      border: 2px solid var(--cream);
+      box-shadow: 0 0 0 2px var(--amber);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .tl-dot--navy { background: var(--navy); box-shadow: 0 0 0 2px var(--navy); }
+    .tl-dot--sky  { background: var(--sky);  box-shadow: 0 0 0 2px var(--sky); }
+    .tl-line {
+      width: 2px;
+      flex: 1;
+      background: var(--border);
+      margin-top: 4px;
+      min-height: 24px;
+    }
+    .tl-item:last-child .tl-line { display: none; }
+
+    /* Right column: content */
+    .tl-content {
+      flex: 1;
+      min-width: 0;
+      padding: 0 0 28px 14px;
+    }
+    .tl-title {
+      font-family: var(--serif);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .tl-title--muted { color: var(--muted); font-size: 15px; }
+    .tl-content p {
+      font-size: 14px !important;
+      color: var(--muted) !important;
+      margin-bottom: 6px !important;
+      line-height: 1.6 !important;
+    }
+
+    /* Meta tags */
+    .tl-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .tl-tag {
+      font-size: 12px;
+      background: rgba(33,62,96,0.08);
+      color: var(--navy);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    /* Optional note */
+    .opt-note {
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+      background: rgba(148,182,239,0.1);
+      border: 1px dashed rgba(148,182,239,0.4);
+      padding: 8px 12px;
+      border-radius: 3px;
+      margin-top: 8px;
+      line-height: 1.55;
+    }
+
+    /* Album detail list */
+    .album-steps {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      padding-left: 16px;
+    }
+    .album-steps li { margin-bottom: 4px; line-height: 1.5; }
+
+    /* HIGHLIGHT BOX */
+    .hl-box {
+      background: rgba(230,140,58,0.06);
+      border: 1px solid rgba(230,140,58,0.25);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: var(--body);
+      line-height: 1.7;
+      margin: 12px 0;
+    }
+    .hl-box strong { color: var(--navy); }
+
+    /* SIGNATURE */
+    .sig { padding: 16px; background: var(--white); border-radius: 4px; border-left: 3px solid var(--navy); margin-top: 8px; }
+    .sig-name { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+    .sig-brand { font-size: 11px; letter-spacing: 0.10em; color: var(--amber); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
+    .sig-links { display: flex; flex-direction: column; gap: 10px; }
+    .sig-links a { font-size: 14px; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 6px; min-height: 36px; }
+
+    /* FOOTER */
+    .e-footer { background: var(--navy); padding: 20px 18px; text-align: center; }
+    .footer-brand { font-family: var(--serif); font-size: 15px; color: rgba(244,242,239,0.7); margin-bottom: 6px; letter-spacing: 0.06em; }
+    .e-footer p { font-size: 12px; color: rgba(244,242,239,0.4); margin-bottom: 3px; }
+    .e-footer a { color: rgba(244,242,239,0.5); text-decoration: none; }
+
+    /* VAR TAG */
+    .v {
+      background: rgba(148,182,239,0.2); border: 1px solid rgba(148,182,239,0.5);
+      color: #2A5080; font-family: var(--sans); font-size: 11px; font-weight: 600;
+      padding: 1px 6px; border-radius: 3px; white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════
+       DESKTOP ENHANCEMENTS (min-width: 600px)
+       ═══════════════════════════════════════ */
+    @media (min-width: 600px) {
+      .wrap { padding: 24px 20px 56px; }
+      .subject-bar { padding: 12px 20px; }
+      .e-header { padding: 36px 48px 30px; }
+      .e-header::after { width: 48px; margin: 18px auto 0; }
+      .brand-name { font-size: 30px; }
+      .e-body { padding: 40px 48px; }
+      .greeting { font-size: 22px; }
+      .tl-left { width: 36px; }
+      .tl-title { font-size: 18px; }
+      .sig { padding: 20px 24px; }
+      .sig-links { flex-direction: row; flex-wrap: wrap; gap: 8px 20px; }
+      .sig-links a { min-height: auto; font-size: 13px; }
+      .e-footer { padding: 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="file-label">Email 3 · Après avoir calé la séance engagement et le planning global</p>
+
+  <div class="subject-bar">
+    <span class="subject-icon">✉️</span>
+    <div>
+      <p class="subject-line"><strong>Objet A :</strong> Votre planning Light &amp; Shutter — de la séance engagement à la livraison</p>
+      <p class="subject-line"><strong>Objet B :</strong> Le calendrier de votre mariage — ce qui se passe, quand</p>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="e-header">
+      <div class="brand-name">Light &amp; Shutter</div>
+      <div class="brand-sub">Photographie de mariage · Nord, France</div>
+    </div>
+
+    <div class="e-body">
+
+      <p class="greeting"><span class="v">[Prénom(s)]</span>,</p>
+      <p>Voici votre planning complet. Gardez cet email — c'est votre référence de la séance engagement jusqu'à la livraison finale.</p>
+
+      <hr class="hr">
+
+      <div class="timeline">
+
+        <!-- 1 · SÉANCE ENGAGEMENT -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-dot"></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">📷 Séance engagement — <span class="v">[DATE]</span></div>
+            <div class="tl-tags">
+              <span class="tl-tag">📍 <span class="v">[LIEU CHOISI]</span></span>
+              <span class="tl-tag">⏱ ~1h30</span>
+            </div>
+            <p style="margin-top:10px;">Livraison : ~50 photos retouchées sous <span class="v">[X semaines]</span>.</p>
+            <div class="opt-note">À planifier ensemble si ce n'est pas encore fait — répondez à cet email avec vos disponibilités.</div>
+          </div>
+        </div>
+
+        <!-- 2 · POINT DE PRÉPARATION -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-dot"></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">📋 Point de préparation — <span class="v">[DATE 2–3 sem. avant]</span></div>
+            <p>On passe en revue le planning minuté du jour J, les lieux, les moments clés à couvrir, et on anticipe les imprévus. Ce point peut se faire par email ou par appel selon votre préférence.</p>
+          </div>
+        </div>
+
+        <!-- 3 · LE JOUR J -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-dot tl-dot--navy"></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">🎉 Le jour J — <span class="v">[DATE DU MARIAGE]</span></div>
+            <div class="tl-tags">
+              <span class="tl-tag">Couverture : <span class="v">[DURÉE]</span></span>
+              <span class="tl-tag">Début : <span class="v">[HEURE DÉBUT]</span></span>
+              <span class="tl-tag">Fin : <span class="v">[HEURE FIN]</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 · BEST-OF 72H -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-dot"></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">⚡ Best-of 20 photos — J+72h <span style="font-size:13px;font-weight:400;color:var(--muted);">(Signature &amp; Héritage)</span></div>
+            <p>Vous recevez une sélection de vos premières photos par email. Idéal pour partager l'annonce avec vos proches.</p>
+            <div class="opt-note">Cette étape n'apparaît pas dans la formule Essentiel sans option Aperçu photo.</div>
+          </div>
+        </div>
+
+        <!-- 5 · LIVRAISON GALERIE -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-dot"></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">🖼️ Livraison de la galerie — J+2/3 semaines</div>
+            <p>Vous recevez le lien de votre galerie privée à l'adresse email de votre dossier.</p>
+            <div class="tl-tags">
+              <span class="tl-tag"><span class="v">[NOMBRE]</span> photos HD</span>
+              <span class="tl-tag">Accès <span class="v">[6 / 12 / 24 mois]</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 · ALBUM (optionnel) -->
+        <div class="tl-item">
+          <div class="tl-left">
+            <div class="tl-dot tl-dot--sky"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title tl-title--muted">📚 Album <span style="font-weight:400;font-size:13px;">(si commandé — sinon ignorer ce bloc)</span></div>
+            <p>Délai total entre votre sélection et réception de l'album : <strong style="color:var(--navy);">environ 3 à 4 semaines</strong>.</p>
+            <ul class="album-steps">
+              <li>Sélection des photos dans la galerie</li>
+              <li>Mise en page — ~1 semaine</li>
+              <li>Fabrication chez l'imprimeur — 2 à 3 semaines</li>
+              <li>Livraison par envoi postal</li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /timeline -->
+
+      <hr class="hr">
+
+      <div class="hl-box">
+        <strong>Important :</strong> Ce planning est basé sur vos informations actuelles. Tout changement dans votre programme de mariage (heure, lieu, ajout d'une étape) doit m'être signalé <strong>par email</strong> dès que possible.
+      </div>
+
+      <p style="margin-top:22px;">Une question sur une étape ? Répondez directement à cet email.</p>
+      <p style="margin-bottom:18px;">À bientôt,</p>
+
+      <div class="sig">
+        <div class="sig-name">Tolliam</div>
+        <div class="sig-brand">Light &amp; Shutter</div>
+        <div class="sig-links">
+          <a href="#">📧 <span class="v">[EMAIL]</span></a>
+          <a href="#">📱 <span class="v">[TÉLÉPHONE]</span></a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="e-footer">
+      <p class="footer-brand">Light &amp; Shutter</p>
+      <p>© 2026 · Photographie de mariage · Nord, France</p>
+      <p><a href="https://lightandshutter.fr">lightandshutter.fr</a></p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

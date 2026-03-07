@@ -41,6 +41,19 @@ definePageMeta({
       <UCard>
         <template #header>
           <div class="flex items-center gap-3">
+            <UIcon name="i-heroicons-envelope" class="w-6 h-6 text-primary" />
+            <h3 class="text-lg font-semibold">Onboarding mariage</h3>
+          </div>
+        </template>
+        <p class="text-gray-600">Envoyez la séquence d'emails d'onboarding à vos clients</p>
+        <template #footer>
+          <UButton to="/onboarding" variant="soft" block> Envoyer un email </UButton>
+        </template>
+      </UCard>
+
+      <UCard>
+        <template #header>
+          <div class="flex items-center gap-3">
             <UIcon name="i-heroicons-chart-bar" class="w-6 h-6 text-primary" />
             <h3 class="text-lg font-semibold">Statistiques</h3>
           </div>

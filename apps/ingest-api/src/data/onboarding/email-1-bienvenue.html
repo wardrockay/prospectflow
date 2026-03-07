@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email 1 — Bienvenue &amp; Confirmation · Light &amp; Shutter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════
+       BASE = MOBILE
+       ═══════════════════════════════════════ */
+    :root {
+      --cream: #F4F2EF;
+      --navy:  #213E60;
+      --amber: #E68C3A;
+      --sky:   #94B6EF;
+      --body:  #2C3E50;
+      --muted: #5A6B7A;
+      --border:#DDD8D1;
+      --white: #FFFFFF;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--sans);
+      background: #E8E4DF;
+      color: var(--body);
+      line-height: 1.6;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* WRAPPER */
+    .wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 12px 8px 48px;
+    }
+
+    /* FILE LABEL */
+    .file-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    /* SUBJECT BAR */
+    .subject-bar {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .subject-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .subject-line { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .subject-line + .subject-line { margin-top: 4px; }
+    .subject-line strong { color: var(--navy); }
+
+    /* CARD */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 0 0 6px 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(33,62,96,0.08);
+    }
+
+    /* HEADER */
+    .e-header {
+      background: var(--navy);
+      padding: 28px 20px 22px;
+      text-align: center;
+    }
+    .e-header::after {
+      content: '';
+      display: block;
+      width: 36px;
+      height: 2px;
+      background: var(--amber);
+      margin: 12px auto 0;
+    }
+    .brand-name {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--cream);
+      letter-spacing: 0.08em;
+    }
+    .brand-sub {
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(244,242,239,0.5);
+      margin-top: 4px;
+    }
+
+    /* BODY */
+    .e-body {
+      background: var(--cream);
+      padding: 24px 18px;
+    }
+    .greeting {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--navy);
+      margin-bottom: 16px;
+    }
+    .e-body p {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--body);
+      margin-bottom: 14px;
+    }
+
+    /* DIVIDER */
+    .hr { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+    /* CONFIRMATION BOX */
+    .confirm-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 4px;
+      padding: 16px;
+      margin: 18px 0;
+    }
+    .confirm-box h3 {
+      font-family: var(--serif);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+    /* MOBILE: label on top, value below */
+    .c-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 9px 0;
+      border-bottom: 1px solid #EDECEA;
+    }
+    .c-row:last-child { border-bottom: none; }
+    .c-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .c-val {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .c-val--amber { color: var(--amber); }
+
+    /* STEPS */
+    .steps-title {
+      font-family: var(--serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .step {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 28px;
+      min-width: 28px;
+      height: 28px;
+      background: var(--navy);
+      color: var(--cream);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-body strong {
+      display: block;
+      font-size: 14px;
+      color: var(--navy);
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .step-body span {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* INFO BOX */
+    .info-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      margin: 18px 0;
+    }
+    .info-box h3 {
+      font-family: var(--serif);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .info-box p {
+      font-size: 14px !important;
+      color: var(--muted) !important;
+      margin-bottom: 0 !important;
+      line-height: 1.7 !important;
+    }
+
+    /* CLOSING ITALIC */
+    .closing-italic {
+      font-family: var(--serif);
+      font-size: 17px;
+      font-style: italic;
+      color: var(--navy);
+      line-height: 1.65;
+      margin-bottom: 14px !important;
+    }
+
+    /* SIGNATURE */
+    .sig {
+      padding: 16px;
+      background: var(--white);
+      border-radius: 4px;
+      border-left: 3px solid var(--navy);
+      margin-top: 8px;
+    }
+    .sig-name {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+    .sig-brand {
+      font-size: 11px;
+      letter-spacing: 0.10em;
+      color: var(--amber);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    /* MOBILE: contacts stacked */
+    .sig-links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sig-links a {
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+    }
+
+    /* FOOTER */
+    .e-footer {
+      background: var(--navy);
+      padding: 20px 18px;
+      text-align: center;
+    }
+    .footer-brand {
+      font-family: var(--serif);
+      font-size: 15px;
+      color: rgba(244,242,239,0.7);
+      margin-bottom: 6px;
+      letter-spacing: 0.06em;
+    }
+    .e-footer p {
+      font-size: 12px;
+      color: rgba(244,242,239,0.4);
+      margin-bottom: 3px;
+    }
+    .e-footer a { color: rgba(244,242,239,0.5); text-decoration: none; }
+
+    /* VAR TAG */
+    .v {
+      background: rgba(148,182,239,0.2);
+      border: 1px solid rgba(148,182,239,0.5);
+      color: #2A5080;
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════
+       DESKTOP ENHANCEMENTS (min-width: 600px)
+       ═══════════════════════════════════════ */
+    @media (min-width: 600px) {
+      .wrap { padding: 24px 20px 56px; }
+      .subject-bar { padding: 12px 20px; }
+      .e-header { padding: 36px 48px 30px; }
+      .e-header::after { width: 48px; margin: 18px auto 0; }
+      .brand-name { font-size: 30px; }
+      .e-body { padding: 40px 48px; }
+      .greeting { font-size: 22px; }
+      .confirm-box { padding: 20px 24px; }
+      /* Desktop: label left, value right */
+      .c-row {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+      .c-lbl {
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+        color: var(--muted);
+      }
+      .c-val { font-size: 14px; text-align: right; }
+      .info-box { padding: 20px 24px; }
+      .sig { padding: 20px 24px; }
+      .sig-links { flex-direction: row; flex-wrap: wrap; gap: 8px 20px; }
+      .sig-links a { min-height: auto; font-size: 13px; }
+      .e-footer { padding: 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="file-label">Email 1 · À envoyer dans les 24h après réception de l'acompte</p>
+
+  <div class="subject-bar">
+    <span class="subject-icon">✉️</span>
+    <div>
+      <p class="subject-line"><strong>Objet A :</strong> C'est officiel — votre mariage est dans mon agenda</p>
+      <p class="subject-line"><strong>Objet B :</strong> Votre acompte est reçu — et je suis impatient de vous rencontrer</p>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="e-header">
+      <div class="brand-name">Light &amp; Shutter</div>
+      <div class="brand-sub">Photographie de mariage · Nord, France</div>
+    </div>
+
+    <div class="e-body">
+
+      <p class="greeting"><span class="v">[Prénom(s)]</span>,</p>
+
+      <p>Votre acompte est bien reçu. C'est officiel : votre date est réservée.</p>
+      <p>Merci — sincèrement. Chaque mariage que j'accompagne compte pour moi, et je suis déjà curieux de découvrir votre histoire.</p>
+
+      <hr class="hr">
+
+      <div class="confirm-box">
+        <h3>Confirmation de votre réservation</h3>
+        <div class="c-row">
+          <span class="c-lbl">Formule réservée</span>
+          <span class="c-val"><span class="v">[NOM DE LA FORMULE]</span></span>
+        </div>
+        <div class="c-row">
+          <span class="c-lbl">Date du mariage</span>
+          <span class="c-val"><span class="v">[DATE DU MARIAGE]</span></span>
+        </div>
+        <div class="c-row">
+          <span class="c-lbl">Lieu</span>
+          <span class="c-val"><span class="v">[LIEU DU MARIAGE]</span></span>
+        </div>
+        <div class="c-row">
+          <span class="c-lbl">Acompte reçu</span>
+          <span class="c-val"><span class="v">[MONTANT]</span> €</span>
+        </div>
+        <div class="c-row">
+          <span class="c-lbl">Solde à régler avant le jour J</span>
+          <span class="c-val c-val--amber"><span class="v">[MONTANT SOLDE]</span> €</span>
+        </div>
+      </div>
+
+      <hr class="hr">
+
+      <p class="steps-title">Ce qui se passe maintenant</p>
+      <p style="margin-bottom:18px;">Voici les grandes étapes — tout le reste viendra par email :</p>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>Dans les prochains jours</strong>
+          <span>Je vous envoie un email qui résume exactement ce qui est inclus dans votre formule et comment on va travailler ensemble.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>D'ici <span class="v">[X semaines]</span></strong>
+          <span>On planifie votre <strong>séance engagement</strong> (offerte avec votre formule). C'est notre premier vrai moment ensemble, l'occasion de faire connaissance avant le grand jour.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>2–3 semaines avant le mariage</strong>
+          <span>On fait un point détaillé : planning minuté, lieux, moments clés.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>Le jour J</strong>
+          <span>Vous vivez votre mariage. Moi, je m'occupe du reste.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <strong>Sous 2–3 semaines après</strong>
+          <span>Vous recevez votre galerie en ligne privée.</span>
+        </div>
+      </div>
+
+      <hr class="hr">
+
+      <div class="info-box">
+        <h3>Comment on communique</h3>
+        <p>Mon canal principal est l'<strong>email</strong>. WhatsApp est possible pour les questions rapides, mais tout ce qui est important — changement de planning, demande spécifique, ajout d'option — passe par email pour que rien ne se perde. Je réponds dans les <strong>24h ouvrées</strong>.</p>
+      </div>
+
+      <hr class="hr">
+
+      <p class="closing-italic">Une seule chose à retenir aujourd'hui : <em>votre date est sécurisée.</em> Le reste peut attendre.</p>
+      <p style="margin-bottom:18px;">À très vite,</p>
+
+      <div class="sig">
+        <div class="sig-name">Tolliam</div>
+        <div class="sig-brand">Light &amp; Shutter</div>
+        <div class="sig-links">
+          <a href="#">📧 <span class="v">[EMAIL]</span></a>
+          <a href="#">📱 <span class="v">[TÉLÉPHONE]</span></a>
+          <a href="https://lightandshutter.fr">🌐 lightandshutter.fr</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="e-footer">
+      <p class="footer-brand">Light &amp; Shutter</p>
+      <p>© 2026 · Photographie de mariage · Nord, France</p>
+      <p><a href="https://lightandshutter.fr">lightandshutter.fr</a></p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

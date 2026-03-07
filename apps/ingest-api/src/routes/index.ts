@@ -8,6 +8,7 @@ import leadMagnetRouter from './lead-magnet.routes.js';
 import adminLeadMagnetRouter from './admin-lead-magnet.routes.js';
 import nurtureSequencesRouter from './nurture-sequences.routes.js';
 import emailTemplatesRouter from './email-templates.routes.js';
+import onboardingRouter from './onboarding.routes.js';
 import { getPool } from '../config/database.js';
 import testRouter from './test.routes.js';
 
@@ -38,6 +39,9 @@ router.use('/admin/nurture-sequences', nurtureSequencesRouter);
 
 // Email templates management (admin)
 router.use('/admin/email-templates', emailTemplatesRouter);
+
+// Onboarding email sending (mariage clients)
+router.use('/onboarding', onboardingRouter);
 
 // Dev-only test routes for error generation
 if (process.env.NODE_ENV !== 'production') {
