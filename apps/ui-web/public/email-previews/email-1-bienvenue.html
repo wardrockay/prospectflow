@@ -1,232 +1,501 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Email 1 — Bienvenue &amp; Confirmation · Light &amp; Shutter</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" type="text/css" />
-  <style type="text/css">
-    @media only screen and (max-width: 600px) {
-      .w600 { width: 100% !important; }
-      .body-td { padding: 24px 18px !important; }
-      .header-td { padding: 28px 20px 0 !important; }
-      .brand-name { font-size: 22px !important; }
-      .footer-td { padding: 20px 18px !important; }
+
+  <style>
+    :root {
+      --cream: #EBF5E8;
+      --navy: #06211A;
+      --amber: #6BC935;
+      --sky: #006F53;
+      --text-body: #1A3028;
+      --text-muted: #4D6E5A;
+      --border: #C3DFBB;
+      --white: #FFFFFF;
+      --font-serif: Georgia, 'Times New Roman', Times, serif;
+      --font-sans: Arial, Helvetica, 'Helvetica Neue', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-sans);
+      background: #D4EDD0;
+      color: var(--text-body);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    /* ── EMAIL WRAPPER ── */
+    .email-section {
+      max-width: 680px;
+      margin: 0 auto 56px;
+    }
+
+    .email-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .email-subject-bar {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      padding: 12px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .email-subject-icon {
+      font-size: 16px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .email-subject-content .subject-options {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .email-subject-content .subject-options strong {
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    /* ── EMAIL CARD ── */
+    .email-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 0 0 6px 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(6, 33, 26, 0.08);
+    }
+
+    /* ── EMAIL HEADER ── */
+    .email-header {
+      background: var(--navy);
+      padding: 36px 48px 32px;
+      text-align: center;
+      position: relative;
+    }
+
+    .email-header::after {
+      content: '';
+      display: block;
+      width: 48px;
+      height: 2px;
+      background: var(--amber);
+      margin: 18px auto 0;
+    }
+
+    .brand-name {
+      font-family: var(--font-serif);
+      font-size: 30px;
+      font-weight: 400;
+      color: var(--cream);
+      letter-spacing: 0.08em;
+    }
+
+    .brand-tagline {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(235, 245, 232, 0.55);
+      margin-top: 4px;
+    }
+
+    /* ── EMAIL BODY ── */
+    .email-body {
+      background: var(--cream);
+      padding: 40px 48px;
+    }
+
+    .email-greeting {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--navy);
+      margin-bottom: 20px;
+    }
+
+    .email-body p {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text-body);
+      margin-bottom: 16px;
+    }
+
+    .email-body p em {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      color: var(--navy);
+      font-style: italic;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+
+    /* ── CONFIRMATION BOX ── */
+    .confirmation-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+
+    .confirmation-box h3 {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 14px;
+    }
+
+    .confirmation-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid #D0E8C8;
+      font-size: 14px;
+    }
+
+    .confirmation-row:last-child {
+      border-bottom: none;
+    }
+
+    .confirmation-row .label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .confirmation-row .value {
+      color: var(--navy);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    /* ── STEPS / TIMELINE ── */
+    .steps-title {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 20px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      background: var(--navy);
+      color: var(--cream);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content strong {
+      display: block;
+      font-size: 14px;
+      color: var(--navy);
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .step-content span {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── COMMUNICATION BOX ── */
+    .info-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+
+    .info-box h3 {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+
+    .info-box p {
+      font-size: 14px !important;
+      color: var(--text-muted) !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* ── SIGNATURE ── */
+    .email-signature {
+      padding: 20px 24px;
+      background: var(--white);
+      border-radius: 4px;
+      border-left: 3px solid var(--navy);
+      margin-top: 8px;
+    }
+
+    .signature-name {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+
+    .signature-brand {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--amber);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .signature-contacts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+    }
+
+    .signature-contacts a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .signature-contacts a:hover { color: var(--navy); }
+
+    /* ── EMAIL FOOTER ── */
+    .email-footer {
+      background: var(--navy);
+      padding: 24px 48px;
+      text-align: center;
+    }
+
+    .email-footer p {
+      font-size: 12px;
+      color: rgba(235, 245, 232, 0.45);
+      margin-bottom: 4px;
+    }
+
+    .email-footer a {
+      color: rgba(235, 245, 232, 0.55);
+      text-decoration: none;
+    }
+
+    .email-footer a:hover { color: var(--amber); }
+
+    .footer-brand {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      color: rgba(235, 245, 232, 0.7);
+      margin-bottom: 8px !important;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── VAR TAG ── */
+    .var-tag {
+      background: rgba(107, 201, 53, 0.12);
+      border: 1px solid rgba(107, 201, 53, 0.35);
+      color: #004D38;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 660px) {
+      body { padding: 12px; }
+      .email-header, .email-body, .email-footer { padding: 28px 20px; }
+      .email-subject-bar { padding: 10px 14px; }
+      .confirmation-row { flex-direction: column; gap: 2px; }
+      .signature-contacts { flex-direction: column; gap: 6px; }
     }
   </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #E8E4DF; -webkit-text-size-adjust: 100%; mso-line-height-rule: exactly;">
-<!-- Preheader (hidden — fournit le texte d'aperçu Gmail et empêche le repli) -->
-<div style="display: none; font-size: 1px; color: #E8E4DF; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all;">Votre réservation est confirmée — récapitulatif de votre formule et prochaines étapes.</div>
+<body>
+<section class="email-section" id="email1">
+  <p class="email-label">Email 1 · À envoyer dans les 24h après réception de l'acompte</p>
 
-<!-- Outer wrapper -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#E8E4DF" style="background-color: #E8E4DF;">
-  <tr>
-    <td align="center" valign="top" style="padding: 24px 16px 56px;">
+  <div class="email-subject-bar">
+    <span class="email-subject-icon">✉️</span>
+    <div class="email-subject-content">
+      <div class="subject-options">
+        <strong>Objet A :</strong> C'est officiel : votre mariage est dans mon agenda
+      </div>
+      <div class="subject-options" style="margin-top:4px;">
+        <strong>Objet B :</strong> Votre acompte est reçu, et je suis impatient de vous rencontrer
+      </div>
+    </div>
+  </div>
 
-      <!-- Main card (600px) -->
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="w600" style="width: 600px; max-width: 600px;">
+  <div class="email-card">
+    <!-- Header -->
+    <div class="email-header">
+      <div class="brand-name">Light &amp; Shutter</div>
+      <div class="brand-tagline">Photographie de mariage · Nord, France</div>
+    </div>
 
-        <!-- ── HEADER ── -->
-        <tr>
-          <td class="header-td" bgcolor="#213E60" align="center" style="padding: 36px 48px 0; background-color: #213E60;">
-            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 400; color: #F4F2EF; letter-spacing: 5px; margin: 0; line-height: 1.2;" class="brand-name">Light &amp; Shutter</p>
-            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #8AA0B8; margin: 6px 0 0; line-height: 1.4;">Photographie de mariage &middot; Nord, France</p>
-          </td>
-        </tr>
-        <!-- Amber divider -->
-        <tr>
-          <td bgcolor="#213E60" align="center" style="padding: 16px 0 28px; background-color: #213E60;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="48" style="width: 48px;">
-              <tr>
-                <td bgcolor="#E68C3A" height="2" style="background-color: #E68C3A; height: 2px; font-size: 2px; line-height: 2px; mso-line-height-rule: exactly;">&nbsp;</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
+    <!-- Body -->
+    <div class="email-body">
+      <p class="email-greeting"><span class="var-tag">[Prénom(s)]</span>,</p>
 
-        <!-- ── BODY ── -->
-        <tr>
-          <td class="body-td" bgcolor="#F4F2EF" style="padding: 40px 48px; background-color: #F4F2EF;">
+      <p>Votre acompte est bien reçu. C'est officiel : votre date est réservée.</p>
 
-            <!-- Greeting -->
-            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 400; color: #213E60; margin: 0 0 16px; line-height: 1.4;">[Prénom(s)],</p>
+      <p>Merci, sincèrement. Chaque mariage que j'accompagne compte pour moi, et je suis déjà curieux de découvrir votre histoire.</p>
 
-            <!-- Intro -->
-            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 14px;">Votre acompte est bien re&#231;u. C'est officiel&nbsp;: votre date est r&#233;serv&#233;e.</p>
-            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 22px;">Merci &#8212; sinc&#232;rement. Chaque mariage que j'accompagne compte pour moi, et je suis d&#233;j&#224; curieux de d&#233;couvrir votre histoire.</p>
+      <hr class="divider">
 
-            <!-- HR -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
+      <!-- Confirmation box -->
+      <div class="confirmation-box">
+        <h3>Confirmation de votre réservation</h3>
+        <div class="confirmation-row">
+          <span class="label">Formule réservée</span>
+          <span class="value"><span class="var-tag">[NOM DE LA FORMULE]</span></span>
+        </div>
+        <div class="confirmation-row">
+          <span class="label">Date du mariage</span>
+          <span class="value"><span class="var-tag">[DATE DU MARIAGE]</span></span>
+        </div>
+        <div class="confirmation-row">
+          <span class="label">Lieu</span>
+          <span class="value"><span class="var-tag">[LIEU DU MARIAGE]</span></span>
+        </div>
+        <div class="confirmation-row">
+          <span class="label">Acompte reçu</span>
+          <span class="value"><span class="var-tag">[MONTANT]</span> €</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="label">Solde à régler avant le jour J</span>
+          <span class="value" style="color:var(--amber);"><span class="var-tag">[MONTANT SOLDE]</span> €</span>
+        </div>
+      </div>
 
-            <!-- CONFIRMATION BOX -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px; margin: 0 0 18px;">
-              <tr>
-                <!-- Amber left border -->
-                <td width="3" bgcolor="#E68C3A" style="background-color: #E68C3A; width: 3px; font-size: 0; line-height: 0;">&nbsp;</td>
-                <td style="padding: 20px 24px; background-color: #FFFFFF; border-radius: 0 4px 4px 0;">
-                  <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 600; color: #213E60; margin: 0 0 12px; line-height: 1.3;">Confirmation de votre r&#233;servation</p>
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                    <tr>
-                      <td width="55%" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; padding: 9px 0; border-bottom: 1px solid #EDECEA; vertical-align: middle;">Formule r&#233;serv&#233;e</td>
-                      <td width="45%" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; padding: 9px 0; border-bottom: 1px solid #EDECEA; text-align: right; vertical-align: middle;">[NOM DE LA FORMULE]</td>
-                    </tr>
-                    <tr>
-                      <td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; padding: 9px 0; border-bottom: 1px solid #EDECEA; vertical-align: middle;">Date du mariage</td>
-                      <td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; padding: 9px 0; border-bottom: 1px solid #EDECEA; text-align: right; vertical-align: middle;">[DATE DU MARIAGE]</td>
-                    </tr>
-                    <tr>
-                      <td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; padding: 9px 0; border-bottom: 1px solid #EDECEA; vertical-align: middle;">Lieu</td>
-                      <td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; padding: 9px 0; border-bottom: 1px solid #EDECEA; text-align: right; vertical-align: middle;">[LIEU DU MARIAGE]</td>
-                    </tr>
-                    <tr>
-                      <td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; padding: 9px 0; border-bottom: 1px solid #EDECEA; vertical-align: middle;">Acompte re&#231;u</td>
-                      <td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; padding: 9px 0; border-bottom: 1px solid #EDECEA; text-align: right; vertical-align: middle;">[MONTANT] &#8364;</td>
-                    </tr>
-                    <tr>
-                      <td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; padding: 9px 0; vertical-align: middle;">Solde &#224; r&#233;gler avant le jour J</td>
-                      <td style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #E68C3A; padding: 9px 0; text-align: right; vertical-align: middle;">[MONTANT SOLDE] &#8364;</td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
+      <hr class="divider">
 
-            <!-- HR -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
+      <!-- Steps -->
+      <p class="steps-title">Ce qui se passe maintenant</p>
+      <p style="margin-bottom:20px;">Voici les grandes étapes. Tout le reste viendra par email :</p>
 
-            <!-- Steps title -->
-            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 19px; font-weight: 600; color: #213E60; margin: 0 0 6px; line-height: 1.3;">Ce qui se passe maintenant</p>
-            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 18px;">Voici les grandes &#233;tapes &#8212; tout le reste viendra par email&nbsp;:</p>
+      <div class="step-item">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <strong>Dans les prochains jours</strong>
+          <span>Je vous envoie un email qui résume exactement ce qui est inclus dans votre formule et comment on va travailler ensemble.</span>
+        </div>
+      </div>
 
-            <!-- STEP 1 -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 14px;">
-              <tr>
-                <td width="42" valign="top" style="width: 42px; vertical-align: top; padding-top: 2px; padding-right: 14px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="28" height="28" style="width: 28px; height: 28px;">
-                    <tr><td bgcolor="#213E60" align="center" valign="middle" style="background-color: #213E60; width: 28px; height: 28px; border-radius: 50%; font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 700; color: #F4F2EF; text-align: center; line-height: 28px;">1</td></tr>
-                  </table>
-                </td>
-                <td valign="top" style="vertical-align: top;">
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; margin: 0 0 3px; line-height: 1.4;">Dans les prochains jours</p>
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0; line-height: 1.6;">Je vous envoie un email qui r&#233;sume exactement ce qui est inclus dans votre formule et comment on va travailler ensemble.</p>
-                </td>
-              </tr>
-            </table>
+      <div class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <strong>D'ici <span class="var-tag">[X semaines]</span></strong>
+          <span>On planifie votre <strong>séance engagement</strong> (offerte avec votre formule). C'est notre premier vrai moment ensemble, l'occasion de faire connaissance avant le grand jour.</span>
+        </div>
+      </div>
 
-            <!-- STEP 2 -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 14px;">
-              <tr>
-                <td width="42" valign="top" style="width: 42px; vertical-align: top; padding-top: 2px; padding-right: 14px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="28" height="28" style="width: 28px; height: 28px;">
-                    <tr><td bgcolor="#213E60" align="center" valign="middle" style="background-color: #213E60; width: 28px; height: 28px; border-radius: 50%; font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 700; color: #F4F2EF; text-align: center; line-height: 28px;">2</td></tr>
-                  </table>
-                </td>
-                <td valign="top" style="vertical-align: top;">
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; margin: 0 0 3px; line-height: 1.4;">D'ici [X semaines]</p>
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0; line-height: 1.6;">On planifie votre <strong style="color: #2C3E50;">s&#233;ance engagement</strong> (offerte avec votre formule). C'est notre premier vrai moment ensemble, l'occasion de faire connaissance avant le grand jour.</p>
-                </td>
-              </tr>
-            </table>
+      <div class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <strong>2–3 semaines avant le mariage</strong>
+          <span>On fait un point détaillé : planning minuté, lieux, moments clés.</span>
+        </div>
+      </div>
 
-            <!-- STEP 3 -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 14px;">
-              <tr>
-                <td width="42" valign="top" style="width: 42px; vertical-align: top; padding-top: 2px; padding-right: 14px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="28" height="28" style="width: 28px; height: 28px;">
-                    <tr><td bgcolor="#213E60" align="center" valign="middle" style="background-color: #213E60; width: 28px; height: 28px; border-radius: 50%; font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 700; color: #F4F2EF; text-align: center; line-height: 28px;">3</td></tr>
-                  </table>
-                </td>
-                <td valign="top" style="vertical-align: top;">
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; margin: 0 0 3px; line-height: 1.4;">2&#8211;3 semaines avant le mariage</p>
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0; line-height: 1.6;">On fait un point d&#233;taill&#233;&nbsp;: planning minut&#233;, lieux, moments cl&#233;s.</p>
-                </td>
-              </tr>
-            </table>
+      <div class="step-item">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <strong>Le jour J</strong>
+          <span>Vous vivez votre mariage. Moi, je m'occupe du reste.</span>
+        </div>
+      </div>
 
-            <!-- STEP 4 -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 14px;">
-              <tr>
-                <td width="42" valign="top" style="width: 42px; vertical-align: top; padding-top: 2px; padding-right: 14px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="28" height="28" style="width: 28px; height: 28px;">
-                    <tr><td bgcolor="#213E60" align="center" valign="middle" style="background-color: #213E60; width: 28px; height: 28px; border-radius: 50%; font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 700; color: #F4F2EF; text-align: center; line-height: 28px;">4</td></tr>
-                  </table>
-                </td>
-                <td valign="top" style="vertical-align: top;">
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; margin: 0 0 3px; line-height: 1.4;">Le jour J</p>
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0; line-height: 1.6;">Vous vivez votre mariage. Moi, je m'occupe du reste.</p>
-                </td>
-              </tr>
-            </table>
+      <div class="step-item">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <strong>Sous 2–3 semaines après</strong>
+          <span>Vous recevez votre galerie en ligne privée.</span>
+        </div>
+      </div>
 
-            <!-- STEP 5 -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 22px;">
-              <tr>
-                <td width="42" valign="top" style="width: 42px; vertical-align: top; padding-top: 2px; padding-right: 14px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="28" height="28" style="width: 28px; height: 28px;">
-                    <tr><td bgcolor="#213E60" align="center" valign="middle" style="background-color: #213E60; width: 28px; height: 28px; border-radius: 50%; font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 700; color: #F4F2EF; text-align: center; line-height: 28px;">5</td></tr>
-                  </table>
-                </td>
-                <td valign="top" style="vertical-align: top;">
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; font-weight: 600; color: #213E60; margin: 0 0 3px; line-height: 1.4;">Sous 2&#8211;3 semaines apr&#232;s</p>
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0; line-height: 1.6;">Vous recevez votre galerie en ligne priv&#233;e.</p>
-                </td>
-              </tr>
-            </table>
+      <hr class="divider">
 
-            <!-- HR -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
+      <!-- Communication -->
+      <div class="info-box">
+        <h3>Comment on communique</h3>
+        <p>Mon canal principal est l'<strong>email</strong>. WhatsApp est possible pour les questions rapides, mais tout ce qui est important — changement de planning, demande spécifique, ajout d'option — passe par email pour que rien ne se perde. Je réponds dans les <strong>24h ouvrées</strong>.</p>
+      </div>
 
-            <!-- INFO BOX -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px; background-color: #FFFFFF; margin: 0 0 22px;">
-              <tr>
-                <td style="padding: 20px 24px;">
-                  <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 600; color: #213E60; margin: 0 0 8px; line-height: 1.3;">Comment on communique</p>
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 14px; color: #5A6B7A; margin: 0; line-height: 1.7;">Mon canal principal est l'<strong style="color: #2C3E50;">email</strong>. WhatsApp est possible pour les questions rapides, mais tout ce qui est important &#8212; changement de planning, demande sp&#233;cifique, ajout d'option &#8212; passe par email pour que rien ne se perde. Je r&#233;ponds dans les <strong style="color: #2C3E50;">24h ouvrées</strong>.</p>
-                </td>
-              </tr>
-            </table>
+      <hr class="divider">
 
-            <!-- HR -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 22px;"><tr><td style="border-top: 1px solid #DDD8D1; font-size: 0; line-height: 0;">&nbsp;</td></tr></table>
+      <p style="font-style:italic;color:var(--navy); font-family:var(--font-serif); font-size:17px;">Une seule chose à retenir aujourd'hui : <em>votre date est sécurisée.</em> Le reste peut attendre.</p>
 
-            <!-- Closing -->
-            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; font-style: italic; color: #213E60; line-height: 1.65; margin: 0 0 14px;">Une seule chose &#224; retenir aujourd'hui&nbsp;: <em>votre date est s&#233;curis&#233;e.</em> Le reste peut attendre.</p>
-            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #2C3E50; margin: 0 0 18px;">&#192; tr&#232;s vite,</p>
+      <p style="margin-top:20px;">À très vite,</p>
 
-            <!-- SIGNATURE -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #DDD8D1; border-radius: 4px;">
-              <tr>
-                <!-- Navy left border -->
-                <td width="3" bgcolor="#213E60" style="background-color: #213E60; width: 3px; font-size: 0; line-height: 0;">&nbsp;</td>
-                <td style="padding: 20px 24px; background-color: #FFFFFF; border-radius: 0 4px 4px 0;">
-                  <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; font-weight: 600; color: #213E60; margin: 0 0 2px; line-height: 1.2;">Etienne</p>
-                  <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 11px; letter-spacing: 2px; color: #E68C3A; text-transform: uppercase; font-weight: 600; margin: 0 0 12px; line-height: 1.4;">Light &amp; Shutter</p>
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                    <tr><td style="padding-bottom: 5px;"><a href="mailto:[EMAIL]" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #5A6B7A; text-decoration: none;">&#128231; [EMAIL]</a></td></tr>
-                    <tr><td style="padding-bottom: 5px;"><a href="tel:[TÉLÉPHONE]" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #5A6B7A; text-decoration: none;">&#128241; [TÉLÉPHONE]</a></td></tr>
-                    <tr><td><a href="https://lightandshutter.fr" style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 13px; color: #5A6B7A; text-decoration: none;">&#127760; lightandshutter.fr</a></td></tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
+      <div class="email-signature">
+        <div class="signature-name">Etienne</div>
+        <div class="signature-brand">Light &amp; Shutter</div>
+        <div class="signature-contacts">
+          <a href="#">📧 <span class="var-tag">[EMAIL]</span></a>
+          <a href="#">📱 <span class="var-tag">[TÉLÉPHONE]</span></a>
+          <a href="https://lightandshutter.fr">🌐 lightandshutter.fr</a>
+        </div>
+      </div>
+    </div>
 
-          </td>
-        </tr>
-
-        <!-- ── FOOTER ── -->
-        <tr>
-          <td class="footer-td" bgcolor="#213E60" align="center" style="padding: 24px 48px; background-color: #213E60;">
-            <p style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; color: #B8C8D8; margin: 0 0 6px; letter-spacing: 2px; line-height: 1.3;">Light &amp; Shutter</p>
-            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; color: #6B7F90; margin: 0 0 3px; line-height: 1.4;">&#169; 2026 &middot; Photographie de mariage &middot; Nord, France</p>
-            <p style="font-family: Inter, -apple-system, Arial, sans-serif; font-size: 12px; margin: 0; line-height: 1.4;"><a href="https://lightandshutter.fr" style="color: #7A939F; text-decoration: none;">lightandshutter.fr</a></p>
-          </td>
-        </tr>
-
-      </table>
-    </td>
-  </tr>
-</table>
+    <!-- Footer -->
+    <div class="email-footer">
+      <p class="footer-brand">Light &amp; Shutter</p>
+      <p>© 2026 · Photographie de mariage · Nord, France</p>
+      <p><a href="https://lightandshutter.fr">lightandshutter.fr</a></p>
+    </div>
+  </div>
+</section>
 
 </body>
 </html>
