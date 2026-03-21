@@ -59,10 +59,25 @@ export interface OnboardingEmailVariables {
   numeroWhatsApp?: string;
 }
 
-// Templates are already email-client-compatible (table layout, inline styles, no CSS vars).
-// No processing needed beyond variable substitution done by applyVariables().
+// CSS custom properties are not supported by most email clients (Outlook, Gmail, etc.).
+// Replace all var(--x) occurrences with their resolved hex values before sending.
+const CSS_VAR_VALUES: Record<string, string> = {
+  '--cream': '#EBF5E8',
+  '--navy': '#06211A',
+  '--amber': '#6BC935',
+  '--sky': '#006F53',
+  '--text-body': '#1A3028',
+  '--text-muted': '#4D6E5A',
+  '--border': '#C3DFBB',
+  '--white': '#FFFFFF',
+  '--font-serif': "Georgia, 'Times New Roman', Times, serif",
+  '--font-sans': "Arial, Helvetica, 'Helvetica Neue', sans-serif",
+};
+
 function prepareForSending(raw: string): string {
-  return raw;
+  return raw.replace(/var\((--[\w-]+)\)/g, (match, varName) => {
+    return CSS_VAR_VALUES[varName] ?? match;
+  });
 }
 
 function loadTemplate(emailId: number): string {

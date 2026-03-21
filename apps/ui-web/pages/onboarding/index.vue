@@ -407,7 +407,7 @@ async function sendEmail() {
         <div class="rounded-xl border border-gray-200 overflow-hidden bg-gray-50 shadow-sm" style="height: calc(100vh - 180px);">
           <iframe
             :srcdoc="previewHtml"
-            sandbox="allow-same-origin"
+            sandbox="allow-same-origin allow-scripts"
             class="w-full h-full border-0"
             title="Prévisualisation de l'email"
           />
