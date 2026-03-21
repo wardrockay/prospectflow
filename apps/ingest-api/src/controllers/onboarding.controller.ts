@@ -11,7 +11,7 @@ const sendEmailSchema = z.object({
   variables: z.object({
     prenoms: z.string().min(1),
     emailPhotographe: z.string().email(),
-    telephone: z.string().min(1),
+    telephone: z.string().optional(),
     nomFormule: z.string().optional(),
     dateMariage: z.string().optional(),
     lieuMariage: z.string().optional(),

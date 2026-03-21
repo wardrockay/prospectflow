@@ -90,7 +90,7 @@ function applyVariables(html: string, emailId: number, vars: OnboardingEmailVari
   const replacements: Record<string, string> = {
     '[Prénom(s)]': vars.prenoms,
     '[EMAIL]': vars.emailPhotographe,
-    '[TÉLÉPHONE]': vars.telephone,
+    '[TÉLÉPHONE]': vars.telephone ?? '',
   };
 
   if (emailId === 1) {
