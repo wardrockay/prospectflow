@@ -170,8 +170,7 @@
     }
 
     .confirmation-row {
-      display: flex;
-      justify-content: space-between;
+      overflow: hidden;
       padding: 7px 0;
       border-bottom: 1px solid #D0E8C8;
       font-size: 14px;
@@ -182,11 +181,13 @@
     }
 
     .confirmation-row .label {
+      float: left;
       color: var(--text-muted);
       font-weight: 500;
     }
 
     .confirmation-row .value {
+      float: right;
       color: var(--navy);
       font-weight: 600;
       text-align: right;
@@ -202,10 +203,7 @@
     }
 
     .step-item {
-      display: flex;
-      gap: 16px;
       margin-bottom: 18px;
-      align-items: flex-start;
     }
 
     .step-number {
@@ -214,17 +212,10 @@
       background: var(--navy);
       color: var(--cream);
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      line-height: 28px;
+      text-align: center;
       font-size: 12px;
       font-weight: 700;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .step-content {
-      flex: 1;
     }
 
     .step-content strong {
@@ -291,19 +282,13 @@
       margin-bottom: 10px;
     }
 
-    .signature-contacts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 20px;
-    }
-
     .signature-contacts a {
       font-size: 13px;
       color: var(--text-muted);
       text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      display: inline-block;
+      margin-right: 16px;
+      margin-bottom: 6px;
     }
 
     .signature-contacts a:hover { color: var(--navy); }
@@ -410,45 +395,75 @@
       <p class="steps-title">Ce qui se passe maintenant</p>
       <p style="margin-bottom:20px;">Voici les grandes étapes. Tout le reste viendra par email :</p>
 
-      <div class="step-item">
-        <div class="step-number">1</div>
-        <div class="step-content">
-          <strong>Dans les prochains jours</strong>
-          <span>Je vous envoie un email qui résume exactement ce qui est inclus dans votre formule et comment on va travailler ensemble.</span>
-        </div>
-      </div>
+      <table class="step-item" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="28" style="vertical-align:top;padding-right:16px;padding-top:2px;">
+            <div class="step-number">1</div>
+          </td>
+          <td style="vertical-align:top;">
+            <div class="step-content">
+              <strong>Dans les prochains jours</strong>
+              <span>Je vous envoie un email qui résume exactement ce qui est inclus dans votre formule et comment on va travailler ensemble.</span>
+            </div>
+          </td>
+        </tr>
+      </table>
 
-      <div class="step-item">
-        <div class="step-number">2</div>
-        <div class="step-content">
-          <strong>D'ici <span class="var-tag">[X semaines]</span></strong>
-          <span>On planifie votre <strong>séance engagement</strong> (offerte avec votre formule). C'est notre premier vrai moment ensemble, l'occasion de faire connaissance avant le grand jour.</span>
-        </div>
-      </div>
+      <table class="step-item" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="28" style="vertical-align:top;padding-right:16px;padding-top:2px;">
+            <div class="step-number">2</div>
+          </td>
+          <td style="vertical-align:top;">
+            <div class="step-content">
+              <strong>D'ici <span class="var-tag">[X semaines]</span></strong>
+              <span>On planifie votre <strong>séance engagement</strong> (offerte avec votre formule). C'est notre premier vrai moment ensemble, l'occasion de faire connaissance avant le grand jour.</span>
+            </div>
+          </td>
+        </tr>
+      </table>
 
-      <div class="step-item">
-        <div class="step-number">3</div>
-        <div class="step-content">
-          <strong>2–3 semaines avant le mariage</strong>
-          <span>On fait un point détaillé : planning minuté, lieux, moments clés.</span>
-        </div>
-      </div>
+      <table class="step-item" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="28" style="vertical-align:top;padding-right:16px;padding-top:2px;">
+            <div class="step-number">3</div>
+          </td>
+          <td style="vertical-align:top;">
+            <div class="step-content">
+              <strong>2–3 semaines avant le mariage</strong>
+              <span>On fait un point détaillé : planning minuté, lieux, moments clés.</span>
+            </div>
+          </td>
+        </tr>
+      </table>
 
-      <div class="step-item">
-        <div class="step-number">4</div>
-        <div class="step-content">
-          <strong>Le jour J</strong>
-          <span>Vous vivez votre mariage. Moi, je m'occupe du reste.</span>
-        </div>
-      </div>
+      <table class="step-item" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="28" style="vertical-align:top;padding-right:16px;padding-top:2px;">
+            <div class="step-number">4</div>
+          </td>
+          <td style="vertical-align:top;">
+            <div class="step-content">
+              <strong>Le jour J</strong>
+              <span>Vous vivez votre mariage. Moi, je m'occupe du reste.</span>
+            </div>
+          </td>
+        </tr>
+      </table>
 
-      <div class="step-item">
-        <div class="step-number">5</div>
-        <div class="step-content">
-          <strong>Sous 2–3 semaines après</strong>
-          <span>Vous recevez votre galerie en ligne privée.</span>
-        </div>
-      </div>
+      <table class="step-item" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="28" style="vertical-align:top;padding-right:16px;padding-top:2px;">
+            <div class="step-number">5</div>
+          </td>
+          <td style="vertical-align:top;">
+            <div class="step-content">
+              <strong>Sous 2–3 semaines après</strong>
+              <span>Vous recevez votre galerie en ligne privée.</span>
+            </div>
+          </td>
+        </tr>
+      </table>
 
       <hr class="divider">
 
