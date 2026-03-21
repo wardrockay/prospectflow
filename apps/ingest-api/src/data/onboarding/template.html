@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Light & Shutter — Templates Email Post-Acompte</title>
+
+  <style>
+    :root {
+      --cream: #EBF5E8;
+      --navy: #06211A;
+      --amber: #6BC935;
+      --sky: #006F53;
+      --text-body: #1A3028;
+      --text-muted: #4D6E5A;
+      --border: #C3DFBB;
+      --white: #FFFFFF;
+      --font-serif: Georgia, 'Times New Roman', Times, serif;
+      --font-sans: Arial, Helvetica, 'Helvetica Neue', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-sans);
+      background: #D4EDD0;
+      color: var(--text-body);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    /* ── PAGE NAV ── */
+    .page-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(6, 33, 26, 0.97);
+      backdrop-filter: blur(12px);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: -20px -20px 32px;
+      border-bottom: 2px solid var(--amber);
+    }
+
+    .page-nav-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      color: var(--cream);
+      letter-spacing: 0.03em;
+      margin-right: 16px;
+      opacity: 0.9;
+    }
+
+    .page-nav a {
+      padding: 8px 18px;
+      border: 1.5px solid rgba(107, 201, 53, 0.5);
+      color: var(--cream);
+      text-decoration: none;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 20px;
+      transition: all 200ms ease;
+      white-space: nowrap;
+    }
+
+    .page-nav a:hover {
+      background: var(--amber);
+      border-color: var(--amber);
+      color: var(--navy);
+    }
+
+    /* ── EMAIL WRAPPER ── */
+    .email-section {
+      max-width: 680px;
+      margin: 0 auto 56px;
+    }
+
+    .email-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .email-subject-bar {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      padding: 12px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .email-subject-icon {
+      font-size: 16px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .email-subject-content .subject-options {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .email-subject-content .subject-options strong {
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    /* ── EMAIL CARD ── */
+    .email-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 0 0 6px 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(6, 33, 26, 0.08);
+    }
+
+    /* ── EMAIL HEADER ── */
+    .email-header {
+      background: var(--navy);
+      padding: 36px 48px 32px;
+      text-align: center;
+      position: relative;
+    }
+
+    .email-header::after {
+      content: '';
+      display: block;
+      width: 48px;
+      height: 2px;
+      background: var(--amber);
+      margin: 18px auto 0;
+    }
+
+    .brand-name {
+      font-family: var(--font-serif);
+      font-size: 30px;
+      font-weight: 400;
+      color: var(--cream);
+      letter-spacing: 0.08em;
+    }
+
+    .brand-tagline {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(235, 245, 232, 0.55);
+      margin-top: 4px;
+    }
+
+    /* ── EMAIL BODY ── */
+    .email-body {
+      background: var(--cream);
+      padding: 40px 48px;
+    }
+
+    .email-greeting {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--navy);
+      margin-bottom: 20px;
+    }
+
+    .email-body p {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text-body);
+      margin-bottom: 16px;
+    }
+
+    .email-body p em {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      color: var(--navy);
+      font-style: italic;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+
+    .divider-amber {
+      border: none;
+      border-top: 2px solid var(--amber);
+      width: 40px;
+      margin: 28px 0;
+    }
+
+    /* ── CONFIRMATION BOX ── */
+    .confirmation-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+
+    .confirmation-box h3 {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 14px;
+    }
+
+    .confirmation-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid #D0E8C8;
+      font-size: 14px;
+    }
+
+    .confirmation-row:last-child {
+      border-bottom: none;
+    }
+
+    .confirmation-row .label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .confirmation-row .value {
+      color: var(--navy);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    /* ── STEPS / TIMELINE ── */
+    .steps-title {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 20px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      background: var(--navy);
+      color: var(--cream);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content strong {
+      display: block;
+      font-size: 14px;
+      color: var(--navy);
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .step-content span {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── COMMUNICATION BOX ── */
+    .info-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+
+    .info-box h3 {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+
+    .info-box p {
+      font-size: 14px !important;
+      color: var(--text-muted) !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* ── CLOSING ── */
+    .email-closing {
+      font-size: 15px;
+      color: var(--text-body);
+      margin-top: 8px;
+      margin-bottom: 24px;
+      font-style: italic;
+      font-family: var(--font-serif);
+      font-size: 17px;
+    }
+
+    .email-signature {
+      padding: 20px 24px;
+      background: var(--white);
+      border-radius: 4px;
+      border-left: 3px solid var(--navy);
+      margin-top: 8px;
+    }
+
+    .signature-name {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+
+    .signature-brand {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--amber);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .signature-contacts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+    }
+
+    .signature-contacts a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .signature-contacts a:hover { color: var(--navy); }
+
+    /* ── EMAIL 2 — PRESTATION ── */
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 21px;
+      font-weight: 600;
+      color: var(--navy);
+      margin: 28px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title .icon {
+      font-size: 18px;
+    }
+
+    .formula-block {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin: 12px 0;
+    }
+
+    .formula-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .formula-name {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .formula-price {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--amber);
+      background: rgba(230, 140, 58, 0.1);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .formula-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .formula-list li {
+      padding: 6px 0;
+      font-size: 14px;
+      color: var(--text-body);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      border-bottom: 1px solid #D8EFCF;
+    }
+
+    .formula-list li:last-child { border-bottom: none; }
+
+    .formula-list li::before {
+      content: '✓';
+      color: var(--amber);
+      font-weight: 700;
+      flex-shrink: 0;
+      font-size: 13px;
+      margin-top: 1px;
+    }
+
+    .formula-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+      background: rgba(107, 201, 53, 0.08);
+      border: 1px dashed rgba(107, 201, 53, 0.3);
+      padding: 8px 14px;
+      border-radius: 3px;
+      margin-top: 4px;
+    }
+
+    .excluded-box {
+      background: #F4FAF2;
+      border: 1px solid #C3DFBB;
+      border-left: 3px solid var(--text-muted);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+
+    .excluded-box ul {
+      padding-left: 16px;
+      margin-top: 8px;
+    }
+
+    .excluded-box ul li {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    /* ── TABLE ── */
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .schedule-table th {
+      background: var(--navy);
+      color: var(--cream);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .schedule-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-body);
+      vertical-align: top;
+    }
+
+    .schedule-table tr:last-child td { border-bottom: none; }
+    .schedule-table tr:nth-child(even) td { background: rgba(235, 245, 232, 0.6); }
+
+    .var-tag {
+      background: rgba(107, 201, 53, 0.12);
+      border: 1px solid rgba(107, 201, 53, 0.35);
+      color: #004D38;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    /* ── EMAIL 3 — PLANNING ── */
+    .timeline-item {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0;
+      position: relative;
+    }
+
+    .timeline-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      width: 36px;
+    }
+
+    .timeline-dot {
+      width: 12px;
+      height: 12px;
+      background: var(--amber);
+      border-radius: 50%;
+      border: 2px solid var(--white);
+      box-shadow: 0 0 0 2px var(--amber);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .timeline-line {
+      width: 2px;
+      flex: 1;
+      background: var(--border);
+      margin-top: 4px;
+      min-height: 24px;
+    }
+
+    .timeline-item:last-child .timeline-line {
+      display: none;
+    }
+
+    .timeline-content {
+      flex: 1;
+      padding-bottom: 28px;
+      padding-top: 0;
+    }
+
+    .timeline-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .timeline-emoji {
+      margin-right: 6px;
+    }
+
+    .timeline-content p {
+      font-size: 14px !important;
+      color: var(--text-muted) !important;
+      margin-bottom: 4px !important;
+    }
+
+    .timeline-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .meta-tag {
+      font-size: 12px;
+      background: rgba(6, 33, 26, 0.08);
+      color: var(--navy);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .optional-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+      background: rgba(0, 111, 83, 0.06);
+      border: 1px dashed rgba(0, 111, 83, 0.3);
+      padding: 8px 14px;
+      border-radius: 3px;
+      margin-top: 8px;
+    }
+
+    /* ── EMAIL 4 — COMMUNICATION ── */
+    .rule-block {
+      margin-bottom: 24px;
+    }
+
+    .rule-title {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .highlight-box {
+      background: rgba(107, 201, 53, 0.06);
+      border: 1px solid rgba(107, 201, 53, 0.25);
+      border-radius: 4px;
+      padding: 14px 18px;
+      margin: 12px 0;
+      font-size: 14px;
+      color: var(--text-body);
+    }
+
+    .highlight-box strong {
+      color: var(--navy);
+    }
+
+    .quote-example {
+      background: var(--white);
+      border-left: 3px solid var(--sky);
+      border-radius: 0 4px 4px 0;
+      padding: 10px 16px;
+      margin: 8px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ── EMAIL FOOTER ── */
+    .email-footer {
+      background: var(--navy);
+      padding: 24px 48px;
+      text-align: center;
+    }
+
+    .email-footer p {
+      font-size: 12px;
+      color: rgba(235, 245, 232, 0.45);
+      margin-bottom: 4px;
+    }
+
+    .email-footer a {
+      color: rgba(235, 245, 232, 0.55);
+      text-decoration: none;
+    }
+
+    .email-footer a:hover { color: var(--amber); }
+
+    .footer-brand {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      color: rgba(235, 245, 232, 0.7);
+      margin-bottom: 8px !important;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── VARIABLES LEGEND ── */
+    .variables-section {
+      max-width: 680px;
+      margin: 0 auto 56px;
+    }
+
+    .variables-title {
+      font-family: var(--font-serif);
+      font-size: 26px;
+      font-weight: 500;
+      color: var(--navy);
+      margin-bottom: 16px;
+    }
+
+    .variables-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(6, 33, 26, 0.06);
+    }
+
+    .variables-table th {
+      background: var(--navy);
+      color: var(--cream);
+      padding: 10px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .variables-table td {
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .variables-table tr:last-child td { border-bottom: none; }
+    .variables-table tr:nth-child(even) td { background: #FAFAF8; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 660px) {
+      body { padding: 12px; }
+      .page-nav { padding: 10px 12px; gap: 6px; }
+      .page-nav-title { display: none; }
+      .email-header, .email-body, .email-footer { padding: 28px 20px; }
+      .email-subject-bar { padding: 10px 14px; }
+      .confirmation-row { flex-direction: column; gap: 2px; }
+      .formula-header { flex-direction: column; }
+      .signature-contacts { flex-direction: column; gap: 6px; }
+      .schedule-table th, .schedule-table td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── PAGE NAVIGATION ── -->
+<nav class="page-nav">
+  <span class="page-nav-title">Light & Shutter · Emails</span>
+  <a href="#email1">Email 1 – Bienvenue</a>
+  <a href="#email2">Email 2 – Périmètre</a>
+  <a href="#email3">Email 3 – Planning</a>
+  <a href="#email4">Email 4 – Communication</a>
+  <a href="#variables">Variables</a>
+</nav>
+
+
+<!-- ══════════════════════════════════════════
+     EMAIL 1 — BIENVENUE & CONFIRMATION
+     ══════════════════════════════════════════ -->
+<section class="email-section" id="email1">
+  <p class="email-label">Email 1 · À envoyer dans les 24h après réception de l'acompte</p>
+
+  <div class="email-subject-bar">
+    <span class="email-subject-icon">✉️</span>
+    <div class="email-subject-content">
+      <div class="subject-options">
+        <strong>Objet A :</strong> C'est officiel : votre mariage est dans mon agenda
+      </div>
+      <div class="subject-options" style="margin-top:4px;">
+        <strong>Objet B :</strong> Votre acompte est reçu, et je suis impatient de vous rencontrer
+      </div>
+    </div>
+  </div>
+
+  <div class="email-card">
+    <!-- Header -->
+    <div class="email-header">
+      <div class="brand-name">Light & Shutter</div>
+      <div class="brand-tagline">Photographie de mariage · Nord, France</div>
+    </div>
+
+    <!-- Body -->
+    <div class="email-body">
+      <p class="email-greeting"><span class="var-tag">[Prénom(s)]</span>,</p>
+
+      <p>Votre acompte est bien reçu. C'est officiel : votre date est réservée.</p>
+
+      <p>Merci, sincèrement. Chaque mariage que j'accompagne compte pour moi, et je suis déjà curieux de découvrir votre histoire.</p>
+
+      <hr class="divider">
+
+      <!-- Confirmation box -->
+      <div class="confirmation-box">
+        <h3>Confirmation de votre réservation</h3>
+        <div class="confirmation-row">
+          <span class="label">Formule réservée</span>
+          <span class="value"><span class="var-tag">[NOM DE LA FORMULE]</span></span>
+        </div>
+        <div class="confirmation-row">
+          <span class="label">Date du mariage</span>
+          <span class="value"><span class="var-tag">[DATE DU MARIAGE]</span></span>
+        </div>
+        <div class="confirmation-row">
+          <span class="label">Lieu</span>
+          <span class="value"><span class="var-tag">[LIEU DU MARIAGE]</span></span>
+        </div>
+        <div class="confirmation-row">
+          <span class="label">Acompte reçu</span>
+          <span class="value"><span class="var-tag">[MONTANT]</span> €</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="label">Solde à régler avant le jour J</span>
+          <span class="value" style="color:var(--amber);"><span class="var-tag">[MONTANT SOLDE]</span> €</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Steps -->
+      <p class="steps-title">Ce qui se passe maintenant</p>
+      <p style="margin-bottom:20px;">Voici les grandes étapes. Tout le reste viendra par email :</p>
+
+      <div class="step-item">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <strong>Dans les prochains jours</strong>
+          <span>Je vous envoie un email qui résume exactement ce qui est inclus dans votre formule et comment on va travailler ensemble.</span>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <strong>D'ici <span class="var-tag">[X semaines]</span></strong>
+          <span>On planifie votre <strong>séance engagement</strong> (offerte avec votre formule). C'est notre premier vrai moment ensemble, l'occasion de faire connaissance avant le grand jour.</span>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <strong>2–3 semaines avant le mariage</strong>
+          <span>On fait un point détaillé : planning minuté, lieux, moments clés.</span>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <strong>Le jour J</strong>
+          <span>Vous vivez votre mariage. Moi, je m'occupe du reste.</span>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <strong>Sous 2–3 semaines après</strong>
+          <span>Vous recevez votre galerie en ligne privée.</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Communication -->
+      <div class="info-box">
+        <h3>Comment on communique</h3>
+        <p>Mon canal principal est l'<strong>email</strong>. WhatsApp est possible pour les questions rapides, mais tout ce qui est important — changement de planning, demande spécifique, ajout d'option — passe par email pour que rien ne se perde. Je réponds dans les <strong>24h ouvrées</strong>.</p>
+      </div>
+
+      <hr class="divider">
+
+      <p style="font-style:italic;color:var(--navy); font-family:var(--font-serif); font-size:17px;">Une seule chose à retenir aujourd'hui : <em>votre date est sécurisée.</em> Le reste peut attendre.</p>
+
+      <p style="margin-top:20px;">À très vite,</p>
+
+      <div class="email-signature">
+        <div class="signature-name">Tolliam</div>
+        <div class="signature-brand">Light & Shutter</div>
+        <div class="signature-contacts">
+          <a href="#">📧 <span class="var-tag">[EMAIL]</span></a>
+          <a href="#">📱 <span class="var-tag">[TÉLÉPHONE]</span></a>
+          <a href="https://lightandshutter.fr">🌐 lightandshutter.fr</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="email-footer">
+      <p class="footer-brand">Light & Shutter</p>
+      <p>© 2026 · Photographie de mariage · Nord, France</p>
+      <p><a href="#">lightandshutter.fr</a></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     EMAIL 2 — PÉRIMÈTRE DE PRESTATION
+     ══════════════════════════════════════════ -->
+<section class="email-section" id="email2">
+  <p class="email-label">Email 2 · À envoyer 2–3 jours après l'email 1</p>
+
+  <div class="email-subject-bar">
+    <span class="email-subject-icon">✉️</span>
+    <div class="email-subject-content">
+      <div class="subject-options">
+        <strong>Objet A :</strong> Ce qui est inclus dans votre formule <span class="var-tag">[NOM FORMULE]</span> (et ce qui ne l'est pas)
+      </div>
+      <div class="subject-options" style="margin-top:4px;">
+        <strong>Objet B :</strong> Votre formule en détail : tout ce qu'on a convenu ensemble
+      </div>
+    </div>
+  </div>
+
+  <div class="email-card">
+    <div class="email-header">
+      <div class="brand-name">Light & Shutter</div>
+      <div class="brand-tagline">Photographie de mariage · Nord, France</div>
+    </div>
+
+    <div class="email-body">
+      <p class="email-greeting"><span class="var-tag">[Prénom(s)]</span>,</p>
+
+      <p>Avant de démarrer le travail ensemble, je veux qu'on soit parfaitement alignés sur ce qu'on a convenu. Pas de mauvaises surprises de part et d'autre.</p>
+
+      <hr class="divider">
+
+      <!-- Formulas -->
+      <div class="section-title">
+        <span class="icon">✅</span> Ce qui est inclus
+        <span style="font-size:14px; font-weight:400; color:var(--text-muted);">· formule <span class="var-tag">[NOM FORMULE]</span> / <span class="var-tag">[PRIX TOTAL]</span> €</span>
+      </div>
+
+      <p class="formula-note" style="margin-bottom:16px;">⚠️ Utiliser le bloc correspondant à la formule choisie. Supprimer les deux autres.</p>
+
+      <!-- Formule Essentiel -->
+      <div class="formula-block">
+        <div class="formula-header">
+          <span class="formula-name">Formule Essentiel</span>
+          <span class="formula-price">690 €</span>
+        </div>
+        <ul class="formula-list">
+          <li>4 heures de couverture photo le jour J</li>
+          <li>300 photos haute résolution, retouchées individuellement</li>
+          <li>Galerie en ligne privée pendant 6 mois</li>
+        </ul>
+      </div>
+
+      <!-- Formule Signature -->
+      <div class="formula-block">
+        <div class="formula-header">
+          <span class="formula-name">Formule Signature</span>
+          <span class="formula-price">1 090 €</span>
+        </div>
+        <ul class="formula-list">
+          <li>8 heures de couverture photo le jour J</li>
+          <li>400 photos haute résolution, retouchées individuellement</li>
+          <li>Vidéo de 8 min</li>
+          <li>Galerie en ligne privée pendant 12 mois</li>
+          <li>Séance engagement pré-mariage (~1h30, environ 50 photos retouchées incluses)</li>
+        </ul>
+      </div>
+
+      <!-- Formule Héritage -->
+      <div class="formula-block">
+        <div class="formula-header">
+          <span class="formula-name">Formule Héritage</span>
+          <span class="formula-price">1 590 €</span>
+        </div>
+        <ul class="formula-list">
+          <li>Journée complète de couverture photo</li>
+          <li>600 photos haute résolution, retouchées individuellement</li>
+          <li>Vidéo de 10 min</li>
+          <li>Best-of 20 photos livré en 72h après le mariage</li>
+          <li>Galerie en ligne privée pendant 24 mois</li>
+          <li>Séance engagement pré-mariage (~1h30, environ 50 photos retouchées incluses)</li>
+        </ul>
+      </div>
+
+      <!-- Options -->
+      <div class="info-box" style="margin-top:16px;">
+        <h3>Options ajoutées <span style="font-weight:400;font-size:13px;color:var(--text-muted);">(supprimer si aucune)</span></h3>
+        <p>· <span class="var-tag">[OPTION 1]</span> : <span class="var-tag">[PRIX]</span> € <em style="font-size:12px;">(ex : Album 30×30 50 pages)</em></p>
+        <p style="margin-top:6px;">· <span class="var-tag">[OPTION 2]</span> : <span class="var-tag">[PRIX]</span> € <em style="font-size:12px;">(ex : Drone, Photobooth…)</em></p>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Retouches -->
+      <div class="section-title" style="font-size:18px;">
+        <span class="icon">🔄</span> Retouches spécifiques
+      </div>
+
+      <p>Un round de retouches est inclus pour jusqu'à <strong>50 photos</strong> de votre galerie finale.</p>
+
+      <div class="highlight-box" style="margin-top:12px;">
+        <strong>Ce que ça couvre :</strong> une correction précise sur une photo que vous souhaitez imprimer ou encadrer — supprimer un élément gênant, ajuster l'exposition, recadrer.
+        <br><br>
+        <strong>Ce que ça ne couvre pas :</strong> une révision esthétique complète de la galerie ou un changement de style de traitement.
+      </div>
+
+      <hr class="divider">
+
+      <!-- Non inclus -->
+      <div class="section-title" style="font-size:18px;">
+        <span class="icon">❌</span> Ce qui n'est pas inclus
+      </div>
+
+      <div class="excluded-box">
+        <ul>
+          <li>Fichiers RAW (négatifs numériques bruts non traités)</li>
+          <li>Rush vidéo ou vidéo non montée</li>
+          <li>Aucun fichier source</li>
+        </ul>
+        <p style="margin-top:10px; font-size:13px; color:var(--text-muted);">Ces éléments ne sont pas disponibles à la vente et ne font pas partie de la prestation.</p>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Calendrier -->
+      <div class="section-title" style="font-size:18px;">
+        <span class="icon">📅</span> Calendrier prévu
+      </div>
+
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Étape</th>
+            <th>Timing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Séance engagement</td>
+            <td>À planifier ensemble</td>
+          </tr>
+          <tr>
+            <td>Point de préparation</td>
+            <td>2–3 semaines avant le mariage</td>
+          </tr>
+          <tr>
+            <td>Best-of 20 photos <em style="font-size:12px;">(Héritage ou si Aperçu commandé)</em></td>
+            <td>Sous 72h après le mariage</td>
+          </tr>
+          <tr>
+            <td>Livraison de la galerie complète</td>
+            <td>Sous 2–3 semaines après le mariage</td>
+          </tr>
+          <tr>
+            <td>Album <em style="font-size:12px;">(si commandé)</em></td>
+            <td>Sur commande après livraison galerie (voir Email 3)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr class="divider">
+
+      <!-- Hors périmètre -->
+      <div class="section-title" style="font-size:18px;">
+        <span class="icon">⚠️</span> Travaux hors périmètre
+      </div>
+
+      <p>Toute demande qui ne figure pas dans cette liste fait l'objet d'un devis séparé, soumis à votre accord <strong>avant</strong> toute réalisation. Pas de frais cachés, pas de mauvaise surprise.</p>
+
+      <hr class="divider">
+
+      <p>Si vous avez une question sur ce qui précède, répondez à cet email. Sinon, considérez ce document comme notre cadre de travail commun — on construit à partir de là.</p>
+
+      <p style="margin-top:16px;">À bientôt,</p>
+
+      <div class="email-signature">
+        <div class="signature-name">Tolliam</div>
+        <div class="signature-brand">Light & Shutter</div>
+        <div class="signature-contacts">
+          <a href="#">📧 <span class="var-tag">[EMAIL]</span></a>
+          <a href="#">📱 <span class="var-tag">[TÉLÉPHONE]</span></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="email-footer">
+      <p class="footer-brand">Light & Shutter</p>
+      <p>© 2026 · Photographie de mariage · Nord, France</p>
+      <p><a href="#">lightandshutter.fr</a></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     EMAIL 3 — PLANNING & JALONS
+     ══════════════════════════════════════════ -->
+<section class="email-section" id="email3">
+  <p class="email-label">Email 3 · Après avoir calé la séance engagement et le planning global</p>
+
+  <div class="email-subject-bar">
+    <span class="email-subject-icon">✉️</span>
+    <div class="email-subject-content">
+      <div class="subject-options">
+        <strong>Objet A :</strong> Votre planning Light & Shutter — de la séance engagement à la livraison
+      </div>
+      <div class="subject-options" style="margin-top:4px;">
+        <strong>Objet B :</strong> Le calendrier de votre mariage — ce qui se passe, quand
+      </div>
+    </div>
+  </div>
+
+  <div class="email-card">
+    <div class="email-header">
+      <div class="brand-name">Light & Shutter</div>
+      <div class="brand-tagline">Photographie de mariage · Nord, France</div>
+    </div>
+
+    <div class="email-body">
+      <p class="email-greeting"><span class="var-tag">[Prénom(s)]</span>,</p>
+
+      <p>Voici votre planning complet. Gardez cet email — c'est votre référence de la séance engagement jusqu'à la livraison finale.</p>
+
+      <hr class="divider">
+
+      <!-- Timeline -->
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title"><span class="timeline-emoji">📷</span>Séance engagement · <span class="var-tag">[DATE]</span></div>
+          <div class="timeline-meta">
+            <span class="meta-tag">📍 <span class="var-tag">[LIEU CHOISI]</span></span>
+            <span class="meta-tag">⏱ ~1h30</span>
+          </div>
+          <p style="margin-top:10px;">Livraison : ~50 photos retouchées sous <span class="var-tag">[X semaines]</span>.</p>
+          <div class="optional-note">À planifier ensemble si ce n'est pas encore fait. Répondez à cet email avec vos disponibilités.</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title"><span class="timeline-emoji">📋</span>Point de préparation · <span class="var-tag">[DATE 2–3 sem. avant]</span></div>
+          <p>On passe en revue le planning minuté du jour J, les lieux, les moments clés à couvrir, et on anticipe les imprévus. Ce point peut se faire par email ou par appel selon votre préférence.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot" style="background:var(--navy); box-shadow: 0 0 0 2px var(--navy);"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title"><span class="timeline-emoji">🎉</span>Le jour J · <span class="var-tag">[DATE DU MARIAGE]</span></div>
+          <div class="timeline-meta">
+            <span class="meta-tag">Couverture : <span class="var-tag">[DURÉE]</span></span>
+            <span class="meta-tag">Début : <span class="var-tag">[HEURE DE DÉBUT]</span></span>
+            <span class="meta-tag">Fin : <span class="var-tag">[HEURE DE FIN]</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title"><span class="timeline-emoji">⚡</span>Best-of 20 photos · J+72h<span style="font-size:13px;font-weight:400;color:var(--text-muted);"> (Signature & Héritage)</span></div>
+          <p>Vous recevez une sélection de vos premières photos par email. Idéal pour partager l'annonce avec vos proches.</p>
+          <div class="optional-note">Cette étape n'apparaît pas dans la formule Essentiel sans option Aperçu photo.</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title"><span class="timeline-emoji">🖼️</span>Livraison de la galerie — J+2/3 semaines</div>
+          <p>Vous recevez le lien de votre galerie privée à l'adresse email de votre dossier.</p>
+          <div class="timeline-meta">
+            <span class="meta-tag"><span class="var-tag">[NOMBRE]</span> photos HD</span>
+            <span class="meta-tag">Accès <span class="var-tag">[6 / 12 / 24 mois]</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot" style="background:var(--sky); box-shadow: 0 0 0 2px var(--sky);"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title" style="color:var(--text-muted);font-size:16px;"><span class="timeline-emoji">📚</span>Album <span style="font-weight:400;font-size:13px;">(si commandé — sinon ignorer)</span></div>
+          <p>Délai total entre votre sélection et réception de l'album : <strong>environ 3 à 4 semaines</strong>.</p>
+          <div class="optional-note">Sélection des photos dans la galerie → Mise en page (~1 sem.) → Fabrication (~2–3 sem.) → Livraison postale</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="highlight-box">
+        <strong>Important :</strong> Ce planning est basé sur vos informations actuelles. Tout changement dans votre programme de mariage (heure, lieu, ajout d'une étape) doit m'être signalé <strong>par email</strong> dès que possible.
+      </div>
+
+      <p style="margin-top:24px;">Une question sur une étape ? Répondez directement à cet email.</p>
+
+      <p style="margin-top:16px;">À bientôt,</p>
+
+      <div class="email-signature">
+        <div class="signature-name">Tolliam</div>
+        <div class="signature-brand">Light & Shutter</div>
+        <div class="signature-contacts">
+          <a href="#">📧 <span class="var-tag">[EMAIL]</span></a>
+          <a href="#">📱 <span class="var-tag">[TÉLÉPHONE]</span></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="email-footer">
+      <p class="footer-brand">Light & Shutter</p>
+      <p>© 2026 · Photographie de mariage · Nord, France</p>
+      <p><a href="#">lightandshutter.fr</a></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     EMAIL 4 — COMMUNICATION & RETOURS
+     ══════════════════════════════════════════ -->
+<section class="email-section" id="email4">
+  <p class="email-label">Email 4 · Après les emails 2 et 3 (peut être combiné avec l'email 3)</p>
+
+  <div class="email-subject-bar">
+    <span class="email-subject-icon">✉️</span>
+    <div class="email-subject-content">
+      <div class="subject-options">
+        <strong>Objet A :</strong> Comment on travaille ensemble — communication et retours
+      </div>
+      <div class="subject-options" style="margin-top:4px;">
+        <strong>Objet B :</strong> Pour que tout se passe bien — voici comment je fonctionne
+      </div>
+    </div>
+  </div>
+
+  <div class="email-card">
+    <div class="email-header">
+      <div class="brand-name">Light & Shutter</div>
+      <div class="brand-tagline">Photographie de mariage · Nord, France</div>
+    </div>
+
+    <div class="email-body">
+      <p class="email-greeting"><span class="var-tag">[Prénom(s)]</span>,</p>
+
+      <p>Un mariage, ça génère des questions. Des idées à 23h. Des "et si on ajoutait ça ?" le vendredi soir. C'est complètement normal — et c'est signe que vous tenez à chaque détail.</p>
+
+      <p>Pour qu'on travaille bien ensemble et que la communication soit la plus fluide possible pour vous comme pour moi, voici comment je fonctionne.</p>
+
+      <hr class="divider">
+
+      <div class="rule-block">
+        <div class="rule-title">📬 Canal principal : l'email</div>
+        <p>Mon adresse : <span class="var-tag">[EMAIL]</span></p>
+        <p style="margin-top:10px;">L'email me permet de garder une trace de tout ce qu'on s'est dit, de ne rien oublier, et de vous répondre de façon précise et réfléchie.</p>
+        <div class="info-box" style="margin-top:12px;">
+          <h3>WhatsApp <span class="var-tag">[NUMÉRO]</span></h3>
+          <p>Possible pour les échanges rapides et informels. Mais tout ce qui est important — changement de planning, demande spécifique, ajout d'option — <strong>passe par email</strong>. Ce n'est pas une question de formalité : c'est pour que rien ne se perde.</p>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="rule-block">
+        <div class="rule-title">⏱️ Délai de réponse : 24h ouvrées</div>
+        <p>Je réponds aux emails dans les 24h ouvrées. En dehors de cette fenêtre (week-ends, jours fériés, et les jours où je photographie un mariage), ma réponse attendra le prochain jour ouvré.</p>
+        <div class="highlight-box" style="margin-top:12px;">
+          Un email envoyé le vendredi soir reçoit une réponse le <strong>lundi matin</strong>.
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="rule-block">
+        <div class="rule-title">📋 Format des retours (retouches spécifiques)</div>
+        <p>Si vous souhaitez une retouche sur une photo de votre galerie, envoyez-moi un email avec :</p>
+        <ul style="padding-left:20px; margin-top:10px;">
+          <li style="margin-bottom:6px; font-size:15px;">Le <strong>numéro de la photo</strong> (visible dans votre galerie)</li>
+          <li style="margin-bottom:6px; font-size:15px;">Ce que vous souhaitez modifier</li>
+          <li style="font-size:15px;">Le contexte si utile <em style="color:var(--text-muted);">(ex : "cette photo est destinée à l'impression en grand format")</em></li>
+        </ul>
+      </div>
+
+      <hr class="divider">
+
+      <div class="rule-block">
+        <div class="rule-title">🔔 Changements dans votre planning</div>
+        <p>Votre programme évolue au fil des mois — c'est normal. Mais j'ai besoin d'être informé de tout changement important : heure de début, changement de lieu, ajout ou suppression d'une étape.</p>
+
+        <div class="highlight-box" style="margin-top:12px;">
+          <strong>Règle simple : tout changement important = un email.</strong><br>
+          Pas besoin d'un long message. Un mot suffit :
+        </div>
+
+        <div class="quote-example">"On a décalé la cérémonie à 16h au lieu de 15h."</div>
+        <div class="quote-example">"On ajoute une session photo au coucher de soleil vers 20h30."</div>
+
+        <p style="margin-top:12px;">Plus je suis informé tôt, mieux je peux préparer la journée pour capturer exactement ce que vous souhaitez.</p>
+      </div>
+
+      <hr class="divider">
+
+      <p style="font-family:var(--font-serif); font-size:17px; color:var(--navy); font-style:italic;">Je suis là pour que cette expérience soit aussi simple que possible. Si quelque chose n'est pas clair ou si vous avez une question, répondez à cet email — c'est exactement pour ça qu'il existe.</p>
+
+      <p style="margin-top:20px;">À très bientôt,</p>
+
+      <div class="email-signature">
+        <div class="signature-name">Tolliam</div>
+        <div class="signature-brand">Light & Shutter</div>
+        <div class="signature-contacts">
+          <a href="#">📧 <span class="var-tag">[EMAIL]</span></a>
+          <a href="#">📱 <span class="var-tag">[TÉLÉPHONE]</span></a>
+          <a href="https://lightandshutter.fr">🌐 lightandshutter.fr</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="email-footer">
+      <p class="footer-brand">Light & Shutter</p>
+      <p>© 2026 · Photographie de mariage · Nord, France</p>
+      <p><a href="#">lightandshutter.fr</a></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     VARIABLES LEGEND
+     ══════════════════════════════════════════ -->
+<section class="variables-section" id="variables">
+  <p class="email-label">Référence</p>
+  <p class="variables-title">Variables à remplacer</p>
+
+  <table class="variables-table">
+    <thead>
+      <tr>
+        <th>Variable</th>
+        <th>Contenu attendu</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="var-tag">[PRÉNOM(S)]</span></td><td>Prénom(s) des mariés</td></tr>
+      <tr><td><span class="var-tag">[NOM DE LA FORMULE]</span></td><td>Essentiel / Signature / Héritage</td></tr>
+      <tr><td><span class="var-tag">[PRIX TOTAL]</span></td><td>Prix de la formule (690 / 1090 / 1590)</td></tr>
+      <tr><td><span class="var-tag">[MONTANT]</span></td><td>Montant reçu en acompte</td></tr>
+      <tr><td><span class="var-tag">[MONTANT SOLDE]</span></td><td>Solde restant à régler</td></tr>
+      <tr><td><span class="var-tag">[DATE DU MARIAGE]</span></td><td>Date confirmée du mariage</td></tr>
+      <tr><td><span class="var-tag">[LIEU DU MARIAGE]</span></td><td>Lieu de la cérémonie ou réception</td></tr>
+      <tr><td><span class="var-tag">[DATE SÉANCE ENGAGEMENT]</span></td><td>Si déjà planifiée</td></tr>
+      <tr><td><span class="var-tag">[LIEU SÉANCE ENGAGEMENT]</span></td><td>Lieu choisi pour l'engagement</td></tr>
+      <tr><td><span class="var-tag">[HEURE DE DÉBUT / FIN]</span></td><td>Planning du jour J</td></tr>
+      <tr><td><span class="var-tag">[NOMBRE]</span></td><td>Nombre de photos selon formule : 300 / 400 / 600</td></tr>
+      <tr><td><span class="var-tag">[DURÉE GALERIE]</span></td><td>Selon formule : 6 / 12 / 24 mois</td></tr>
+      <tr><td><span class="var-tag">[OPTION 1 / 2]</span></td><td>Add-ons commandés (si applicable)</td></tr>
+      <tr><td><span class="var-tag">[EMAIL]</span></td><td>Votre adresse email professionnelle</td></tr>
+      <tr><td><span class="var-tag">[TÉLÉPHONE]</span></td><td>Votre numéro WhatsApp / téléphone</td></tr>
+      <tr><td><span class="var-tag">[X semaines]</span></td><td>Délai estimé pour planifier la séance engagement</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>
