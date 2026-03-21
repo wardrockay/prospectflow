@@ -29,7 +29,7 @@ export interface OnboardingEmailVariables {
   // Common — all emails
   prenoms: string;
   emailPhotographe: string;
-  telephone: string;
+  telephone?: string;
 
   // Formule — emails 1, 2, 3
   nomFormule?: string;
@@ -178,7 +178,7 @@ export async function sendOnboardingEmail(
       Body: {
         Html: { Data: html, Charset: 'UTF-8' },
         Text: {
-          Data: `Light & Shutter — Photographie de mariage\n\nBonjour ${vars.prenoms},\n\nCet email contient du contenu mis en forme (HTML). Si vous ne le voyez pas correctement, ouvrez-le dans votre application email ou contactez-nous à ${vars.emailPhotographe}.\n\n—\nEtienne\nLight & Shutter\n${vars.emailPhotographe} · ${vars.telephone}\nhttps://lightandshutter.fr`,
+          Data: `Light & Shutter — Photographie de mariage\n\nBonjour ${vars.prenoms},\n\nCet email contient du contenu mis en forme (HTML). Si vous ne le voyez pas correctement, ouvrez-le dans votre application email ou contactez-nous à ${vars.emailPhotographe}.\n\n—\nEtienne\nLight & Shutter\n${vars.emailPhotographe}${vars.telephone ? ' · ' + vars.telephone : ''}\nhttps://lightandshutter.fr`,
           Charset: 'UTF-8',
         },
       },
